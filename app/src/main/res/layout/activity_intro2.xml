@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/topViewIntro2Act"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="tmw.sept22buyout.Intro2Act"
+    tools:layout_editor_absoluteY="81dp"
+    tools:layout_editor_absoluteX="0dp">
+
+    <TextView
+        android:id="@+id/labelAskPlayer1Name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:text="@string/strAskPlayerName"
+        android:textSize="28sp"
+        app:layout_constraintBaseline_toBaselineOf="@+id/editPlayer1Name"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
+    <EditText
+        android:id="@+id/editPlayer1Name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="32dp"
+        android:ems="10"
+        android:hint="Name"
+        android:inputType="textPersonName"
+        app:layout_constraintLeft_toRightOf="@+id/labelAskPlayer1Name"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/labelAskPlayer2Name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:text="@string/strAskPlayerName"
+        android:textSize="28sp"
+        app:layout_constraintBaseline_toBaselineOf="@+id/editPlayer2Name"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
+    <EditText
+        android:id="@+id/editPlayer2Name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="16dp"
+        android:ems="10"
+        android:hint="Name"
+        android:inputType="textPersonName"
+        app:layout_constraintLeft_toRightOf="@+id/labelAskPlayer2Name"
+        app:layout_constraintTop_toBottomOf="@+id/editPlayer1Name" />
+
+    <TextView
+        android:id="@+id/labelAskPlayer3Name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:text="@string/strAskPlayerName"
+        android:textSize="28sp"
+        app:layout_constraintBaseline_toBaselineOf="@+id/editPlayer3Name"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
+    <EditText
+        android:id="@+id/editPlayer3Name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="16dp"
+        android:ems="10"
+        android:hint="Name"
+        android:inputType="textPersonName"
+        app:layout_constraintLeft_toRightOf="@+id/labelAskPlayer3Name"
+        app:layout_constraintTop_toBottomOf="@+id/editPlayer2Name" />
+
+    <TextView
+        android:id="@+id/labelAskPlayer4Name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:text="@string/strAskPlayerName"
+        android:textSize="28sp"
+        app:layout_constraintBaseline_toBaselineOf="@+id/editPlayer4Name"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
+    <EditText
+        android:id="@+id/editPlayer4Name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="16dp"
+        android:ems="10"
+        android:hint="Name"
+        android:inputType="textPersonName"
+        app:layout_constraintLeft_toRightOf="@+id/labelAskPlayer4Name"
+        app:layout_constraintTop_toBottomOf="@+id/editPlayer3Name" />
+
+    <TextView
+        android:id="@+id/labelAskPlayer5Name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:text="@string/strAskPlayerName"
+        android:textSize="28sp"
+        app:layout_constraintBaseline_toBaselineOf="@+id/editPlayer5Name"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
+    <EditText
+        android:id="@+id/editPlayer5Name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="16dp"
+        android:ems="10"
+        android:hint="Name"
+        android:inputType="textPersonName"
+        app:layout_constraintLeft_toRightOf="@+id/labelAskPlayer5Name"
+        app:layout_constraintTop_toBottomOf="@+id/editPlayer4Name" />
+
+    <TextView
+        android:id="@+id/labelAskPlayer6Name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:text="@string/strAskPlayerName"
+        android:textSize="28sp"
+        app:layout_constraintBaseline_toBaselineOf="@+id/editPlayer6Name"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
+    <EditText
+        android:id="@+id/editPlayer6Name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="16dp"
+        android:ems="10"
+        android:hint="Name"
+        android:inputType="textPersonName"
+        app:layout_constraintLeft_toRightOf="@+id/labelAskPlayer6Name"
+        app:layout_constraintTop_toBottomOf="@+id/editPlayer5Name" />
+
+    <Button
+        android:id="@+id/btnIntro2Done"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="32dp"
+        android:onClick="intro2DoneClicked"
+        android:text="Done"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/labelAskPlayer6Name" />
+
+    <TextView
+        android:id="@+id/labelIntro2Error"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:textColor="@android:color/holo_red_dark"
+        android:textSize="20sp"
+        app:layout_constraintBaseline_toBaselineOf="@+id/btnIntro2Done"
+        app:layout_constraintLeft_toRightOf="@+id/btnIntro2Done" />
+
+</android.support.constraint.ConstraintLayout>
