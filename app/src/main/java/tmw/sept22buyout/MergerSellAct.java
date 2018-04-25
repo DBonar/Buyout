@@ -9,35 +9,21 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class MergerSellAct extends AppCompatActivity {
+public class MergerSellAct extends DisplayLogic {
 
     private static MergerSellAct Instance = null;
     private static final String TAG = MergerSellAct.class.getSimpleName();
-
-    TokenButton BtnScnTokens[];
-    TextView LblCash;
-    ChainButton BtnScnChains[];
-    TextView LblScnChains[];
-    TextView LblMessage1;
-    TextView LblMessage2;
-    TextView LblMessage3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_merger_sell);
 
-        // Instance = this;
         // Create the display
-        LinearLayout.LayoutParams btnparams =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT);
-        btnparams.width = 0;
-        btnparams.height = LinearLayout.LayoutParams.MATCH_PARENT;
-        btnparams.weight = 1;
-
-        //create a layout
+        // A vertical stack of items.
+        // Overall they will fill the parent space.
+        // Individual items will have different weights to get
+        // different amounts of space.
         LinearLayout.LayoutParams vlparams =
                 new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
@@ -48,191 +34,46 @@ public class MergerSellAct extends AppCompatActivity {
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setLayoutParams(vlparams);
+        this.addContentView(layout, vlparams);
 
-        LinearLayout.LayoutParams hlparams =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.MATCH_PARENT);
-        hlparams.width = LinearLayout.LayoutParams.MATCH_PARENT;
-        hlparams.height = 0;
-        hlparams.weight = 1;
+        // Get the common rows giving the callbacks for buttons.
+        java.util.List<LinearLayout> rows = buildLayout(null,
+                                                        null);
 
-        //LinearLayout hlayout[] = new LinearLayout[20];
-        int nchains = AllChains.instance().getAllChains().length();
-        int totalnrows = Board.BoardYSize + nchains + 6;
-        LinearLayout hlayout[] = new LinearLayout[totalnrows];
-        for (int lln = 0; (lln < totalnrows); lln++) {
-            hlayout[lln] = new LinearLayout(this);
-            hlayout[lln].setOrientation(LinearLayout.HORIZONTAL);
-            hlayout[lln].setLayoutParams(hlparams);
-        }
-
-        // Create the board: a grid of TextView
-        Board board = Board.instance();
-//        Button allbuttons[][] = new Button[13][10];
-        // TextView allbuttons[][] = new TextView[13][10];
-        for (int boardrow = 0; (boardrow < Board.BoardYSize); boardrow++) {
-            for (int boardcol = 0; (boardcol < Board.BoardXSize); boardcol++) {
-//                allbuttons[boardcol][boardrow] = new Button(this);
-//                allbuttons[boardcol][boardrow].setText("ABCDEFGHIJKL".substring(boardcol-1, boardcol) + boardrow);
-//                allbuttons[boardcol][boardrow].setLayoutParams(btnparams);
-                BoardSpace space = board.getSpace(boardcol, boardrow);
-                String spacename = space.getName();
-                TextView element = new TextView(this);
-                element.setText(spacename);
-                element.setLayoutParams(btnparams);
-                hlayout[boardrow].addView(element);
-                space.setDisplay(element);
-
-//                allbuttons[boardcol][boardrow] = new TextView(this);
-//                allbuttons[boardcol][boardrow].setText("ABCDEFGHIJKL".substring(boardcol-1, boardcol) + boardrow);
-//                allbuttons[boardcol][boardrow].setLayoutParams(btnparams);
-//                hlayout[boardrow].addView(allbuttons[boardcol][boardrow]);
-            }
-        }
-
-        // Create the row for token buttons and cash
-        TextView lblTokens = new TextView(this);
-        lblTokens.setText("Tokens:");
-        LinearLayout.LayoutParams lblparams =
+        // Add the last row
+        int last = rows.size() - 1;
+        LinearLayout.LayoutParams btnparams =
                 new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT);
-        lblparams.width = 0;
-        lblparams.height = LinearLayout.LayoutParams.MATCH_PARENT;
-        lblparams.weight = 2;
-        lblTokens.setLayoutParams(lblparams);
-        int rownum = Board.BoardYSize;
-        hlayout[rownum].addView(lblTokens);
+        btnparams.width = 0;
+        btnparams.height = LinearLayout.LayoutParams.MATCH_PARENT;
+        btnparams.weight = 1;
 
-        LinearLayout.LayoutParams widelblparams =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT);
-        widelblparams.width = 0;
-        widelblparams.height = LinearLayout.LayoutParams.MATCH_PARENT;
-        widelblparams.weight = 5;
-
-        BtnScnTokens = new TokenButton[AllTokens.instance().NTokensPerPlayer];
-        for (int tn = 0; (tn < AllTokens.instance().NTokensPerPlayer); tn++) {
-            TokenButton token = new TokenButton(this);
-            token.setText("Button");
-//            final int ftn = tn;
-//            token.setId(ftn);
-            token.setLayoutParams(btnparams);
-            BtnScnTokens[tn] = token;
-            View vtoke = (View) token;
-//            vtoke.setOnClickListener(new View.OnClickListener() {
-//                //@Override;
-//                public void onClick(View btn) {
-//                    tokenBtnCB(btn);
-//                }
-//            });
-            hlayout[rownum].addView(token);
-        }
-        LblCash = new TextView(this);
-        LblCash.setText("Not Specified");
-        LblCash.setLayoutParams(lblparams);
-        // LblCash.setBackgroundColor(ChainColor(2));
-        hlayout[rownum].addView(LblCash);
-
-//        for (int chainn = 1; (chainn <= 7); chainn++) {
-//            int rown = 10 + chainn;
-//            TextView lblChainName = new TextView(this);
-//            lblChainName.setText("Chain #" + chainn);
-//            lblChainName.setLayoutParams(lblparams);
-//            lblChainName.setBackgroundColor(Color.rgb(0, 255, 128));
-//            // lblChainName.setBackgroundColor(ChainColor(chainn));
-//            hlayout[rown].addView(lblChainName);
-//
-//            TextView lblChainStatus = new TextView(this);
-//            lblChainStatus.setText("is not on board.");
-//            lblChainStatus.setLayoutParams(widelblparams);
-//            hlayout[rown].addView(lblChainStatus);
-//        }
-
-        BtnScnChains = new ChainButton[AllChains.instance().nChains()];
-        LblScnChains = new TextView[AllChains.instance().nChains()];
-        Chain onechain;
-        ListIterator<Chain> chains = new ListIterator<Chain>(AllChains.instance().getAllChains());
-        int chainn = 0;
-        while ((onechain = chains.getNext()) != null) {
-            rownum++;
-            ChainButton chainbtn = new ChainButton(this, onechain);
-            chainbtn.setText(onechain.toString());
-            chainbtn.setLayoutParams(btnparams);
-            chainbtn.setBackgroundColor(onechain.getChainColor());
-            BtnScnChains[chainn] = chainbtn;
-            View vchainbtn = (View) chainbtn;
-//            vchainbtn.setOnClickListener(new View.OnClickListener() {
-//                public void onClick(View btn) {
-//                    chainBtnCB(btn);
-//                }
-//            });
-            hlayout[rownum].addView(chainbtn);
-
-            TextView lblChainStatus = new TextView(this);
-            lblChainStatus.setText("is not specified.");
-            lblChainStatus.setLayoutParams(widelblparams);
-            LblScnChains[chainn] = lblChainStatus;
-            hlayout[rownum].addView(lblChainStatus);
-            chainn++;
-        }
-
-        LblMessage1 = new TextView(this);
-        LblMessage1.setText("Not specified.");
-        hlayout[++rownum].addView(LblMessage1);
-        LblMessage2 = new TextView(this);
-        LblMessage2.setText("");
-        hlayout[++rownum].addView(LblMessage2);
-        LblMessage3 = new TextView(this);
-        LblMessage3.setText("");
-        hlayout[++rownum].addView(LblMessage3);
-
-        rownum++;
         Button sellbtn = new Button(this);
         sellbtn.setText("Sell");
         sellbtn.setLayoutParams(btnparams);
         View vsell = (View) sellbtn;
-        vsell.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View btn) {
-                sellBtnCB(btn);
-            }
-        });
-        hlayout[rownum].addView(sellbtn);
+        vsell.setOnClickListener((btn) -> { sellBtnCB(btn); } );1
+        rows.get(last).addView(sellbtn);
 
         Button tradebtn = new Button(this);
         tradebtn.setText("Trade");
         tradebtn.setLayoutParams(btnparams);
         View vtrade = (View) tradebtn;
-        vtrade.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View btn) {
-                tradeBtnCB(btn);
-            }
-        });
-        hlayout[rownum].addView(tradebtn);
+        vtrade.setOnClickListener((btn) -> { tradeBtnCB(btn); } );
+        rows.get(last).addView(tradebtn);
 
         Button keepbtn = new Button(this);
         keepbtn.setText("Keep");
         keepbtn.setLayoutParams(btnparams);
         View vkeep = (View) keepbtn;
-        vkeep.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View btn) {
-                keepBtnCB(btn);
-            }
-        });
-        hlayout[rownum].addView(keepbtn);
+        vkeep.setOnClickListener((btn) -> { keepBtnCB(btn); } );
+        rows.get(last).addView(keepbtn);
 
-        for (int lln = 0; (lln < totalnrows); lln++) {
-            layout.addView(hlayout[lln]);
+        for (int lln = 0; (lln < rows.size()); lln++) {
+            layout.addView(rows.get(lln));
         }
-
-        //create the layout param for the layout
-        LinearLayout.LayoutParams layoutParam = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.FILL_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT);
-
-        this.addContentView(layout, layoutParam);
 
         refreshScreen();
     }
