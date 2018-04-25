@@ -54,7 +54,7 @@ public class MergerSellAct extends DisplayLogic {
         sellbtn.setText("Sell");
         sellbtn.setLayoutParams(btnparams);
         View vsell = (View) sellbtn;
-        vsell.setOnClickListener((btn) -> { sellBtnCB(btn); } );1
+        vsell.setOnClickListener((btn) -> { sellBtnCB(btn); } );
         rows.get(last).addView(sellbtn);
 
         Button tradebtn = new Button(this);
