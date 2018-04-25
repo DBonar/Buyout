@@ -33,16 +33,12 @@ public class PlayGameAct extends AppCompatActivity {
         // Initialize the game objects
         // initializeGame();
         Instance = this;
-        // Create the display
-        LinearLayout.LayoutParams btnparams =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT);
-        btnparams.width = 0;
-        btnparams.height = LinearLayout.LayoutParams.MATCH_PARENT;
-        btnparams.weight = 1;
 
-        //create a layout
+        // Create the display
+        // A vertical stack of items.
+        // Overall they will fill the parent space.
+        // Individual items will have different weights to get
+        // different amounts of space.
         LinearLayout.LayoutParams vlparams =
                 new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
@@ -53,34 +49,50 @@ public class PlayGameAct extends AppCompatActivity {
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setLayoutParams(vlparams);
+        this.addContentView(layout, vlparams);
 
-        LinearLayout.LayoutParams hlparams =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.MATCH_PARENT);
-        hlparams.width = LinearLayout.LayoutParams.MATCH_PARENT;
-        hlparams.height = 0;
-        hlparams.weight = 1;
-
-        //LinearLayout hlayout[] = new LinearLayout[20];
+        // That vertical stack will be made of a number
+        // of horizontal rows.  We'll create the rows as
+        // more LinearLayouts and partially initialize them.
+        // Since they all will have different weights, we'll
+        // do the final initializations (setLayoutParams) later
         int nchains = AllChains.instance().getAllChains().length();
         int totalnrows = Board.BoardYSize + nchains + 6;
         LinearLayout hlayout[] = new LinearLayout[totalnrows];
         for (int lln = 0; (lln < totalnrows); lln++) {
             hlayout[lln] = new LinearLayout(this);
             hlayout[lln].setOrientation(LinearLayout.HORIZONTAL);
-            hlayout[lln].setLayoutParams(hlparams);
+            //hlayout[lln].setLayoutParams(hlparams);
+        }
+
+        // layout for the board rows.  They all get weight 1
+        LinearLayout.LayoutParams hlparams_1 =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.MATCH_PARENT);
+        hlparams_1.width = LinearLayout.LayoutParams.MATCH_PARENT;
+        hlparams_1.height = 0;
+        hlparams_1.weight = 1;
+        int rownum = 0; // running counter of which row we're working on
+        for (; rownum < Board.BoardYSize; rownum++) {
+            hlayout[rownum].setLayoutParams(hlparams_1);
         }
 
         // Create the board: a grid of TextView
+        // They need LayoutPrams, so set those up now
+        // then loop over the board creating and adding
+        // the horizontal rows.
+        LinearLayout.LayoutParams btnparams =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+        btnparams.width = 0;
+        btnparams.height = LinearLayout.LayoutParams.MATCH_PARENT;
+        btnparams.weight = 1;
+
         Board board = Board.instance();
-//        Button allbuttons[][] = new Button[13][10];
-        // TextView allbuttons[][] = new TextView[13][10];
         for (int boardrow = 0; (boardrow < Board.BoardYSize); boardrow++) {
             for (int boardcol = 0; (boardcol < Board.BoardXSize); boardcol++) {
-//                allbuttons[boardcol][boardrow] = new Button(this);
-//                allbuttons[boardcol][boardrow].setText("ABCDEFGHIJKL".substring(boardcol-1, boardcol) + boardrow);
-//                allbuttons[boardcol][boardrow].setLayoutParams(btnparams);
                 BoardSpace space = board.getSpace(boardcol, boardrow);
                 String spacename = space.getName();
                 TextView element = new TextView(this);
@@ -88,27 +100,30 @@ public class PlayGameAct extends AppCompatActivity {
                 element.setLayoutParams(btnparams);
                 hlayout[boardrow].addView(element);
                 space.setDisplay(element);
-
-//                allbuttons[boardcol][boardrow] = new TextView(this);
-//                allbuttons[boardcol][boardrow].setText("ABCDEFGHIJKL".substring(boardcol-1, boardcol) + boardrow);
-//                allbuttons[boardcol][boardrow].setLayoutParams(btnparams);
-//                hlayout[boardrow].addView(allbuttons[boardcol][boardrow]);
             }
         }
 
-        // Create the row for token buttons and cash
+        // Now put in a row below the Board with player tokens and cash
+        // This row will have weight 2 in hopes of being big enough to seen
+        LinearLayout.LayoutParams hlparams_2 =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.MATCH_PARENT);
+        hlparams_2.width = LinearLayout.LayoutParams.MATCH_PARENT;
+        hlparams_2.height = 0;
+        hlparams_2.weight = 2;
+        hlayout[rownum].setLayoutParams(hlparams_2);
+
         TextView lblTokens = new TextView(this);
         lblTokens.setText("Tokens:");
-
         LinearLayout.LayoutParams lblparams =
                 new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT);
         lblparams.width = 0;
         lblparams.height = LinearLayout.LayoutParams.MATCH_PARENT;
-        lblparams.weight = 2;
+        lblparams.weight = 1;
         lblTokens.setLayoutParams(lblparams);
-        int rownum = Board.BoardYSize;
         hlayout[rownum].addView(lblTokens);
 
         LinearLayout.LayoutParams widelblparams =
@@ -123,8 +138,6 @@ public class PlayGameAct extends AppCompatActivity {
         for (int tn = 0; (tn < AllTokens.instance().NTokensPerPlayer); tn++) {
             TokenButton token = new TokenButton(this);
             token.setText("Button");
-//            final int ftn = tn;
-//            token.setId(ftn);
             token.setLayoutParams(btnparams);
             BtnScnTokens[tn] = token;
             View vtoke = (View) token;
@@ -136,27 +149,14 @@ public class PlayGameAct extends AppCompatActivity {
             });
             hlayout[rownum].addView(token);
         }
+
         LblCash = new TextView(this);
         LblCash.setText("$" + 30000);
         LblCash.setLayoutParams(lblparams);
-        // LblCash.setBackgroundColor(ChainColor(2));
         hlayout[rownum].addView(LblCash);
 
-//        for (int chainn = 1; (chainn <= 7); chainn++) {
-//            int rown = 10 + chainn;
-//            TextView lblChainName = new TextView(this);
-//            lblChainName.setText("Chain #" + chainn);
-//            lblChainName.setLayoutParams(lblparams);
-//            lblChainName.setBackgroundColor(Color.rgb(0, 255, 128));
-//            // lblChainName.setBackgroundColor(ChainColor(chainn));
-//            hlayout[rown].addView(lblChainName);
-//
-//            TextView lblChainStatus = new TextView(this);
-//            lblChainStatus.setText("is not on board.");
-//            lblChainStatus.setLayoutParams(widelblparams);
-//            hlayout[rown].addView(lblChainStatus);
-//        }
-
+        // Now we add rows for the chains.
+        //  These rows are weight 1 in the stack
         BtnScnChains = new ChainButton[AllChains.instance().nChains()];
         LblScnChains = new TextView[AllChains.instance().nChains()];
         Chain onechain;
@@ -164,6 +164,8 @@ public class PlayGameAct extends AppCompatActivity {
         int chainn = 0;
         while ((onechain = chains.getNext()) != null) {
             rownum++;
+            hlayout[rownum].setLayoutParams(hlparams_2);  // also need height
+
             ChainButton chainbtn = new ChainButton(this, onechain);
             chainbtn.setText(onechain.toString());
             chainbtn.setLayoutParams(btnparams);
@@ -185,17 +187,29 @@ public class PlayGameAct extends AppCompatActivity {
             chainn++;
         }
 
+        // Finally, add the bottom bits
+        rownum++;
+        hlayout[rownum].setLayoutParams(hlparams_1);
         LblMessage1 = new TextView(this);
         LblMessage1.setText("Please click the token you wish to place.");
-        hlayout[++rownum].addView(LblMessage1);
+        hlayout[rownum].addView(LblMessage1);
+
+        // Two spacer rows
+        rownum++;
+        hlayout[rownum].setLayoutParams(hlparams_1);
         LblMessage2 = new TextView(this);
         LblMessage2.setText("");
-        hlayout[++rownum].addView(LblMessage2);
+        hlayout[rownum].addView(LblMessage2);
+        rownum++;
+        hlayout[rownum].setLayoutParams(hlparams_1);
         LblMessage3 = new TextView(this);
         LblMessage3.setText("");
-        hlayout[++rownum].addView(LblMessage3);
+        hlayout[rownum].addView(LblMessage3);
 
+        // A 'continue button and an 'end game' button
+        // This row needs height as well.
         rownum++;
+        hlayout[rownum].setLayoutParams(hlparams_2);
         Button continuebtn = new Button(this);
         continuebtn.setText("Continue");
         continuebtn.setLayoutParams(btnparams);
@@ -218,16 +232,12 @@ public class PlayGameAct extends AppCompatActivity {
         });
         hlayout[rownum].addView(BtnEndGame);
 
+        // Now add all of these horizontal layouts
+        // to the overall vertical layout and refresh
+        // the screen to show it all
         for (int lln = 0; (lln < totalnrows); lln++) {
             layout.addView(hlayout[lln]);
         }
-
-        //create the layout param for the layout
-        LinearLayout.LayoutParams layoutParam = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT);
-
-        this.addContentView(layout, layoutParam);
 
         refreshScreen();
         WhereAmIStack stack = WhereAmIStack.inst();
