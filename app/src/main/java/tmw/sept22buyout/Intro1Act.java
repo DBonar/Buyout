@@ -7,16 +7,20 @@ import android.util.Log;
 import android.view.View;
 import android.widget.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Intro1Act extends AppCompatActivity {
 
     private static final String TAG = Intro1Act.class.getSimpleName();
 
     public static final String msgNPlayers = "tmw.Buyout.NumberPlayers";
     public static final String msgNMachines = "tmw.Buyout.NumberMachines";
-    EditText wEditNHumans;
-    EditText wEditNMachines;
-    TextView wLabelNPlayers;
-    TextView wLabelIntro1Error;
+
+    Map<Integer,Button> humanButtons = new HashMap<Integer,Button>();
+    Map<Integer,Button> machineButtons = new HashMap<Integer, Button>();
+    int numHumans = -1;
+    int numMachines = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,50 +28,75 @@ public class Intro1Act extends AppCompatActivity {
         setContentView(R.layout.activity_intro1);
 
         Log.d(TAG, "Log is working");
-        wEditNHumans = (EditText) findViewById(R.id.editNHumans);
-        wEditNMachines = (EditText) findViewById(R.id.editNMachines);
-        wLabelNPlayers = (TextView) findViewById(R.id.labelNPlayers);
-        wLabelIntro1Error = (TextView) findViewById(R.id.labelIntro1Error);
-        // EditText editText = (EditText) findViewById(R.id.editNHumans);
-        wEditNHumans.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean hasFocus) {
-                editDone(view, hasFocus);
+
+        // Set up button arrays
+        for (int i = 1; i <= 6; i++) {
+            int hResID = getResources().getIdentifier("HButton" + Integer.toString(i),
+                                                       "id", getPackageName() );
+            if (hResID == 0) {
+                throw new RuntimeException("ugly");
             }
-        });
-        wEditNMachines.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean hasFocus) {
-                editDone(view, hasFocus);
-            }
-        });
+            humanButtons.put( hResID, (Button) findViewById(hResID) );
+            int mResID = getResources().getIdentifier("MButton" + Integer.toString(i),
+                    "id", getPackageName() );
+            machineButtons.put( mResID, (Button) findViewById(mResID) );
+        }
+
+        // Default state, 1 human and 2 machine players
+        int hResID = getResources().getIdentifier("HButton" + Integer.toString(1),
+                "id", getPackageName() );
+        humanButtons.get(hResID).performClick();
+        int mResID = getResources().getIdentifier("MButton" + Integer.toString(2),
+                "id", getPackageName() );
+        machineButtons.get(mResID).performClick();
     }
 
-    public void editDone(View view, boolean hasFocus) {
-        int pval = toInt(wEditNHumans.getText().toString());
-        int mval = toInt(wEditNMachines.getText().toString());
-        int nplayers = pval + mval;
-        wLabelNPlayers.setText("Total Players = " + nplayers + ".");
-        if (nplayers >= 3 && nplayers <= 6)
-            wLabelIntro1Error.setText("");
+    public void buttonClick(View view) {
+        Button but = (Button) view;
+        int resID = but.getId();
+        if (humanButtons.containsKey(resID)) {
+            numHumans = toInt(but.getText().toString());
+            but.setActivated(true);
+            for (Object value : humanButtons.values()) {
+                Button trialBut = (Button) value;
+                if (   (trialBut.getId() != resID)
+                    && (trialBut.isActivated())      ) {
+                    trialBut.setActivated(false);
+                }
+            }
+        } else if (machineButtons.containsKey(resID)) {
+            numMachines = toInt(but.getText().toString());
+            but.setActivated(true);
+            for (Object value : machineButtons.values()) {
+                Button trialBut = (Button) value;
+                if (   (trialBut.getId() != resID)
+                        && (trialBut.isActivated())      ) {
+                    trialBut.setActivated(false);
+                }
+            }
+        } else {
+            // Really?  Someone configured a button wrong.
+        }
+
+        // TODO
+        // Now we set the status of the Done button based on
+        // the sum on numHumans and numMachines
     }
 
-    public void intro1DoneClicked(View view) {
-        int pval = toInt(wEditNHumans.getText().toString());
-        int mval = toInt(wEditNMachines.getText().toString());
-        int nplayers = pval + mval;
-        if (nplayers < 3) wLabelIntro1Error.setText("There must be at least 3 players.");
-        else if (nplayers > 6) wLabelIntro1Error.setText("There cannot be more than 6 players.");
-        else {
+
+    public void doneClicked(View view) {
+        int num = numHumans + numMachines;
+        if (   (num >= 3)
+            && (num <= 6) ) {
             Intent intent = new Intent(this, Intro2Act.class);
             // intent.putExtra(strNPlayers, Integer.toString(nplayers));
-            intent.putExtra(msgNPlayers, nplayers);
-            intent.putExtra(msgNMachines, mval);
+            intent.putExtra(msgNPlayers, num);
+            intent.putExtra(msgNMachines, numMachines);
             startActivity(intent);
         }
     }
 
-    public int toInt(String arg) {
+    int toInt(String arg) {
         try {
             return Integer.parseInt(arg);
         } catch (NumberFormatException e) {
