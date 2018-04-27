@@ -33,9 +33,6 @@ public class Intro1Act extends AppCompatActivity {
         for (int i = 1; i <= 6; i++) {
             int hResID = getResources().getIdentifier("HButton" + Integer.toString(i),
                                                        "id", getPackageName() );
-            if (hResID == 0) {
-                throw new RuntimeException("ugly");
-            }
             humanButtons.put( hResID, (Button) findViewById(hResID) );
             int mResID = getResources().getIdentifier("MButton" + Integer.toString(i),
                     "id", getPackageName() );
@@ -78,9 +75,15 @@ public class Intro1Act extends AppCompatActivity {
             // Really?  Someone configured a button wrong.
         }
 
-        // TODO
         // Now we set the status of the Done button based on
         // the sum on numHumans and numMachines
+        Button btn = (Button) findViewById(R.id.btnIntro1Done);
+        if (   (numHumans+numMachines >= 3)
+            && (numHumans+numMachines <= 6) ) {
+            btn.setEnabled(true);
+        } else {
+            btn.setEnabled(false);
+        }
     }
 
 
