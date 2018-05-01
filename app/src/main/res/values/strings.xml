@@ -2,4 +2,13 @@
     <string name="app_name">Buyout</string>
     <string name="strAskPlayerName">Player name?</string>
     <string name="strDone">Done</string>
+    <string-array name="machine_names">
+        <item>Ultron</item>
+        <item>Marvin</item>
+        <item>Robby</item>
+        <item>HAL</item>
+        <item>T9000</item>
+        <item>Skynet</item>
+        <item>Wall-E</item>
+    </string-array>
 </resources>

@@ -23,8 +23,9 @@ public class AllPlayers {
 
     private AllPlayers() {}  // default constructor disallowed.
 
-    protected AllPlayers(int nplayers, int nmachines) {
+    protected AllPlayers(int nplayers, int nmachines, String[] machineNames) {
         // System.out.println("Entered: AllPlayers(" + nplayers + ", " + nmachines + ")");
+        MachinePlayer.setupNames( nmachines, machineNames );
         Players = new Player[nplayers];
         NPlayers = nplayers;
         for (int playern = 0; playern < nplayers; playern++) {
@@ -36,10 +37,7 @@ public class AllPlayers {
             } // if playern
             else {
                 // Player is machine
-                newplayer = new MachinePlayer();
-                newplayer.setMachine();
-                newplayer.setPlayerName("Machine Player #" +
-                        (playern - nplayers + nmachines + 1));
+                newplayer = new MachinePlayer(1 + playern - nplayers + nmachines);
                 // System.out.println("A machine player has been named " + newplayer.getPlayerName());
             } // else
             Players[playern] = newplayer;
@@ -68,9 +66,9 @@ public class AllPlayers {
 //        }
     } // AllPlayers()
 
-    public static AllPlayers instance(int nplayers, int nmachines) {
+    public static AllPlayers instance(int nplayers, int nmachines, String[] machineNames) {
         // There is one and only one AllPlayers instance.
-        if (Instance == null) Instance = new AllPlayers(nplayers, nmachines);
+        if (Instance == null) Instance = new AllPlayers(nplayers, nmachines, machineNames);
         if (nplayers == Instance.NPlayers) return Instance;
         else PlayGameAct.inst().msgSet("Erroneous call to AllPlayers.instance(int, int)");
         return null;

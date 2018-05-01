@@ -22,7 +22,6 @@ public class Player {
     private String PlayerName = "";
     private Player NextPlayer;
     private boolean IsMachine = false;
-    private MachinePlayer TheMachine = null;
     private int Money = 30000;
     private List<Token> OwnedTokens = new List<Token>();
     private List<StockShares> OwnedStock = new List<StockShares>();
@@ -36,7 +35,6 @@ public class Player {
     public boolean isMachine() { return IsMachine; }
     public void setMachine() {
         IsMachine = true;
-        TheMachine = new MachinePlayer();
     }
     public int getMoney() { return Money; }
     public void incrMoney(int arg) { Money += arg; }

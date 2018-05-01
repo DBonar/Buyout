@@ -2,6 +2,10 @@ package tmw.sept22buyout;
 
 import android.util.Log;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Random;
+
 import static tmw.sept22buyout.PlacementStatus.StatusType.*;
 
 /**
@@ -14,7 +18,41 @@ import static tmw.sept22buyout.PlacementStatus.StatusType.*;
 
 public class MachinePlayer extends Player {
 
-    protected MachinePlayer() {
+
+    static private java.util.List<String> machineNames = null;
+    static void setupNames( int N, String[] list ) {
+        // We got a list of names and we want to pick N of
+        // them.  We will assume N < len(list) since we
+        // know N <= 6 and we wrote the list.
+        // Floyd algorithm with a permutation at the end
+        Random rand = new Random();
+        machineNames = new ArrayList<String>(N);
+        int M = list.length;
+        Boolean[] used = new Boolean[M];
+        for (int i = 0; i < used.length; i++) used[i] = false;
+        int in = 0;
+        for (int im = M - N; im < M && in < N; im++) {
+            int r = rand.nextInt(im + 1 );
+            if (used[r]) r = im;
+            machineNames.add(in++, list[r]);
+            used[r] = true;
+        }
+        Collections.shuffle(machineNames);
+    }
+    private String machineName(int n ) {
+        return machineNames.get(n);
+    }
+
+    // If N is the total number of machine players
+    // n is the index number of this player n \in [1,N]
+    protected MachinePlayer(int n) {
+        setMachine();
+        if (   (machineNames == null)
+            || (n > machineNames.size())     ) { // not initialized
+            setPlayerName( "Machine Player #" + Integer.toString(n));
+        } else {
+            setPlayerName(machineNames.get(n-1));
+        }
     }
 
     public void inputTokenSelection() {
