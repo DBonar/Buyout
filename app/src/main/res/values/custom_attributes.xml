@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="custom_attributes">
+        <attr name="num_rows" format="integer" />
+        <attr name="num_cols" format="integer" />
+    </declare-styleable>
+</resources>

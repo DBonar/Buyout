@@ -11,4 +11,13 @@
         <item>Skynet</item>
         <item>Wall-E</item>
     </string-array>
+    <string-array name="chain_names">
+        <item>Chemical</item>
+        <item>Downtown</item>
+        <item>Fleet</item>
+        <item>Morgan</item>
+        <item>NatWest</item>
+        <item>Peoples</item>
+        <item>Stearns</item>
+    </string-array>
 </resources>

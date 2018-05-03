@@ -87,65 +87,11 @@ public class DisplayLogic extends AppCompatActivity {
         hlparams_2.weight = 2;
         hlparams_2.bottomMargin = 2;
 
-        // Create the board: a grid of TextView in nested LinearLayouts
-        {  // TODO This could be refactored into a Board-related class.
-            // Each hoizontal line needs to be sized.  So, we
-            // can't just use the params from above, we need one
-            // that is sized based on the Text boxes it contains.
-            LinearLayout.LayoutParams row_params =
-                    new LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.MATCH_PARENT);
-            row_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
-            row_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
-            row_params.weight = 1;
-
-            // TODO It would be nice to have the text more centered
-            LinearLayout.LayoutParams cell_params =
-                    new LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.WRAP_CONTENT);
-            cell_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
-            cell_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
-            cell_params.weight = 1;
-            cell_params.leftMargin = 2;
-
-            // This is the overall element for the board.  Note
-            // that it's height is based on its content just as
-            // the height of the individual rows in it is based on
-            // content.  So the size of this element should be
-            // mostly independant of the screen size.
-            // TODO this is probably ugly on a landscape screen
-            LinearLayout board_layout = new LinearLayout(this);
-            board_layout.setOrientation(LinearLayout.VERTICAL);
-            board_layout.setLayoutParams(row_params);
-
-            // It will have YSize rows each of which is a
-            // horizontal LinearLayout holding XSize 'buttons'
-            Board board = Board.instance();
-            for (int rln = 0; rln < Board.BoardYSize; rln++) {
-                LinearLayout temp = new LinearLayout(this);
-                temp.setOrientation((LinearLayout.HORIZONTAL));
-                temp.setLayoutParams(row_params);
-
-                for (int cln = 0; cln < Board.BoardXSize; cln++) {
-                    BoardSpace space = board.getSpace(cln, rln);
-                    String spacename = space.getName();
-                    TextView element = new TextView(this);
-                    element.setPadding(8,0,0,0);
-                    element.setText(spacename);
-                    element.setLayoutParams(cell_params);
-                    temp.addView(element);
-                    space.setDisplay(element);
-                }
-
-                board_layout.addView(temp);
-            }
-
-            hlayout.set(rownum++, board_layout);  // replacing the orig one.
-        }
-
-
+        // Create the board
+        hlayout.set(rownum++, new BoardComponent(this,
+                                                  Board.BoardYSize,
+                                                  Board.BoardXSize));
+        
         // Now put in a row below the Board with player tokens and cash
         // This row will have weight 2 in hopes of being big enough to seen
         { // TODO Again, this could probably be factored out in Player-related code
