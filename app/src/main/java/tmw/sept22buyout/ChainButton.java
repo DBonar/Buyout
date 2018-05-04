@@ -7,7 +7,7 @@ import android.widget.Button;
  * Created by Tim Weinrich on 10/18/2017.
  */
 
-public class ChainButton extends android.support.v7.widget.AppCompatButton {
+public class ChainButton extends Button {
 
     private Chain PChain;
 

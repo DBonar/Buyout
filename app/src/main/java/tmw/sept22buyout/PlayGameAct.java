@@ -15,6 +15,7 @@ public class PlayGameAct extends DisplayLogic {
     private static final String TAG = PlayGameAct.class.getSimpleName();
 
     Button BtnEndGame;
+    private LinearLayout layout;  // created and built in onCreate()
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +38,7 @@ public class PlayGameAct extends DisplayLogic {
         vlparams.width = LinearLayout.LayoutParams.MATCH_PARENT;
         vlparams.height = LinearLayout.LayoutParams.MATCH_PARENT;
 
-        LinearLayout layout = new LinearLayout(this);
+        layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setLayoutParams(vlparams);
         this.addContentView(layout, vlparams);
@@ -135,18 +136,20 @@ public class PlayGameAct extends DisplayLogic {
 
         Log.d(TAG, "PlayGameAct.refreshScreen() has started.");
         Player thisplayer = BOGlobals.CurrentPlayer;
-        Board board = Board.instance();
-        for (int rown = 0; (rown < Board.BoardYSize); rown++) {
-            for (int coln = 0; (coln < Board.BoardXSize); coln++) {
-                BoardSpace space = board.getSpace(coln, rown);
-                TextView view = space.getDisplay();
-                if (space.getChain() != null)
-                    view.setBackgroundColor(space.getChain().getChainColor());
-                else if (space.isOccupied())
-                    view.setBackgroundColor(BOGlobals.ClrFullSpace);
-                else view.setBackgroundColor(BOGlobals.ClrEmptySpace);
-            }
-        }
+//        Board board = Board.instance();
+//        for (int rown = 0; (rown < Board.BoardYSize); rown++) {
+//            for (int coln = 0; (coln < Board.BoardXSize); coln++) {
+//                BoardSpace space = board.getSpace(coln, rown);
+//                TextView view = space.getDisplay();
+//                if (space.getChain() != null)
+//                    view.setBackgroundColor(space.getChain().getChainColor());
+//                else if (space.isOccupied())
+//                    view.setBackgroundColor(BOGlobals.ClrFullSpace);
+//                else view.setBackgroundColor(BOGlobals.ClrEmptySpace);
+//            }
+//        }
+
+        BoardComponent board = (BoardComponent) layout.getChildAt(0);
         Token onetoken;
         ListIterator<Token> ptokens =
                 new ListIterator<Token>(thisplayer.getTokens());
@@ -156,11 +159,11 @@ public class PlayGameAct extends DisplayLogic {
             TokenButton tbutton = BtnScnTokens[tn];
             tbutton.setToken(onetoken);
             tbutton.setText(onetoken.getName());
-            BoardSpace space = board.getSpace(onetoken.getCol(), onetoken.getRow());
-            TextView vspace = space.getDisplay();
-            vspace.setBackgroundColor(BOGlobals.ClrTokenSpace);
+
+            board.highlight( onetoken );
         }
         LblCash.setText("$" + thisplayer.getMoney());
+
         for (int cn = 0; (cn < BtnScnChains.length); cn++) {
             ChainButton btnonechain = BtnScnChains[cn];
             Chain onechain = btnonechain.getChain();

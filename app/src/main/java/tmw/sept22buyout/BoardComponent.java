@@ -54,6 +54,7 @@ public class BoardComponent extends LinearLayout {
         row_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
         row_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
         row_params.weight = 1;
+        row_params.bottomMargin = 2;
 
         // TODO It would be nice to have the text more centered
         LinearLayout.LayoutParams cell_params =
@@ -85,14 +86,26 @@ public class BoardComponent extends LinearLayout {
                 BoardSpace space = board.getSpace(cln, rln);
                 String spacename = space.getName();
                 TextView cell = new TextView(context);
-                cell.setPadding(8,0,0,0);
+                cell.setPadding(8,0,0,10);
                 cell.setText(spacename);
                 cell.setLayoutParams(cell_params);
+                if (space.getChain() != null)
+                    cell.setBackgroundColor(space.getChain().getChainColor());
+                else if (space.isOccupied())
+                    cell.setBackgroundColor(BOGlobals.ClrFullSpace);
+                else cell.setBackgroundColor(BOGlobals.ClrEmptySpace);
                 row.addView(cell);
-                space.setDisplay(cell);
             }
 
             addView(row);
         }
+    }
+
+    public void highlight(Token token) {
+        // We know how this display works, we can go ahead and
+        // directly index into its children.
+        LinearLayout row = (LinearLayout) getChildAt(token.getRow());
+        TextView cell = (TextView) row.getChildAt(token.getCol());
+        cell.setBackgroundColor(BOGlobals.ClrTokenSpace);
     }
 }
