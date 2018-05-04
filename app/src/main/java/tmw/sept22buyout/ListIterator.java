@@ -6,19 +6,19 @@ package tmw.sept22buyout;
 //
 // ListIterator.java
 //
-// Permits user to walk thru a List.
+// Permits user to walk thru a LList.
 //
 
 public class ListIterator<obj> {
 
-    private List<obj> TheList = null;
+    private LList<obj> theLList = null;
     private ListCell<obj> Iterator = null;
 
     private ListIterator() {}
 
-    public ListIterator(List newlist) {
-        TheList = newlist;
-        Iterator = TheList.getFirstCell();
+    public ListIterator(LList newlist) {
+        theLList = newlist;
+        Iterator = theLList.getFirstCell();
     }
 
     public obj getNext() {
@@ -32,13 +32,13 @@ public class ListIterator<obj> {
     }
 
     public obj getFirst() {
-        ListCell<obj> firstcell = TheList.getFirstCell();
+        ListCell<obj> firstcell = theLList.getFirstCell();
         Iterator = firstcell.next(); // Iterator points to second ele.
         return firstcell.value();
     }
 
     public void reset() {
-        Iterator = TheList.getFirstCell();
+        Iterator = theLList.getFirstCell();
     }
 
 } // class ListIterator

@@ -1,7 +1,5 @@
 package tmw.sept22buyout;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
@@ -72,12 +70,12 @@ public class MachinePlayer extends Player {
         afterTokenSelection(onetoken);
     }
 
-    public void inputSelectNewChain(Token tokentoplay, List<Chain> unplacedchains) {
+    public void inputSelectNewChain(Token tokentoplay, LList<Chain> unplacedchains) {
         afterSelectNewChain(unplacedchains.getFirst());
     }
 
-    public void inputSelectBuyingChain(Token tokentoplay, List<Chain> buychains,
-                                       List<Chain> sellchains) {
+    public void inputSelectBuyingChain(Token tokentoplay, LList<Chain> buychains,
+                                       LList<Chain> sellchains) {
         afterSelectBuyingChain(buychains.getFirst());
     }
 

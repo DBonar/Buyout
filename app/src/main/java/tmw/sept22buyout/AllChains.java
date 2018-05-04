@@ -8,10 +8,10 @@ package tmw.sept22buyout;
 public class AllChains {
 
     private static AllChains Instance = null;
-    private List<Chain> AllBankChains;
+    private LList<Chain> AllBankChains;
 
     protected AllChains() {
-        AllBankChains = new List<Chain>();
+        AllBankChains = new LList<Chain>();
         // Note that chain list will come out in the opposite sequence that
         // they are added (since we add to the beginning of a list).
         AllBankChains.add(new Chain("Stearns",  Chain.BankClass.Investment,
@@ -35,11 +35,11 @@ public class AllChains {
         return Instance;
     }
 
-    public List<Chain> getAllChains() { return AllBankChains; }
+    public LList<Chain> getAllChains() { return AllBankChains; }
     public int nChains() { return AllBankChains.length(); }
 
-    public List<Chain> allUnplacedChains() {
-        List<Chain> result = new List<Chain>();
+    public LList<Chain> allUnplacedChains() {
+        LList<Chain> result = new LList<Chain>();
         Chain onechain;
         ListIterator<Chain> chains = new ListIterator<Chain>(AllBankChains);
         while ((onechain = chains.getNext()) != null) {
@@ -48,8 +48,8 @@ public class AllChains {
         return result;
     }
 
-    public List<Chain> allPlacedChains() {
-        List<Chain> result = new List<Chain>();
+    public LList<Chain> allPlacedChains() {
+        LList<Chain> result = new LList<Chain>();
         Chain onechain;
         ListIterator<Chain> chains = new ListIterator<Chain>(AllBankChains);
         while ((onechain = chains.getNext()) != null) {

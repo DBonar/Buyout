@@ -80,9 +80,9 @@ public class MergerSellAct extends DisplayLogic {
 
     public void refreshScreen() {
 
-//        // Some test code for the next List.copy() fn
-//        List<String> one = new List<String>("a", "b", "c", "d");
-//        List<String> two = new List<String>();
+//        // Some test code for the next LList.copy() fn
+//        LList<String> one = new LList<String>("a", "b", "c", "d");
+//        LList<String> two = new LList<String>();
 //        two.copy(one);
 //        LblMessage2.setText("Copy() test " + two.takeFirst() + two.takeFirst());
 

@@ -6,7 +6,7 @@ package tmw.sept22buyout;
 //
 // ListCell.java
 //
-// One element of a List.
+// One element of a LList.
 //
 
 public class ListCell<obj> {

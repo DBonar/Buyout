@@ -10,12 +10,12 @@ package tmw.sept22buyout;
 public class WhereAmIStack {
 
     private static WhereAmIStack Instance = null;
-    private List<WhereAmI> Location = null;
+    private LList<WhereAmI> Location = null;
 
     private void WhereAmIStack() {}  // default constructor disallowed.
 
     protected WhereAmIStack() {
-        Location = new List<WhereAmI>();
+        Location = new LList<WhereAmI>();
     }
 
     public static WhereAmIStack inst() {

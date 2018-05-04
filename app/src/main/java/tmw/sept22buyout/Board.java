@@ -41,8 +41,8 @@ public class Board {
         GameBoard[token.getCol()][token.getRow()].setOccupied();
     }
 
-    public List<BoardSpace> allNeighbors(BoardSpace boardspace) {
-        List<BoardSpace> result = new List<BoardSpace>();
+    public LList<BoardSpace> allNeighbors(BoardSpace boardspace) {
+        LList<BoardSpace> result = new LList<BoardSpace>();
         int col = boardspace.getCol();
         int row = boardspace.getRow();
         col++;
@@ -63,6 +63,6 @@ public class Board {
                 row >= 0 && row < BoardYSize)
             result.add(GameBoard[col][row]);
         return result;
-    } // List<BoardSpace> allNeighbors
+    } // LList<BoardSpace> allNeighbors
 
 }

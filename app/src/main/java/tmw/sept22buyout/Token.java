@@ -30,12 +30,12 @@ public class Token extends NamedLoc {
         boolean newchain = false; // true iff there is a neighbor which is
         // occupied, but not part of a chain. Note that a value of true does
         // not necessarily imply that a new chain is being formed.
-        List<Chain> mergechains = new List<Chain>(); // A list of every chain
+        LList<Chain> mergechains = new LList<Chain>(); // A list of every chain
         // which neighbors boardspace.
         Chain asafechain = null; // a neighboring chain that is safe
         boolean istwosafechains = false; // true iff at least two neighboring
         // chains are safe
-        List<BoardSpace> neighborlist = board.allNeighbors(boardspace);
+        LList<BoardSpace> neighborlist = board.allNeighbors(boardspace);
         BoardSpace oneneighbor;
         ListIterator<BoardSpace> neighbors =
                 new ListIterator<BoardSpace>(neighborlist);
@@ -84,13 +84,13 @@ public class Token extends NamedLoc {
     }
 
     private void setMergerChains(PlacementStatus result,
-                                 List<Chain> mergechains) {
+                                 LList<Chain> mergechains) {
         // Identify the largest chain from mergechains and put it on BuyChains.
         // BuyChains is a list because there may be more than one chain tied
         // for largest.
         // Sort all the rest according to size of chain (largest first) and
         // put them on SellChains.
-        List<Chain> largest = new List<Chain>(); // The largest chain(s)
+        LList<Chain> largest = new LList<Chain>(); // The largest chain(s)
         int largesize = -1; // The size of the largest chain(s)
         Chain onemerge;
         ListIterator<Chain> mergers = new ListIterator<Chain>(mergechains);
@@ -100,10 +100,10 @@ public class Token extends NamedLoc {
                 largest.add(onemerge);
             else if (onemerge.getBoardCount() > largesize) {
                 largesize = onemerge.getBoardCount();
-                largest = new List<Chain>(onemerge); }
+                largest = new LList<Chain>(onemerge); }
         } // end while onemerge
         // Now collect all chains not on largest and sort them.
-        List<Chain> sellchainsort = new List<Chain>();
+        LList<Chain> sellchainsort = new LList<Chain>();
         ListIterator<Chain> sellmergers = new ListIterator<Chain>(mergechains);
         // for each chain in mergechains
         while ((onemerge = sellmergers.getNext()) != null) {
@@ -121,7 +121,7 @@ public class Token extends NamedLoc {
                         Chain ele1 = sellchainsort.getFirst();
                         Chain ele2 = onemerge;
                         Chain ele3 = sellchainsort.find(1);
-                        sellchainsort = new List<Chain>(ele1, ele2, ele3);
+                        sellchainsort = new LList<Chain>(ele1, ele2, ele3);
                     }
                     else { // onemerge belongs at end of list
                         sellchainsort.append(onemerge); }

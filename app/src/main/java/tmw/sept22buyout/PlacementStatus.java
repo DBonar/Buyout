@@ -12,16 +12,16 @@ public class PlacementStatus {
 
     private StatusType PStatus = null;
     private Chain PChain = null;
-    private List<Chain> PBuyChains = null;
-    private List<Chain> PSellChains = null;
+    private LList<Chain> PBuyChains = null;
+    private LList<Chain> PSellChains = null;
 
     public StatusType getStatus() { return PStatus; }
     public void setStatus(StatusType newstatus) { PStatus = newstatus; }
     public Chain getChain() { return PChain; }
     public void setChain(Chain newchain) { PChain = newchain; }
-    public List<Chain> getBuyChains() { return PBuyChains; }
-    public void setBuyChains(List<Chain> newbuychains) { PBuyChains = newbuychains; }
-    public List<Chain> getSellChains() { return PSellChains; }
-    public void setSellChains(List<Chain> newsellchains) { PSellChains = newsellchains; }
+    public LList<Chain> getBuyChains() { return PBuyChains; }
+    public void setBuyChains(LList<Chain> newbuychains) { PBuyChains = newbuychains; }
+    public LList<Chain> getSellChains() { return PSellChains; }
+    public void setSellChains(LList<Chain> newsellchains) { PSellChains = newsellchains; }
 
 }

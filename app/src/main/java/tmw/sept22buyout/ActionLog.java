@@ -12,10 +12,10 @@ package tmw.sept22buyout;
 public class ActionLog {
 
     private static ActionLog Instance = null;
-    private List<ActionRecord> Log;
+    private LList<ActionRecord> Log;
 
     protected ActionLog() { // This is a singleton class. No public constructor
-        Log = new List<ActionRecord>();
+        Log = new LList<ActionRecord>();
     }
 
     public static ActionLog instance() {
@@ -37,7 +37,7 @@ public class ActionLog {
         Log.append(new ActionRecord(playerturn, theplayer, newaction));
     }
 
-    public List<ActionRecord> getLog() { return Log; }
+    public LList<ActionRecord> getLog() { return Log; }
 
     // public ActionRecord getRecordN(int neededrec) {
     // 	return(Log.find(neededrec));

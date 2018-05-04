@@ -1,6 +1,5 @@
 package tmw.sept22buyout;
 
-import android.graphics.Color;
 import android.support.annotation.ColorInt;
 
 /**
@@ -104,14 +103,14 @@ public class Chain {
     public void fillIn() {
         // Find all occupied spaces which can reach the ChainSeed by way of
         // occupied spaces.  Mark them all as part of this Chain.
-        List<BoardSpace> borderlist = new List<BoardSpace>();
-        List<BoardSpace> markedlist = new List<BoardSpace>();
+        LList<BoardSpace> borderlist = new LList<BoardSpace>();
+        LList<BoardSpace> markedlist = new LList<BoardSpace>();
         borderlist.add(ChainSeed);
         fillInRecurse(borderlist, markedlist);
     }
 
-    public void fillInRecurse(List<BoardSpace> borderlist,
-                              List<BoardSpace> markedlist) {
+    public void fillInRecurse(LList<BoardSpace> borderlist,
+                              LList<BoardSpace> markedlist) {
         // borderlist is a list of nodes to be checked.
         // markedlist is a list of nodes which have already been checked.
         // If this is too slow, we can rewrite this using markers.
@@ -123,7 +122,7 @@ public class Chain {
         // Mark this space as already checked
         markedlist.add(thisborder);
         // Check each neighbor of thisborder.
-        List<BoardSpace> neighborlist = Board.instance().allNeighbors(thisborder);
+        LList<BoardSpace> neighborlist = Board.instance().allNeighbors(thisborder);
         BoardSpace oneneighbor;
         ListIterator<BoardSpace> neighbors =
                 new ListIterator<BoardSpace>(neighborlist);

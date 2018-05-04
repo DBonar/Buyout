@@ -24,7 +24,7 @@ public class AllTokens {
         Board board = Board.instance();
         int nrandomtokens = AllPlayers.instance().length();
         int successn = 0;
-        List<Token> placedtokens = new List<Token>();
+        LList<Token> placedtokens = new LList<Token>();
         for (int attemptn = 1; attemptn < 10000 && successn < nrandomtokens; attemptn++) {
             BoardSpace placer;
             // Test code:
@@ -41,7 +41,7 @@ public class AllTokens {
             if (placer.isOccupied()) continue;
             // We cannot place new token next to an existing placed tokens
             boolean isplacerok = true;
-            List<BoardSpace> neighborlist = board.allNeighbors(placer);
+            LList<BoardSpace> neighborlist = board.allNeighbors(placer);
             BoardSpace oneneighbor;
             ListIterator<BoardSpace> neighbors =
                     new ListIterator<BoardSpace>(neighborlist);

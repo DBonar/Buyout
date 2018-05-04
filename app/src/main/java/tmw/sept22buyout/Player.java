@@ -1,12 +1,5 @@
 package tmw.sept22buyout;
 
-import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.TextView;
-
 import static tmw.sept22buyout.PlacementStatus.StatusType.*;
 
 /**
@@ -23,8 +16,8 @@ public class Player {
     private Player NextPlayer;
     private boolean IsMachine = false;
     private int Money = 30000;
-    private List<Token> OwnedTokens = new List<Token>();
-    private List<StockShares> OwnedStock = new List<StockShares>();
+    private LList<Token> OwnedTokens = new LList<Token>();
+    private LList<StockShares> OwnedStock = new LList<StockShares>();
 
     public Player() { }
 
@@ -38,10 +31,10 @@ public class Player {
     }
     public int getMoney() { return Money; }
     public void incrMoney(int arg) { Money += arg; }
-    public List<Token> getTokens() { return OwnedTokens; }
+    public LList<Token> getTokens() { return OwnedTokens; }
     public void addToken(Token token) {	OwnedTokens.add(token); }
     public void removeToken(Token token) { OwnedTokens.remove(token); }
-    public List<StockShares> getOwnedStock() { return OwnedStock; }
+    public LList<StockShares> getOwnedStock() { return OwnedStock; }
     public String toString() { return PlayerName; }
 
     public Token findToken(String tokenname) {
@@ -109,7 +102,7 @@ public class Player {
         else if (status.getStatus() == NewChain) {
             // We need to choose a chain to create
             PlayGameAct.inst().log("Entering Player.afterTokenSelection()/NewChain");
-            List<Chain> unplacedchains = AllChains.instance().allUnplacedChains();
+            LList<Chain> unplacedchains = AllChains.instance().allUnplacedChains();
             if (unplacedchains.length() == 1) {
                 PlayGameAct.inst().log("Entering Player.afterTokenSelection()/OnlyOneChain");
                 Chain newchain = unplacedchains.getFirst();
@@ -143,7 +136,7 @@ public class Player {
     } // end afterTokenSelection()
 
     public void beginSelectNewChain(Token tokentoplay,
-                                    List<Chain> unplacedchains) {
+                                    LList<Chain> unplacedchains) {
         PlayGameAct.inst().log("Entering Player.beginSelectNewChain()");
         WhereAmI phase = new WhereAmI(WhereAmI.PlayPhase.SelectNewChain);
         phase.setToken(tokentoplay);
@@ -153,7 +146,7 @@ public class Player {
         inputSelectNewChain(tokentoplay, unplacedchains);
     }
 
-    public void inputSelectNewChain(Token tokentoplay, List<Chain> unplacedchains) {
+    public void inputSelectNewChain(Token tokentoplay, LList<Chain> unplacedchains) {
         PlayGameAct.inst().refreshScreen(tokentoplay);
     }
 
@@ -161,7 +154,7 @@ public class Player {
         // Make sure chain is a valid option
         WhereAmI wai = WhereAmIStack.inst().look();
         Token tokentoplay = wai.getToken();
-        List<Chain> unplacedchains = wai.getChainList();
+        LList<Chain> unplacedchains = wai.getChainList();
         if (! unplacedchains.find(chain)) {
             PlayGameAct.inst().msgSet("That chain is unavailable.",
                     "Please select a different chain.");
@@ -179,8 +172,8 @@ public class Player {
         return true;
     } // end afterSelectNewChain()
 
-    public void beginSelectBuyingChain(Token tokentoplay, List<Chain> buychains,
-                                       List<Chain> sellchains) {
+    public void beginSelectBuyingChain(Token tokentoplay, LList<Chain> buychains,
+                                       LList<Chain> sellchains) {
         // First, determine which chain is buying the others
         WhereAmI wai = new WhereAmI(WhereAmI.PlayPhase.SelectBuyingChain);
         wai.setToken(tokentoplay);
@@ -196,8 +189,8 @@ public class Player {
         }
     }
 
-    public void inputSelectBuyingChain(Token tokentoplay, List<Chain> buychains,
-                                       List<Chain> sellchains) {
+    public void inputSelectBuyingChain(Token tokentoplay, LList<Chain> buychains,
+                                       LList<Chain> sellchains) {
         PlayGameAct.inst().refreshScreen();
     }
 
@@ -205,8 +198,8 @@ public class Player {
         // User has selected chain as the buyer.
         WhereAmI wai = WhereAmIStack.inst().look();
         Token tokentoplay = wai.getToken();
-        List<Chain> buychains = wai.getChainList();
-        List<Chain> sellchains = wai.getSellChains();
+        LList<Chain> buychains = wai.getChainList();
+        LList<Chain> sellchains = wai.getSellChains();
         // Check for a legal selection
         if (! buychains.find(chain)) return false;
         // chain is the buyer.  All other members of buychains are now the first
@@ -234,7 +227,7 @@ public class Player {
     //    repeat if seller != this
     // next sellchain
 
-    public void beginSellChainLoop(Token tokentoplay, Chain buychain, List<Chain> stilltosell) {
+    public void beginSellChainLoop(Token tokentoplay, Chain buychain, LList<Chain> stilltosell) {
         // for onesellchain in sellchains
         if (stilltosell.length() == 0) {
             PlayGameAct.inst().msgSet("Error in beginSellChainLoop()");
@@ -246,14 +239,14 @@ public class Player {
     } // end beginSellChainLoop()
 
     public void contSellChainLoop(Token tokentoplay, Chain buychain, Chain onesellchain,
-                                  List<Chain> stilltosell) {
+                                  LList<Chain> stilltosell) {
         // onesellchain.payShareholderBonuses(this)
         onesellchain.payShareholderBonuses(this);
         beginSellChainPlayerLoop(tokentoplay, buychain, onesellchain, stilltosell);
     } // end contSellChainLoop()
 
     public void nextSellChainLoop(Token tokentoplay, Chain buychain, Chain sellchain,
-                                  List<Chain> stilltosell) {
+                                  LList<Chain> stilltosell) {
         sellchain.removeFromBoard();
         if (stilltosell.length() == 0) {
             // We are done selling stock.
@@ -272,7 +265,7 @@ public class Player {
     } // end nextSellChainLoop()
 
     public void beginSellChainPlayerLoop(Token tokentoplay, Chain buychain, Chain sellchain,
-                                         List<Chain> stilltosell) {
+                                         LList<Chain> stilltosell) {
         // for seller = this
         Player seller = this;
         Player endplayer = this;
@@ -281,7 +274,7 @@ public class Player {
     } // end beginSellChainPlayerLoop()
 
     public void contSellChainPlayerLoop(Token tokentoplay, Chain buychain, Chain sellchain,
-                                        List<Chain> stilltosell, Player seller,
+                                        LList<Chain> stilltosell, Player seller,
                                         Player endplayer) {
         // if seller has sellchain stock:
         int sharestounload = seller.getChainNShares(sellchain);
@@ -296,7 +289,7 @@ public class Player {
     } // end contSellChainPlayerLoop()
 
     public void nextSellChainPlayerLoop(Token tokentoplay, Chain buychain, Chain sellchain,
-                                        List<Chain> stilltosell, Player seller,
+                                        LList<Chain> stilltosell, Player seller,
                                         Player endplayer) {
         // seller = next player
         seller = seller.nextPlayer();
@@ -308,7 +301,7 @@ public class Player {
     } // end nextSellChainPlayerLoop()
 
     public void beginUnloadStock(Token tokentoplay, Chain buychain, Chain sellchain,
-                                 List<Chain> stilltosell, Player seller,
+                                 LList<Chain> stilltosell, Player seller,
                                  Player endplayer, int sharestounload) {
         // Ask seller what to do with his shares of sellchain
         PlayGameAct.inst().log("beginUnloadStock called with (" + tokentoplay.getName() +
@@ -337,7 +330,7 @@ public class Player {
         Token tokentoplay = wai.getToken();
         Chain buychain = wai.getBuyChain();
         Chain sellchain = wai.getChain();
-        List<Chain> stilltosell = wai.getChainList();
+        LList<Chain> stilltosell = wai.getChainList();
         Player seller = wai.getPlayer();
         Player endplayer = wai.getEndPlayer();
         nextSellChainPlayerLoop(tokentoplay, buychain, sellchain, stilltosell,
@@ -428,7 +421,7 @@ public class Player {
         if (isATokenPlayable()) return;
         // No token is playable, so we trade them in.
         AllTokens alltokens = AllTokens.instance();
-        OwnedTokens = new List<Token>();
+        OwnedTokens = new LList<Token>();
         for (int tokenn = 1; tokenn <= alltokens.NTokensPerPlayer; tokenn++) {
             Token newtoken = alltokens.takeNextToken();
             if (newtoken != null) addToken(newtoken);
