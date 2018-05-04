@@ -2,6 +2,9 @@ package tmw.sept22buyout;
 
 import android.support.annotation.ColorInt;
 
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * Created by Tim Weinrich on 10/13/2017.
  */
@@ -122,11 +125,10 @@ public class Chain {
         // Mark this space as already checked
         markedlist.add(thisborder);
         // Check each neighbor of thisborder.
-        LList<BoardSpace> neighborlist = Board.instance().allNeighbors(thisborder);
+        List<BoardSpace> neighborlist = Board.instance().allNeighbors(thisborder);
         BoardSpace oneneighbor;
-        ListIterator<BoardSpace> neighbors =
-                new ListIterator<BoardSpace>(neighborlist);
-        while ((oneneighbor = neighbors.getNext()) != null) {
+        Iterator<BoardSpace> neighbors = neighborlist.iterator();
+        while ((oneneighbor = neighbors.next()) != null) {
             if (oneneighbor.isOccupied()) {
                 // Any unoccupied place is ignored
                 // See if this neighbor has already been checked

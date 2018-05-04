@@ -26,6 +26,7 @@ public class DisplayLogic extends AppCompatActivity {
     TextView LblMessage1;
     TextView LblMessage2;
     TextView LblMessage3;
+    Board board;
 
     // This is the real reason to add this class.
     // It is common functionality used by both subclasses
@@ -88,9 +89,8 @@ public class DisplayLogic extends AppCompatActivity {
 //        hlparams_2.bottomMargin = 2;
 
         // Create the board
-        hlayout.set(rownum++, new BoardComponent(this,
-                                                  Board.BoardYSize,
-                                                  Board.BoardXSize));
+        board = Board.initialize(this, 9, 12);
+        hlayout.set(rownum++, board);
         
         // Now put in a row below the Board with player tokens and cash
         // This row will have weight 2 in hopes of being big enough to seen

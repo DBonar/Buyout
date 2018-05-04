@@ -149,7 +149,6 @@ public class PlayGameAct extends DisplayLogic {
 //            }
 //        }
 
-        BoardComponent board = (BoardComponent) layout.getChildAt(0);
         Token onetoken;
         ListIterator<Token> ptokens =
                 new ListIterator<Token>(thisplayer.getTokens());
@@ -159,7 +158,6 @@ public class PlayGameAct extends DisplayLogic {
             TokenButton tbutton = BtnScnTokens[tn];
             tbutton.setToken(onetoken);
             tbutton.setText(onetoken.getName());
-
             board.highlight( onetoken );
         }
         LblCash.setText("$" + thisplayer.getMoney());

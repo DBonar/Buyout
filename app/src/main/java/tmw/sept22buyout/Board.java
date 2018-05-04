@@ -1,5 +1,14 @@
 package tmw.sept22buyout;
 
+import android.content.Context;
+import android.content.res.TypedArray;
+import android.util.AttributeSet;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Tim Weinrich on 10/12/2017.
  */
@@ -9,60 +18,201 @@ package tmw.sept22buyout;
 // Game board for Buyout game
 //
 
-public class Board {
+public class Board extends LinearLayout {
 
-    static final int BoardXSize = 12;
-    static final int BoardYSize = 9;
-
+    // Support for a singleton usage since most of the code expects it
+    static public int BoardXSize = 0;
+    static public int BoardYSize = 0;
     private static Board Instance = null;
+    private BoardSpace[][] data;  // [row][col]
 
-    private BoardSpace[][] GameBoard;
+    public static Board instance() {
+        if (Instance == null)
+            throw new RuntimeException("Board is not initialized");
+        return Instance;
+    }
 
-    protected Board() {
-        GameBoard = new BoardSpace[BoardXSize][BoardYSize];
-        for (int x = 0; x < BoardXSize; x++) {
-            for (int y = 0; y < BoardYSize; y++) {
-                GameBoard[x][y] = new BoardSpace(x, y);
+    public static Board initialize(Context context, int nRows, int nCols) {
+        if (Instance != null)
+            throw new RuntimeException("Board is already initialized");
+        Instance = new Board(context, nRows, nCols);
+        BoardXSize = Instance.ncols;
+        BoardYSize = Instance.nrows;
+        return Instance;
+    }
+
+    // The instance members and constructors
+    private int nrows;
+    private int ncols;
+
+    private Board(Context context, int nRows, int nCols) {
+        super(context);
+
+        nrows = nRows;
+        ncols = nCols;
+
+        fillData();
+    }
+    private Board(Context context, AttributeSet attrs) {
+        super(context, attrs);
+
+        TypedArray a = context.obtainStyledAttributes(attrs,
+                R.styleable.custom_attributes, 0, 0);
+        nrows = a.getInt(R.styleable.custom_attributes_num_rows, 9);
+        ncols = a.getInt(R.styleable.custom_attributes_num_cols, 12);
+        a.recycle();
+
+        fillData();
+    }
+    private void fillData() {
+        data = new BoardSpace[nrows][ncols];
+        for (int r = 0; r < nrows; r++) {
+            for (int c = 0; c < ncols; c++) {
+                data[r][c] = new BoardSpace(c, r);  // BoardSpace expects (col,row)
             }
         }
     }
 
-    public static Board instance() {
-        if (Instance == null) Instance = new Board();
-        return Instance;
-    }
-
-    public BoardSpace getSpace(int col, int row) { return GameBoard[col][row]; }
 
     public BoardSpace getSpace(Token token) {
-        return getSpace(token.getCol(), token.getRow()); }
-
-    public void addToken(Token token) {
-        GameBoard[token.getCol()][token.getRow()].setOccupied();
+        return data[token.getRow()][token.getCol()];
     }
 
-    public LList<BoardSpace> allNeighbors(BoardSpace boardspace) {
-        LList<BoardSpace> result = new LList<BoardSpace>();
-        int col = boardspace.getCol();
-        int row = boardspace.getRow();
+    public void addToken(Token token) {
+        int row_num = token.getRow();
+        int col_num = token.getCol();
+        data[row_num][col_num].setOccupied();
+        LinearLayout row = (LinearLayout) getChildAt(row_num);
+        TextView cell = (TextView) row.getChildAt(col_num);
+        cell.setBackgroundColor(BOGlobals.ClrFullSpace);
+    }
+
+    public void setChain(Token token, Chain chain) {
+        int row_num = token.getRow();
+        int col_num = token.getCol();
+        data[row_num][col_num].setChain(chain);
+        LinearLayout row = (LinearLayout) getChildAt(row_num);
+        TextView cell = (TextView) row.getChildAt(col_num);
+        cell.setBackgroundColor(chain.getChainColor());
+    }
+
+    private List<BoardSpace> allNeighbors(int row, int col) {
+        List<BoardSpace> result = new ArrayList<BoardSpace>();
         col++;
         if (col >= 0 && col < BoardXSize &&
                 row >= 0 && row < BoardYSize)
-            result.add(GameBoard[col][row]);
+            result.add(data[row][col]);
         col -= 2;
         if (col >= 0 && col < BoardXSize &&
                 row >= 0 && row < BoardYSize)
-            result.add(GameBoard[col][row]);
+            result.add(data[row][col]);
         col++;
         row++;
         if (col >= 0 && col < BoardXSize &&
                 row >= 0 && row < BoardYSize)
-            result.add(GameBoard[col][row]);
+            result.add(data[row][col]);
         row -= 2;
         if (col >= 0 && col < BoardXSize &&
                 row >= 0 && row < BoardYSize)
-            result.add(GameBoard[col][row]);
+            result.add(data[row][col]);
         return result;
     } // LList<BoardSpace> allNeighbors
+    public List<BoardSpace> allNeighbors(BoardSpace bs) {
+        return allNeighbors(bs.getRow(),bs.getCol());
+    }
+    public List<BoardSpace> allNeightbors(Token token) {
+        return allNeighbors(token.getRow(), token.getCol());
+    }
 
+    public BoardSpace randomSpace() {
+        int row = (int)(Utils.random() * nrows);
+        int col = (int)(Utils.random() * ncols);
+        return data[row][col];
+    }
+
+    public List<Token> unoccupiedTokens() {
+        List<Token> rec = new ArrayList<Token>();
+        for (int r = 0; r < nrows; r++) {
+            for (int c = 0; c < ncols; c++) {
+                if (! data[r][c].isOccupied()) {
+                    rec.add( new Token(c,r) );  // Token expects (col, row)
+                }
+            }
+        }
+        return rec;
+    }
+
+    //
+    //  Layout related bits
+    //
+    public void buildLayout(Context context) {
+        // Each hoizontal line needs to be sized.  So, we
+        // can't just use the params from above, we need one
+        // that is sized based on the Text boxes it contains.
+        LinearLayout.LayoutParams row_params =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.MATCH_PARENT);
+        row_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
+        row_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        row_params.weight = 1;
+        row_params.bottomMargin = 2;
+
+        // TODO It would be nice to have the text more centered
+        LinearLayout.LayoutParams cell_params =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+        cell_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
+        cell_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        cell_params.weight = 1;
+        cell_params.leftMargin = 2;
+
+        // This is the overall element for the board.  Note
+        // that it's height is based on its content just as
+        // the height of the individual rows in it is based on
+        // content.  So the size of this element should be
+        // mostly independant of the screen size.
+        setOrientation(LinearLayout.VERTICAL);
+        setLayoutParams(row_params);
+
+        // It will have YSize rows each of which is a
+        // horizontal LinearLayout holding XSize 'buttons'
+        for (int rln = 0; rln < nrows; rln++) {
+            LinearLayout row = new LinearLayout(context);
+            row.setOrientation((LinearLayout.HORIZONTAL));
+            row.setLayoutParams(row_params);
+
+            for (int cln = 0; cln < ncols; cln++) {
+                BoardSpace space = data[rln][cln];
+                String spacename = space.getName();
+                TextView cell = new TextView(context);
+                cell.setPadding(8,0,0,10);
+                cell.setText(spacename);
+                cell.setLayoutParams(cell_params);
+                if (space.getChain() != null)
+                    cell.setBackgroundColor(space.getChain().getChainColor());
+                else if (space.isOccupied())
+                    cell.setBackgroundColor(BOGlobals.ClrFullSpace);
+                else cell.setBackgroundColor(BOGlobals.ClrEmptySpace);
+                row.addView(cell);
+            }
+
+            addView(row);
+        }
+    }
+
+    public void highlight(Token token) {
+        // We know how this display works, we can go ahead and
+        // directly index into its children.
+        LinearLayout row = (LinearLayout) getChildAt(token.getRow());
+        TextView cell = (TextView) row.getChildAt(token.getCol());
+        cell.setBackgroundColor(BOGlobals.ClrTokenSpace);
+    }
+
+    public void chosen(Token token) {
+        LinearLayout row = (LinearLayout) getChildAt(token.getRow());
+        TextView cell = (TextView) row.getChildAt(token.getCol());
+        cell.setBackgroundColor(BOGlobals.ClrChoseSpace);
+    }
 }

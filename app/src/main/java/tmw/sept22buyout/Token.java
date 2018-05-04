@@ -9,6 +9,9 @@ package tmw.sept22buyout;
  *
  */
 
+import java.util.Iterator;
+import java.util.List;
+
 import static tmw.sept22buyout.PlacementStatus.StatusType.*;
 
 public class Token extends NamedLoc {
@@ -35,12 +38,11 @@ public class Token extends NamedLoc {
         Chain asafechain = null; // a neighboring chain that is safe
         boolean istwosafechains = false; // true iff at least two neighboring
         // chains are safe
-        LList<BoardSpace> neighborlist = board.allNeighbors(boardspace);
+        List<BoardSpace> neighborlist = board.allNeighbors(boardspace);
         BoardSpace oneneighbor;
-        ListIterator<BoardSpace> neighbors =
-                new ListIterator<BoardSpace>(neighborlist);
+        Iterator<BoardSpace> neighbors = neighborlist.iterator();
         // for each neighbor
-        while ((oneneighbor = neighbors.getNext()) != null) {
+        while ((oneneighbor = neighbors.next()) != null) {
             // If its occupied but not chained, set newchain
             if (oneneighbor.isOccupied() && oneneighbor.getChain() == null)
                 newchain = true;

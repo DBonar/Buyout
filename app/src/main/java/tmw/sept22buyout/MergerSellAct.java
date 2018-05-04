@@ -89,23 +89,25 @@ public class MergerSellAct extends DisplayLogic {
         Log.d(TAG, "MergerSellAct.refreshScreen() has started.");
         WhereAmI wai = WhereAmIStack.inst().look();
         Token token = wai.getToken();
-        BoardSpace highlightspace = Board.instance().getSpace(token);
         Player thisplayer = wai.getPlayer();
         Chain buychain = wai.getBuyChain();
         Chain sellchain = wai.getChain();
-        int nsharestounload = wai.getNShares();
         Board board = Board.instance();
-        for (int rown = 0; (rown < Board.BoardYSize); rown++) {
-            for (int coln = 0; (coln < Board.BoardXSize); coln++) {
-                BoardSpace space = board.getSpace(coln, rown);
-                TextView view = space.getDisplay();
-                if (space.getChain() != null)
-                    view.setBackgroundColor(space.getChain().getChainColor());
-                else if (space.isOccupied())
-                    view.setBackgroundColor(BOGlobals.ClrFullSpace);
-                else view.setBackgroundColor(BOGlobals.ClrEmptySpace);
-            }
-        }
+        int nsharestounload = wai.getNShares();
+
+//        Board board = Board.instance();
+//        for (int rown = 0; (rown < Board.BoardYSize); rown++) {
+//            for (int coln = 0; (coln < Board.BoardXSize); coln++) {
+//                BoardSpace space = board.getSpace(coln, rown);
+//                TextView view = space.getDisplay();
+//                if (space.getChain() != null)
+//                    view.setBackgroundColor(space.getChain().getChainColor());
+//                else if (space.isOccupied())
+//                    view.setBackgroundColor(BOGlobals.ClrFullSpace);
+//                else view.setBackgroundColor(BOGlobals.ClrEmptySpace);
+//            }
+//        }
+
         Token onetoken;
         ListIterator<Token> ptokens =
                 new ListIterator<Token>(thisplayer.getTokens());
@@ -115,12 +117,11 @@ public class MergerSellAct extends DisplayLogic {
             TokenButton tbutton = BtnScnTokens[tn];
             tbutton.setToken(onetoken);
             tbutton.setText(onetoken.getName());
-            BoardSpace space = board.getSpace(onetoken.getCol(), onetoken.getRow());
-            TextView vspace = space.getDisplay();
-            vspace.setBackgroundColor(BOGlobals.ClrTokenSpace);
+            board.highlight(onetoken);
         }
-        TextView view = highlightspace.getDisplay();
-        view.setBackgroundColor(BOGlobals.ClrChoseSpace);
+
+        board.chosen(token);
+
         LblCash.setText("$" + thisplayer.getMoney());
         for (int cn = 0; (cn < BtnScnChains.length); cn++) {
             ChainButton btnonechain = BtnScnChains[cn];
