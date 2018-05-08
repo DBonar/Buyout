@@ -30,37 +30,19 @@ public class AllTokens {
         int successn = 0;
         LList<Token> placedtokens = new LList<Token>();
         for (int attemptn = 1; attemptn < 10000 && successn < nrandomtokens; attemptn++) {
-            BoardSpace placer;
-            // Test code:
-            // if (attemptn==1) placer = board.getSpace(1, 11);
-            // else if (attemptn==2) placer = board.getSpace(3, 10);
-            // else if (attemptn==3) placer = board.getSpace(4, 10);
-            // else
-            // end of test code
-
-            placer = board.randomSpace();
-            // Do not place token on occupied board space
-            if (placer.isOccupied()) continue;
-            // We cannot place new token next to an existing placed tokens
-            boolean isplacerok = true;
-            List<BoardSpace> neighborlist = board.allNeighbors(placer);
-            Iterator<BoardSpace> neighbors = neighborlist.iterator();
-            while (neighbors.hasNext()) {
-                BoardSpace oneneighbor = (BoardSpace) neighbors.next();
-                if (oneneighbor.isOccupied()) isplacerok = false;
-            }
-            if (isplacerok) {
+            Token placer = board.randomUnoccupiedSpace();
+            List<Token> neighborList = board.unoccupiedNeighbors(placer);
+            if (neighborList.size() == 0) {
                 // We can occupy placer
-                placer.setOccupied();
+                board.addToken(placer);
+                placedtokens.add(placer);
                 successn++;
-                placedtokens.add(new Token(placer.getCol(), placer.getRow()));
-                // System.out.println("Initial token placed at [" + placer.getCol() + ", " + placer.getRow() + "]");
-            } // if isplacerok
+           } // if isplacerok
         } // for attemptn
-        // Create all remaining Tokens
-        AllRemainingTokens = Board.instance().unoccupiedTokens();
+
+        // Create all remaining Tokens and shuffle them
+        AllRemainingTokens = board.unoccupiedTokens();
         NTokens = AllRemainingTokens.size();
-        // Now shuffle them.
         Collections.shuffle(AllRemainingTokens);
 
         // Now deal some out to the players
@@ -134,8 +116,6 @@ public class AllTokens {
         // Removes the next token on AllRemainingTokens and returns it.
         // System.out.println("Taking token #" + NextToken);
         if (NextToken >= NTokens) {
-            PlayGameAct.inst().LblMessage1.setText("An error has occured.");
-            PlayGameAct.inst().LblMessage2.setText("The bag of tokens has run out.");
             BOGlobals.EndOfGameOption = true;
             return null;
         }

@@ -74,7 +74,7 @@ public class Player {
     }
 
     public void inputTokenSelection() {
-        PlayGameAct.inst().refreshScreen();
+        PlayGameAct.inst().refreshScreen(this);
     }
 
     public boolean afterTokenSelection(Token tokentoplay) {
@@ -116,17 +116,11 @@ public class Player {
             else {
                 // We need to ask the user to choose a chain
                 PlayGameAct.inst().log("Entering Player.afterTokenSelection()/UserPicksChain");
-//                btn.setToken(null);
-//                btn.setText("");
-//                space.getDisplay().setBackgroundColor(BOGlobals.ClrChoseSpace);
                 beginSelectNewChain(tokentoplay, unplacedchains);
                 return true;
             } // end else
         } // end if status == newchain
         else if (status.getStatus() == Merger) {
-//            btn.setToken(null);
-//            btn.setText("");
-//            space.getDisplay().setBackgroundColor(BOGlobals.ClrChoseSpace);
             beginSelectBuyingChain(tokentoplay, status.getBuyChains(),
                     status.getSellChains());
             return true;
@@ -191,7 +185,7 @@ public class Player {
 
     public void inputSelectBuyingChain(Token tokentoplay, LList<Chain> buychains,
                                        LList<Chain> sellchains) {
-        PlayGameAct.inst().refreshScreen();
+        PlayGameAct.inst().refreshScreen(this);
     }
 
     public boolean afterSelectBuyingChain(Chain chain) {
@@ -217,15 +211,6 @@ public class Player {
         return true;
     } // end afterSelectBuyingChain()
 
-    // We emulate the following loops:
-    // for onesellchain in sellchains
-    //    onesellchain.payShareholderBonuses(this)
-    //    for seller = this
-    //       if seller has sellchain stock:
-    //          unloadStock(seller, sellchain)
-    //       seller = next player
-    //    repeat if seller != this
-    // next sellchain
 
     public void beginSellChainLoop(Token tokentoplay, Chain buychain, LList<Chain> stilltosell) {
         // for onesellchain in sellchains
@@ -351,7 +336,7 @@ public class Player {
     }
 
     public void inputBuyStock() {
-        PlayGameAct.inst().refreshScreen();
+        PlayGameAct.inst().refreshScreen(this);
         // Now wait for the user to click
     }
 
@@ -380,7 +365,7 @@ public class Player {
                 wai.setNShares(wai.getNShares() - 1);
                 PlayGameAct.inst().msgSet("You may buy up to " + wai.getNShares() + " more shares");
                 ActionLog.inst().add(this, "bought a share of " + chain.toString());
-                PlayGameAct.inst().refreshScreen();
+                PlayGameAct.inst().refreshScreen(this);
                 if (wai.getNShares() > 0 &&
                         existsLegalStockPurchase())
                     return false; // Can purchase more
@@ -406,12 +391,12 @@ public class Player {
 
     public void inputTakeTile() {
         PlayGameAct.inst().msgSet("Please click 'Continue' to end your turn");
-        PlayGameAct.inst().refreshScreen();
+        PlayGameAct.inst().refreshScreen(this);
     }
 
     public boolean afterTakeTile() {
         WhereAmIStack.inst().pop();
-        Intro2Act.inst().playGame();
+        PlayGameAct.inst().gameLoop();
         return true;
     }
 

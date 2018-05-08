@@ -70,8 +70,8 @@ public class DisplayLogic extends AppCompatActivity {
 
         // Create the board
         board = Board.initialize(this, 9, 12);
+        AllTokens.instance();
         hlayout.set(rownum++, board.buildLayout(this));
-        AllTokens.instance();  // We hit this at least twice.
         
         // Now put in a row below the Board with player tokens and cash
         // This row will have weight 2 in hopes of being big enough to seen

@@ -29,7 +29,7 @@ public class EndGameAct extends AppCompatActivity {
         output += "These are the last few moves:\n";
         // We need a pointer to any one player (doesnt matter who) so we can write in
         // the log.
-        Player turnplayer = BOGlobals.CurrentPlayer;
+        Player turnplayer = AllPlayers.instance().firstPlayer();
         ActionRecord record;
         ListIterator<ActionRecord> logiter =
                 new ListIterator<ActionRecord>(ActionLog.inst().getLog());

@@ -123,14 +123,31 @@ public class Board {
     public List<BoardSpace> allNeighbors(BoardSpace bs) {
         return allNeighbors(bs.getRow(),bs.getCol());
     }
-    public List<BoardSpace> allNeightbors(Token token) {
-        return allNeighbors(token.getRow(), token.getCol());
+    public List<Token> allNeighbors(Token token) {
+        List neighbors = allNeighbors(token.getRow(), token.getCol());
+        List<Token> ret = new ArrayList<Token>();
+        for (int i = 0; i < neighbors.size(); i++) {
+            BoardSpace bs = (BoardSpace) neighbors.get(i);
+            ret.add(new Token(bs.getCol(), bs.getRow()));
+        }
+        return ret;
+    }
+    public List<Token> unoccupiedNeighbors(Token token) {
+        List<Token> neighbors = allNeighbors(token);
+        List<Token> ret = new ArrayList<Token>();
+        for (int i = 0; i < neighbors.size(); i++) {
+            Token tok = (Token) neighbors.get(i);
+            if (!data[tok.getRow()][tok.getCol()].isOccupied()) {
+                ret.add(tok);
+            }
+        }
+        return ret;
     }
 
-    public BoardSpace randomSpace() {
-        int row = (int)(Utils.random() * nrows);
-        int col = (int)(Utils.random() * ncols);
-        return data[row][col];
+    public Token randomUnoccupiedSpace() {
+        List<Token> possabilities = unoccupiedTokens();
+        int n = (int)(Utils.random() * possabilities.size());
+        return possabilities.get(n);
     }
 
     public List<Token> unoccupiedTokens() {

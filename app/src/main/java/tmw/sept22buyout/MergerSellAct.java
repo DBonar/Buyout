@@ -146,7 +146,7 @@ public class MergerSellAct extends DisplayLogic {
         seller.sellStock(sellchain, 1);
         nshares--;
         wai.setNShares(nshares);
-        ActionLog.inst().add(BOGlobals.CurrentPlayer, seller, "has sold a share of " +
+        ActionLog.inst().add(AllPlayers.instance().firstPlayer(), seller, "has sold a share of " +
                 sellchain.toString());
         if (nshares == 0) finishPlayerMerger();
         else refreshScreen();
@@ -165,7 +165,7 @@ public class MergerSellAct extends DisplayLogic {
             }
         }
         wai.setNShares(nsharestounload);
-        ActionLog.inst().add(BOGlobals.CurrentPlayer, seller, "has traded 2 shares of " +
+        ActionLog.inst().add(AllPlayers.instance().firstPlayer(), seller, "has traded 2 shares of " +
                 sellchain.toString() + " for 1 share of " + buychain.toString());
         if (nsharestounload == 0) finishPlayerMerger();
         else refreshScreen();
@@ -178,7 +178,7 @@ public class MergerSellAct extends DisplayLogic {
         int nshares = wai.getNShares();
         nshares--;
         wai.setNShares(nshares);
-        ActionLog.inst().add(BOGlobals.CurrentPlayer, seller, "has kept 1 share of " +
+        ActionLog.inst().add(AllPlayers.instance().firstPlayer(), seller, "has kept 1 share of " +
                 sellchain.toString());
         if (nshares == 0) finishPlayerMerger();
         else refreshScreen();
@@ -186,14 +186,14 @@ public class MergerSellAct extends DisplayLogic {
 
     public void finishPlayerMerger() {
         // The main player may be a machine...
-        if (BOGlobals.CurrentPlayer.isMachine()) {
+        if (AllPlayers.instance().firstPlayer().isMachine()) {
             // The main player is a machine
-            BOGlobals.CurrentPlayer.afterUnloadStock();
+            AllPlayers.instance().firstPlayer().afterUnloadStock();
             // Control will return here when this machine player is finished.
             // So we kick off the next player.
             if (WhereAmIStack.inst().look() == null) {
                 // This player is finished with his turn.
-                Intro2Act.inst().playGame();
+                PlayGameAct.inst().gameLoop();
             } else {
                 // The main player is still not finished with his turn.
                 // Presumably, control has been handed over to a new activity.

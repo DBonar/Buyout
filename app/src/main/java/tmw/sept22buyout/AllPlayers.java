@@ -20,6 +20,7 @@ public class AllPlayers {
     private static AllPlayers Instance = null;
     private Player Players[];
     private int NPlayers;
+    private int n;
 
     private AllPlayers() {}  // default constructor disallowed.
 
@@ -38,7 +39,6 @@ public class AllPlayers {
             else {
                 // Player is machine
                 newplayer = new MachinePlayer(1 + playern - nplayers + nmachines);
-                // System.out.println("A machine player has been named " + newplayer.getPlayerName());
             } // else
             Players[playern] = newplayer;
         }
@@ -61,23 +61,16 @@ public class AllPlayers {
             if (playern == nplayers - 1)
                 Players[playern].setNextPlayer(Players[0]);
         } // for playern = 0
-//        for (int playern = 0; playern < nplayers; playern++) {
-//            System.out.println("Player #" + (playern + 1) + ": " + Players[playern].getPlayerName());
-//        }
+        n = 0;  // i.e. the first player is the first player
     } // AllPlayers()
 
     public static AllPlayers instance(int nplayers, int nmachines, String[] machineNames) {
-        // There is one and only one AllPlayers instance.
         if (Instance == null) Instance = new AllPlayers(nplayers, nmachines, machineNames);
-        if (nplayers == Instance.NPlayers) return Instance;
-        else PlayGameAct.inst().msgSet("Erroneous call to AllPlayers.instance(int, int)");
-        return null;
+        return Instance;
     }
 
     public static AllPlayers instance() {
-        if (Instance != null) return Instance;
-        PlayGameAct.inst().msgSet("Erroneous call to AllPlayers.Instance()");
-        return null;
+        return Instance;
     }
 
     public Player getPlayerN(int arg) {
@@ -89,28 +82,7 @@ public class AllPlayers {
         return NPlayers;
     }
 
-    public Player firstPlayer() { return Players[0]; }
-
-    // public void chooseMachinePlayers(int nmachines) {
-    // 	int machinesleft = nmachines;
-    // 	int playersleft = length();
-    // 	Player thisplayer = firstPlayer();
-    // 	while (playersleft > 0 && machinesleft > 0) {
-    // 	    // this player has a (machinesleft / playersleft) chance of
-    // 	    // being a machine.
-    // 	    int rand = (int)(Math.random() * playersleft);
-    // 	    if (rand < machinesleft) {
-    // 		// Player thisplayer is a machine
-    // 		thisplayer.setMachine();
-    // 		machinesleft--;
-    // 	    }
-    // 	    playersleft--;
-    // 	    thisplayer = thisplayer.nextPlayer();
-    // 	} // while nmachines
-    // 	if (machinesleft != 0) {
-    // 	    System.out.println("ChooseMachinesPlayers #1: " +
-    // 			       "Tim screwed up his logic again.");
-    // 	    System.exit(1); }
-    // } // void chooseMachinePlayers()
+    public Player firstPlayer() { return Players[n]; }
+    public void nextPlayer() { n = n + 1; if (n == NPlayers) n = 0;}
 
 }

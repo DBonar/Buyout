@@ -11,7 +11,6 @@ public class DisplayLogAct extends AppCompatActivity {
 
     private static final String TAG = DisplayLogAct.class.getSimpleName();
     TextView textOutput;
-    TextView porktemp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

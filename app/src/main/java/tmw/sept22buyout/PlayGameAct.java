@@ -3,6 +3,7 @@ package tmw.sept22buyout;
 import android.content.Intent;
 import android.graphics.Color;
 import android.renderscript.Byte2;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,130 +12,177 @@ import android.widget.*;
 
 public class PlayGameAct extends DisplayLogic {
 
-    private static PlayGameAct Instance = null;
     private static final String TAG = PlayGameAct.class.getSimpleName();
+    private static PlayGameAct Instance;
 
     Button BtnEndGame;
-    private LinearLayout layout;  // created and built in onCreate()
+    private LinearLayout     mainDisplay;  // created and built in onCreate()
+    private ConstraintLayout playerTurnPanel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "PlayGameAct.onCreate() has started");
-        Log.d(TAG, "Player = " + BOGlobals.CurrentPlayer.getPlayerName());
-        if (layout == null) {
-            setContentView(R.layout.activity_play_game);
+        Log.d(TAG, "Player = " + AllPlayers.instance().firstPlayer().getPlayerName());
+        Instance = this;
 
-            Instance = this;
+        setContentView(R.layout.activity_play_game);
+        mainDisplay = (LinearLayout) findViewById(R.id.MainDisplay);
+        playerTurnPanel = (ConstraintLayout) findViewById(R.id.PlayerTurnPanel);
 
-            // Create the display
-            // A vertical stack of items.
-            // Overall they will fill the parent space.
-            // Individual items will have different weights to get
-            // different amounts of space.
-            LinearLayout.LayoutParams vlparams =
-                    new LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.MATCH_PARENT);
-            vlparams.width = LinearLayout.LayoutParams.MATCH_PARENT;
-            vlparams.height = LinearLayout.LayoutParams.MATCH_PARENT;
+        // Create the display
+        // A vertical stack of items.
+        // Overall they will fill the parent space.
+        // Individual items will have different weights to get
+        // different amounts of space.
+        LinearLayout.LayoutParams vlparams =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.MATCH_PARENT);
+        vlparams.width = LinearLayout.LayoutParams.MATCH_PARENT;
+        vlparams.height = LinearLayout.LayoutParams.MATCH_PARENT;
 
-            layout = new LinearLayout(this);
-            layout.setOrientation(LinearLayout.VERTICAL);
-            layout.setLayoutParams(vlparams);
-            this.addContentView(layout, vlparams);
+        mainDisplay = new LinearLayout(this);
+        mainDisplay.setOrientation(LinearLayout.VERTICAL);
+        mainDisplay.setLayoutParams(vlparams);
+        this.addContentView(mainDisplay, vlparams);
 
-            // Get the common rows giving the callbacks for buttons.
-            java.util.List<LinearLayout> rows = buildLayout(
-                    (View btn) -> {
-                        tokenBtnCB(btn);
-                    },
-                    (View btn) -> {
-                        chainBtnCB(btn);
-                    });
+        // Get the common rows giving the callbacks for buttons.
+        java.util.List<LinearLayout> rows = buildLayout(
+                (View btn) -> { tokenBtnCB(btn); },
+                (View btn) -> { chainBtnCB(btn); } );
 
-            // Add the buttons on the final row.
-            // A 'continue button and an 'end game' button
-            // This row needs height as well.
-            int last = rows.size() - 1;
-            LinearLayout.LayoutParams btnparams =
-                    new LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.WRAP_CONTENT);
-            btnparams.width = 0;
-            btnparams.height = LinearLayout.LayoutParams.MATCH_PARENT;
-            btnparams.weight = 1;
+        // Add the buttons on the final row.
+        // A 'continue button and an 'end game' button
+        // This row needs height as well.
+        int last = rows.size() - 1;
+        LinearLayout.LayoutParams btnparams =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+        btnparams.width = 0;
+        btnparams.height = LinearLayout.LayoutParams.MATCH_PARENT;
+        btnparams.weight = 1;
 
-            Button continuebtn = new Button(this);
-            continuebtn.setText("Continue");
-            continuebtn.setLayoutParams(btnparams);
-            View vcontinue = (View) continuebtn;
-            vcontinue.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View btn) {
-                    continueBtnCB(btn);
-                }
-            });
-            rows.get(last).addView(continuebtn);
-
-            BtnEndGame = new Button(this);
-            BtnEndGame.setText("");
-            BtnEndGame.setLayoutParams(btnparams);
-            View vendgame = (View) BtnEndGame;
-            vendgame.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View btn) {
-                    endGameBtnCB(btn);
-                }
-            });
-            rows.get(last).addView(BtnEndGame);
-
-            // Now add all of these horizontal layouts
-            // to the overall vertical layout and refresh
-            // the screen to show it all
-            for (int lln = 0; (lln < rows.size()); lln++) {
-                layout.addView(rows.get(lln));
+        Button continuebtn = new Button(this);
+        continuebtn.setText("Continue");
+        continuebtn.setLayoutParams(btnparams);
+        View vcontinue = (View) continuebtn;
+        vcontinue.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View btn) {
+                continueBtnCB(btn);
             }
+        });
+        rows.get(last).addView(continuebtn);
 
+        BtnEndGame = new Button(this);
+        BtnEndGame.setText("");
+        BtnEndGame.setLayoutParams(btnparams);
+        View vendgame = (View) BtnEndGame;
+        vendgame.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View btn) {
+                endGameBtnCB(btn);
+            }
+        });
+        rows.get(last).addView(BtnEndGame);
+
+        // Now add all of these horizontal layouts
+        // to the overall vertical layout and refresh
+        // the screen to show it all
+        for (int lln = 0; (lln < rows.size()); lln++) {
+            mainDisplay.addView(rows.get(lln));
         }
+
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        gameLoop();
+    }
 
-        refreshScreen();
+    public void gameLoop() {
+        // Start the game loop
+        while (!BOGlobals.EndOfGameOption) {
+            // put up the privacy screen
+            playerTurnPanel.setVisibility(View.VISIBLE);
+            mainDisplay.setVisibility(View.INVISIBLE);
 
-        AllPlayers allplayers = AllPlayers.instance();
-        for (BOGlobals.CurrentPlayer =
-                     ((BOGlobals.CurrentPlayer == null) ?
-                             allplayers.firstPlayer() :
-                             BOGlobals.CurrentPlayer.nextPlayer());
-             (!BOGlobals.EndOfGameOption);
-             BOGlobals.CurrentPlayer = BOGlobals.CurrentPlayer.nextPlayer()) {
-            Player player = BOGlobals.CurrentPlayer;
-            if (!player.isMachine()) {
-                // the player is human, so we use the NewPlayerAct intro...
-                Intent intent = new Intent(this, NewPlayerAct.class);
-                startActivity(intent);
-                return;
-            } else {
-                // the player is a machine.  To avoid indefinite recursion, we make the
-                // move and return here.
+            Player player = AllPlayers.instance().firstPlayer();
+            refreshScreen(player);
+
+            if (player.isMachine()) {
                 player.beginTokenSelection();
-                if (WhereAmIStack.inst().look() != null) {
-                    // This player's turn is not over, but control has been handed to
-                    // another player (presumably MergerSellAct.)  So we allow this
-                    // thread to die.
-                    return;
-                }
-                // Otherwise, we continue on with the next player.
-                if (BOGlobals.EndOfGameOption) {
-                    Intent intent = new Intent(this, EndGameAct.class);
-                    startActivity(intent);
-                    return;
-                }
+            } else {
+                // Wait for interaction with the buttons to get
+                // us done.  N.B. Control flow will not come back
+                // into this loop.  Instead, buttons will have
+                // to be pressed which ultimately call the
+                // checkGameEnd(), nextPlayer(), saveGameState()
+                // triple and then call this function again.
+                return;
             }
+
+            // Game end will break out of the loop.
+            // If the game doesn't end, we do the simple housekeeping
+            // (advance to the next player) and then we save the
+            // game state so that if this app is stopped it can be
+            // restored with data intact.  N.B.  state is only saved
+            // at the end of the turn, so coming through onRestore
+            // again will restart the turn.
+            checkGameEnd();
+            AllPlayers.instance().nextPlayer();
+            saveGameState();
         }
     }
+
+    public void checkGameEnd() {
+        //  Should check something and if it is true, go to a different action
+    }
+
+    public void saveGameState() {
+        //  Should save the state in case the app is backgrounded and killed
+    }
+
+    public void startTurnButtonClicked(View view) {
+        playerTurnPanel.setVisibility(View.INVISIBLE);
+        mainDisplay.setVisibility(View.VISIBLE);
+    }
+
+//        AllPlayers allplayers = AllPlayers.instance();
+//        for (BOGlobals.CurrentPlayer =
+//                     ((BOGlobals.CurrentPlayer == null) ?
+//                             allplayers.firstPlayer() :
+//                             BOGlobals.CurrentPlayer.nextPlayer());
+//             (!BOGlobals.EndOfGameOption);
+//             BOGlobals.CurrentPlayer = BOGlobals.CurrentPlayer.nextPlayer()) {
+//
+//            Player player = BOGlobals.CurrentPlayer;
+//            refreshScreen();
+//
+//            if (!player.isMachine()) {
+//                // A human player.
+//                // They will hit the button to lower the privacy
+//                // screen and then interact with the rest of the controls.
+//            } else {
+//                // the player is a machine.  To avoid indefinite recursion, we make the
+//                // move and return here.
+//                player.beginTokenSelection();
+//                if (WhereAmIStack.inst().look() != null) {
+//                    // This player's turn is not over, but control has been handed to
+//                    // another player (presumably MergerSellAct.)  So we allow this
+//                    // thread to die.
+//                    return;
+//                }
+//                // Otherwise, we continue on with the next player.
+//                if (BOGlobals.EndOfGameOption) {
+//                    Intent intent = new Intent(this, EndGameAct.class);
+//                    startActivity(intent);
+//                    return;
+//                }
+//            }
+//        }
+//    }
 
 //        WhereAmIStack stack = WhereAmIStack.inst();
 //        WhereAmI wai = stack.look();
@@ -168,36 +216,15 @@ public class PlayGameAct extends DisplayLogic {
 //    }
 
     public static PlayGameAct inst() {
-        if (Instance == null) Instance = new PlayGameAct();
         return Instance;
     }
 
-    public void refreshScreen() {
-
-//        // Some test code for the next LList.copy() fn
-//        LList<String> one = new LList<String>("a", "b", "c", "d");
-//        LList<String> two = new LList<String>();
-//        two.copy(one);
-//        LblMessage2.setText("Copy() test " + two.takeFirst() + two.takeFirst());
-
+    public void refreshScreen(Player player) {
         Log.d(TAG, "PlayGameAct.refreshScreen() has started.");
-        Player thisplayer = BOGlobals.CurrentPlayer;
-//        Board board = Board.instance();
-//        for (int rown = 0; (rown < Board.BoardYSize); rown++) {
-//            for (int coln = 0; (coln < Board.BoardXSize); coln++) {
-//                BoardSpace space = board.getSpace(coln, rown);
-//                TextView view = space.getDisplay();
-//                if (space.getChain() != null)
-//                    view.setBackgroundColor(space.getChain().getChainColor());
-//                else if (space.isOccupied())
-//                    view.setBackgroundColor(BOGlobals.ClrFullSpace);
-//                else view.setBackgroundColor(BOGlobals.ClrEmptySpace);
-//            }
-//        }
 
         Token onetoken;
         ListIterator<Token> ptokens =
-                new ListIterator<Token>(thisplayer.getTokens());
+                new ListIterator<Token>(player.getTokens());
         for (int tn = 0; (tn < AllTokens.instance().NTokensPerPlayer); tn++) {
             onetoken = ptokens.getNext();
             if (onetoken == null) break;
@@ -206,35 +233,35 @@ public class PlayGameAct extends DisplayLogic {
             tbutton.setText(onetoken.getName());
             board.highlight( onetoken );
         }
-        LblCash.setText("$" + thisplayer.getMoney());
+        LblCash.setText("$" + player.getMoney());
 
         for (int cn = 0; (cn < BtnScnChains.length); cn++) {
             ChainButton btnonechain = BtnScnChains[cn];
             Chain onechain = btnonechain.getChain();
             TextView lblonechain = LblScnChains[cn];
-            lblonechain.setText(onechain.toFullString(thisplayer));
+            lblonechain.setText(onechain.toFullString(player));
         }
         if (BOGlobals.EndOfGameOption) BtnEndGame.setText("End Game");
         else BtnEndGame.setText("Show Log");
     } // end refreshScreen()
 
     public void refreshScreen(Token tokentohighlight) {
-        refreshScreen();
-        BoardSpace space = Board.instance().getSpace(tokentohighlight);
-        space.getDisplay().setBackgroundColor(BOGlobals.ClrChoseSpace);
+        Board.instance().chosen(tokentohighlight);
     }
 
     public void msgSet(String msg) {
         if (LblMessage1 != null) {
             LblMessage1.setText("");
-            LblMessage3.setText(BOGlobals.CurrentPlayer.getPlayerName() + ": " + msg);
+            LblMessage3.setText(AllPlayers.instance().firstPlayer().getPlayerName()
+                    + ": " + msg);
         }
     }
 
     public void msgSet(String errmsg, String msg) {
         if (LblMessage1 != null) {
             LblMessage1.setText(errmsg);
-            LblMessage3.setText(BOGlobals.CurrentPlayer.getPlayerName() + ": " + msg);
+            LblMessage3.setText(AllPlayers.instance().firstPlayer().getPlayerName()
+                     + ": " + msg);
         }
     }
 
@@ -245,15 +272,7 @@ public class PlayGameAct extends DisplayLogic {
         }
     }
 
-//    public void errMsgSet(String msg) {
-//        if (LblMessage3 != null)
-//            LblMessage3.setText(BOGlobals.CurrentPlayer.getPlayerName() + ": " + msg);
-//    }
-//
-//    public void errMsgSet(Player player, String msg) {
-//        if (LblMessage3 != null)
-//            LblMessage3.setText(player.getPlayerName() + ": " + msg);
-//    }
+
 
     public void log(String msg) { Log.d(TAG, msg); }
 
@@ -264,7 +283,7 @@ public class PlayGameAct extends DisplayLogic {
                 (wai.getPlayPhase() != WhereAmI.PlayPhase.PlayToken)) return;
         TokenButton btn = (TokenButton) view;
         Token token = btn.getToken();
-        boolean success = BOGlobals.CurrentPlayer.afterTokenSelection(token);
+        boolean success = AllPlayers.instance().firstPlayer().afterTokenSelection(token);
         if (! success) {
             btn.setText("");
         }
@@ -275,12 +294,12 @@ public class PlayGameAct extends DisplayLogic {
         if (phase == WhereAmI.PlayPhase.SelectNewChain) {
             ChainButton btn = (ChainButton) view;
             Chain chain = btn.getChain();
-            boolean success = BOGlobals.CurrentPlayer.afterSelectNewChain(chain);
+            boolean success = AllPlayers.instance().firstPlayer().afterSelectNewChain(chain);
         }
         else if (phase == WhereAmI.PlayPhase.SelectBuyingChain) {
             ChainButton btn = (ChainButton) view;
             Chain chain = btn.getChain();
-            boolean success = BOGlobals.CurrentPlayer.afterSelectBuyingChain(chain);
+            boolean success = AllPlayers.instance().firstPlayer().afterSelectBuyingChain(chain);
             if (!success)
                 msgSet("That chain is not one of the chains being merged.",
                         "Please select the buying chain.");
@@ -288,22 +307,22 @@ public class PlayGameAct extends DisplayLogic {
         else if (phase == WhereAmI.PlayPhase.BuyStock) {
             ChainButton btn = (ChainButton) view;
             Chain chain = btn.getChain();
-            boolean success = BOGlobals.CurrentPlayer.afterBuyStock(chain);
+            boolean success = AllPlayers.instance().firstPlayer().afterBuyStock(chain);
         }
     } // end chainBtnCB()
 
     public void continueBtnCB(View view) {
         WhereAmI wai = WhereAmIStack.inst().look();
-        if (wai == null || BOGlobals.CurrentPlayer.isMachine()) {
-            Intro2Act.inst().playGame();
+        if (wai == null || AllPlayers.instance().firstPlayer().isMachine()) {
+            gameLoop();
             return;
         }
         WhereAmI.PlayPhase phase = wai.getPlayPhase();
         if (phase == WhereAmI.PlayPhase.BuyStock) {
-            BOGlobals.CurrentPlayer.afterBuyStock(null);
+            AllPlayers.instance().firstPlayer().afterBuyStock(null);
         }
         else if (phase == WhereAmI.PlayPhase.TakeTile) {
-            BOGlobals.CurrentPlayer.afterTakeTile();
+            AllPlayers.instance().firstPlayer().afterTakeTile();
         }
     }
 
@@ -317,16 +336,6 @@ public class PlayGameAct extends DisplayLogic {
         }
     }
 
-//    public void startNewPlayer() {
-//        // CurrentPlayer will already be set to the new player
-//        if (BOGlobals.CurrentPlayer.isMachine()) {
-//            BOGlobals.CurrentPlayer.beginTokenSelection();
-//        }
-//        else {
-//            Intent intent = new Intent(this, NewPlayerAct.class);
-//            startActivity(intent);
-//        }
-//    }
 
     public void startNewPlayerSell() {
         Intent intent = new Intent(this, NewPlayerSellAct.class);

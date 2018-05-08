@@ -57,8 +57,6 @@ public class ValuationTable {
         if (chainsize == 0) return 0;
         if (chainsize > 41) chainsize = 41;
         int priceindex = SizeIndexes[chainsize];
-        if (priceindex < 1)
-            PlayGameAct.inst().msgSet("Error in Valuation.getPricePerShare().");
         return StockPrice[chainclass.ordinal()][priceindex];
     }
 
@@ -70,8 +68,6 @@ public class ValuationTable {
             return 0; }
         if (chainsize > 41) chainsize = 41;
         int priceindex = SizeIndexes[chainsize];
-        if (priceindex < 1)
-            PlayGameAct.inst().msgSet("Error in Valuation.getBonusPrice().");
         if (isMajority)
             return MajorityBonus[chainclass.ordinal()][priceindex];
             // (Minority bonuses are 1/2 the majority bonus.)

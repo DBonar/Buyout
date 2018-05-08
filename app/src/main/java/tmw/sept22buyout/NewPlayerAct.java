@@ -19,7 +19,7 @@ public class NewPlayerAct extends AppCompatActivity {
         setContentView(R.layout.activity_new_player);
 
         wLblPlayerName = (TextView) findViewById(R.id.lblPlayerName);
-        String playername = BOGlobals.CurrentPlayer.getPlayerName();
+        String playername = AllPlayers.instance().firstPlayer().getPlayerName();
         wLblPlayerName.setText("It is " + playername + "'s turn!");
     }
 

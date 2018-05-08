@@ -142,13 +142,13 @@
         app:layout_constraintTop_toBottomOf="@+id/editPlayer5Name" />
 
     <Button
-        android:id="@+id/btnIntro2Done"
+        android:id="@+id/StartGameButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
         android:layout_marginTop="32dp"
-        android:onClick="intro2DoneClicked"
-        android:text="Done"
+        android:onClick="startGameClicked"
+        android:text="Start Game"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/labelAskPlayer6Name" />
 

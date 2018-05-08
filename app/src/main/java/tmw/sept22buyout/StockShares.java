@@ -25,12 +25,7 @@ public class StockShares {
     public int getNShares() { return NShares; }
     public void addStock(int addedstock) { NShares += addedstock; }
     public void subtractStock(int subdstock) {
-        if (subdstock > NShares) {
-            PlayGameAct.inst().msgSet("Attempt to sell too much stock in StockShares.subtractStock()");
-            System.exit(1); }
-        // System.out.println("subtracting " + subdstock + " shares of " + SSChain.getName());
         NShares -= subdstock;
-        // System.out.println("Now " + NShares);
     }
 
 }

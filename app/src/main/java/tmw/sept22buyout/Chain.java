@@ -54,9 +54,6 @@ public class Chain {
     public void decrBoardCount() { BoardCount--; }
     public int getAvailableStock() { return StockAvailable; }
     public void decreaseStock(int nshares) {
-        if (nshares > StockAvailable) {
-            PlayGameAct.inst().msgSet("Attempt to decrease too many stock in Chain.decreaseStock()");
-            System.exit(1); }
         StockAvailable -= nshares;
     }
     public void increaseStock(int nshares) { StockAvailable += nshares; }

@@ -9,7 +9,6 @@ import android.support.annotation.ColorInt;
 
 public class BOGlobals {
 
-    static Player CurrentPlayer;
     static boolean EndOfGameOption = false;
     static boolean GameOver = false;
     static boolean Cheat = false;

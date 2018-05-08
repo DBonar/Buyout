@@ -81,21 +81,6 @@ public class Intro2Act extends AppCompatActivity {
             wEditPlayer1Name.setVisibility(View.INVISIBLE);
         }
 
-        // wEditPlayer1Name.setText(Integer.toString(BOGlobals.NHumans));
-        // wEditPlayer2Name.setText(Integer.toString(nmachines));
-
-        // wEditPlayer1Name = (EditText) findViewById(R.id.editPlayer1Name);
-        // wEditPlayer1Name.setVisibility(View.GONE);
-
-//        LinearLayout linearLayout = new LinearLayout(this);
-//        linearLayout = (LinearLayout) findViewById(R.id.topViewIntro2Act);
-//        EditText addlPlayerName = new EditText(this);
-//        addlPlayerName.setLayoutParams(
-//            new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT,
-//                                          LayoutParams.WRAP_CONTENT));
-//        addlPlayerName.setText("Name");
-//        linearLayout.addView(addlPlayerName);
-
     }
 
     public static Intro2Act inst() {
@@ -103,7 +88,7 @@ public class Intro2Act extends AppCompatActivity {
         return Instance;
     }
 
-    public void intro2DoneClicked(View view) {
+    public void startGameClicked(View view) {
         makePlayerNameArray();
         if (checkPlayerNames()) {
             Utils.FakeRandomNumbers = true;
@@ -111,56 +96,11 @@ public class Intro2Act extends AppCompatActivity {
                                                         Intro2Act.NMachines,
                                                         getResources().getStringArray(R.array.machine_names));
             AllChains.instance();
-            BOGlobals.CurrentPlayer = allplayers.firstPlayer();
             Intent intent = new Intent(this, PlayGameAct.class);
             startActivity(intent);
         }
-//            Log.d(TAG, "Done is clicked");
-//            //wLblIntro2Error.setText("Okay, we start the new activity here.");
-//            initializeGame();
-////            Intent intent = new Intent(this, NewPlayerAct.class);
-////            startActivity(intent);
-//            playGame();
-//        }
     }
 
-    public void playGame() {
-        // Start up the next player, avoiding
-        // indefinite recursion.
-        // The rule is:  if this player is a machine, the code must return to this routine.
-        AllPlayers allplayers = AllPlayers.instance();
-        for (BOGlobals.CurrentPlayer =
-                     ((BOGlobals.CurrentPlayer == null) ?
-                             allplayers.firstPlayer() :
-                             BOGlobals.CurrentPlayer.nextPlayer());
-             (! BOGlobals.EndOfGameOption);
-             BOGlobals.CurrentPlayer = BOGlobals.CurrentPlayer.nextPlayer()) {
-            Player player = BOGlobals.CurrentPlayer;
-            if (! player.isMachine()) {
-                // the player is human, so we use the NewPlayerAct intro...
-                Intent intent = new Intent(this, NewPlayerAct.class);
-                startActivity(intent);
-                return;
-            }
-            else {
-                // the player is a machine.  To avoid indefinite recursion, we make the
-                // move and return here.
-                player.beginTokenSelection();
-                if (WhereAmIStack.inst().look() != null) {
-                    // This player's turn is not over, but control has been handed to
-                    // another player (presumably MergerSellAct.)  So we allow this
-                    // thread to die.
-                    return;
-                }
-                // Otherwise, we continue on with the next player.
-                if (BOGlobals.EndOfGameOption) {
-                    Intent intent = new Intent(this, EndGameAct.class);
-                    startActivity(intent);
-                    return;
-                }
-            }
-        }
-    }
 
     protected void makePlayerNameArray() {
         HumanNames = new String[NHumans];
@@ -189,14 +129,6 @@ public class Intro2Act extends AppCompatActivity {
         return true;
     }
 
-    protected void initializeGame() {
-        Utils.FakeRandomNumbers = true;
-        AllPlayers allplayers = AllPlayers.instance(Intro2Act.NPlayers,
-                                                    Intro2Act.NMachines,
-                                                    getResources().getStringArray(R.array.machine_names));
-        AllChains.instance();
-        BOGlobals.CurrentPlayer = null;
-    }
 
     @Override
     public void onBackPressed() {
