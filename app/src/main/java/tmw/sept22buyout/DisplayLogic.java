@@ -68,29 +68,10 @@ public class DisplayLogic extends AppCompatActivity {
         spacer_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
         spacer_params.weight = 1;
 
-//        // A layout for the "buttons".  Used for tiles in the board,
-//        // tiles a user might play, and elsewhere.
-//        LinearLayout.LayoutParams btnparams =
-//                new LinearLayout.LayoutParams(
-//                        LinearLayout.LayoutParams.MATCH_PARENT,
-//                        LinearLayout.LayoutParams.WRAP_CONTENT);
-//        btnparams.width = 0;
-//        btnparams.height = LinearLayout.LayoutParams.WRAP_CONTENT;
-//        btnparams.weight = 1;
-//
-//        // A layout for some other rows with need more space.
-//        LinearLayout.LayoutParams hlparams_2 =
-//                new LinearLayout.LayoutParams(
-//                        LinearLayout.LayoutParams.MATCH_PARENT,
-//                        LinearLayout.LayoutParams.MATCH_PARENT);
-//        hlparams_2.width = LinearLayout.LayoutParams.MATCH_PARENT;
-//        hlparams_2.height = 0;
-//        hlparams_2.weight = 2;
-//        hlparams_2.bottomMargin = 2;
-
         // Create the board
         board = Board.initialize(this, 9, 12);
-        hlayout.set(rownum++, board);
+        hlayout.set(rownum++, board.buildLayout(this));
+        AllTokens.instance();  // We hit this at least twice.
         
         // Now put in a row below the Board with player tokens and cash
         // This row will have weight 2 in hopes of being big enough to seen

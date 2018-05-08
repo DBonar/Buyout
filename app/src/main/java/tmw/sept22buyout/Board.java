@@ -18,13 +18,15 @@ import java.util.List;
 // Game board for Buyout game
 //
 
-public class Board extends LinearLayout {
+public class Board {
 
     // Support for a singleton usage since most of the code expects it
     static public int BoardXSize = 0;
     static public int BoardYSize = 0;
     private static Board Instance = null;
+
     private BoardSpace[][] data;  // [row][col]
+    private LinearLayout layout;
 
     public static Board instance() {
         if (Instance == null)
@@ -33,8 +35,13 @@ public class Board extends LinearLayout {
     }
 
     public static Board initialize(Context context, int nRows, int nCols) {
-        if (Instance != null)
-            throw new RuntimeException("Board is already initialized");
+        if (Instance != null) {
+            if ((nRows != Instance.nrows) || (nCols != Instance.ncols)) {
+                throw new RuntimeException("Board is already initialized");
+            } else {
+                return Instance;
+            }
+        }
         Instance = new Board(context, nRows, nCols);
         BoardXSize = Instance.ncols;
         BoardYSize = Instance.nrows;
@@ -46,24 +53,12 @@ public class Board extends LinearLayout {
     private int ncols;
 
     private Board(Context context, int nRows, int nCols) {
-        super(context);
-
         nrows = nRows;
         ncols = nCols;
-
+        layout = null;
         fillData();
     }
-    private Board(Context context, AttributeSet attrs) {
-        super(context, attrs);
 
-        TypedArray a = context.obtainStyledAttributes(attrs,
-                R.styleable.custom_attributes, 0, 0);
-        nrows = a.getInt(R.styleable.custom_attributes_num_rows, 9);
-        ncols = a.getInt(R.styleable.custom_attributes_num_cols, 12);
-        a.recycle();
-
-        fillData();
-    }
     private void fillData() {
         data = new BoardSpace[nrows][ncols];
         for (int r = 0; r < nrows; r++) {
@@ -74,6 +69,10 @@ public class Board extends LinearLayout {
     }
 
 
+    //
+    // The main external functions
+    //
+
     public BoardSpace getSpace(Token token) {
         return data[token.getRow()][token.getCol()];
     }
@@ -82,18 +81,22 @@ public class Board extends LinearLayout {
         int row_num = token.getRow();
         int col_num = token.getCol();
         data[row_num][col_num].setOccupied();
-        LinearLayout row = (LinearLayout) getChildAt(row_num);
-        TextView cell = (TextView) row.getChildAt(col_num);
-        cell.setBackgroundColor(BOGlobals.ClrFullSpace);
+        if (layout != null) {
+            LinearLayout row = (LinearLayout) layout.getChildAt(row_num);
+            TextView cell = (TextView) row.getChildAt(col_num);
+            cell.setBackgroundColor(BOGlobals.ClrFullSpace);
+        }
     }
 
     public void setChain(Token token, Chain chain) {
         int row_num = token.getRow();
         int col_num = token.getCol();
         data[row_num][col_num].setChain(chain);
-        LinearLayout row = (LinearLayout) getChildAt(row_num);
-        TextView cell = (TextView) row.getChildAt(col_num);
-        cell.setBackgroundColor(chain.getChainColor());
+        if (layout != null) {
+            LinearLayout row = (LinearLayout) layout.getChildAt(row_num);
+            TextView cell = (TextView) row.getChildAt(col_num);
+            cell.setBackgroundColor(chain.getChainColor());
+        }
     }
 
     private List<BoardSpace> allNeighbors(int row, int col) {
@@ -145,7 +148,9 @@ public class Board extends LinearLayout {
     //
     //  Layout related bits
     //
-    public void buildLayout(Context context) {
+    public LinearLayout buildLayout(Context context) {
+        layout = new LinearLayout(context);
+
         // Each hoizontal line needs to be sized.  So, we
         // can't just use the params from above, we need one
         // that is sized based on the Text boxes it contains.
@@ -173,8 +178,8 @@ public class Board extends LinearLayout {
         // the height of the individual rows in it is based on
         // content.  So the size of this element should be
         // mostly independant of the screen size.
-        setOrientation(LinearLayout.VERTICAL);
-        setLayoutParams(row_params);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setLayoutParams(row_params);
 
         // It will have YSize rows each of which is a
         // horizontal LinearLayout holding XSize 'buttons'
@@ -198,21 +203,26 @@ public class Board extends LinearLayout {
                 row.addView(cell);
             }
 
-            addView(row);
+            layout.addView(row);
         }
+        return layout;
     }
 
     public void highlight(Token token) {
         // We know how this display works, we can go ahead and
         // directly index into its children.
-        LinearLayout row = (LinearLayout) getChildAt(token.getRow());
-        TextView cell = (TextView) row.getChildAt(token.getCol());
-        cell.setBackgroundColor(BOGlobals.ClrTokenSpace);
+        if (layout != null) {
+            LinearLayout row = (LinearLayout) layout.getChildAt(token.getRow());
+            TextView cell = (TextView) row.getChildAt(token.getCol());
+            cell.setBackgroundColor(BOGlobals.ClrTokenSpace);
+        }
     }
 
     public void chosen(Token token) {
-        LinearLayout row = (LinearLayout) getChildAt(token.getRow());
-        TextView cell = (TextView) row.getChildAt(token.getCol());
-        cell.setBackgroundColor(BOGlobals.ClrChoseSpace);
+        if (layout != null) {
+            LinearLayout row = (LinearLayout) layout.getChildAt(token.getRow());
+            TextView cell = (TextView) row.getChildAt(token.getCol());
+            cell.setBackgroundColor(BOGlobals.ClrChoseSpace);
+        }
     }
 }

@@ -106,13 +106,22 @@ public class Intro2Act extends AppCompatActivity {
     public void intro2DoneClicked(View view) {
         makePlayerNameArray();
         if (checkPlayerNames()) {
-            Log.d(TAG, "Done is clicked");
-            //wLblIntro2Error.setText("Okay, we start the new activity here.");
-            initializeGame();
-//            Intent intent = new Intent(this, NewPlayerAct.class);
-//            startActivity(intent);
-            playGame();
+            Utils.FakeRandomNumbers = true;
+            AllPlayers allplayers = AllPlayers.instance(Intro2Act.NPlayers,
+                                                        Intro2Act.NMachines,
+                                                        getResources().getStringArray(R.array.machine_names));
+            AllChains.instance();
+            BOGlobals.CurrentPlayer = allplayers.firstPlayer();
+            Intent intent = new Intent(this, PlayGameAct.class);
+            startActivity(intent);
         }
+//            Log.d(TAG, "Done is clicked");
+//            //wLblIntro2Error.setText("Okay, we start the new activity here.");
+//            initializeGame();
+////            Intent intent = new Intent(this, NewPlayerAct.class);
+////            startActivity(intent);
+//            playGame();
+//        }
     }
 
     public void playGame() {

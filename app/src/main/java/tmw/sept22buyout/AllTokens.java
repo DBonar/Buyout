@@ -44,13 +44,11 @@ public class AllTokens {
             // We cannot place new token next to an existing placed tokens
             boolean isplacerok = true;
             List<BoardSpace> neighborlist = board.allNeighbors(placer);
-            BoardSpace oneneighbor;
             Iterator<BoardSpace> neighbors = neighborlist.iterator();
-            while ((oneneighbor = neighbors.next()) != null) {
-                // If this place is occupied, then we cannot place token at
-                // placer.
-                // System.out.println("Testing loc: [" + oneneighbor.getCol() + ", " + oneneighbor.getRow() + "]");
-                if (oneneighbor.isOccupied()) isplacerok = false; }
+            while (neighbors.hasNext()) {
+                BoardSpace oneneighbor = (BoardSpace) neighbors.next();
+                if (oneneighbor.isOccupied()) isplacerok = false;
+            }
             if (isplacerok) {
                 // We can occupy placer
                 placer.setOccupied();
@@ -79,6 +77,13 @@ public class AllTokens {
 
     static public AllTokens instance() {
         if (Instance == null) Instance = new AllTokens();
+        return Instance;
+    }
+
+    static public AllTokens initialize() {
+        if (Instance != null)
+            throw new RuntimeException("Tokens already initialized.");
+        Instance = new AllTokens();
         return Instance;
     }
 

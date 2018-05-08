@@ -39,10 +39,10 @@ public class Token extends NamedLoc {
         boolean istwosafechains = false; // true iff at least two neighboring
         // chains are safe
         List<BoardSpace> neighborlist = board.allNeighbors(boardspace);
-        BoardSpace oneneighbor;
         Iterator<BoardSpace> neighbors = neighborlist.iterator();
         // for each neighbor
-        while ((oneneighbor = neighbors.next()) != null) {
+        while (neighbors.hasNext()) {
+            BoardSpace oneneighbor = (BoardSpace) neighbors.next();
             // If its occupied but not chained, set newchain
             if (oneneighbor.isOccupied() && oneneighbor.getChain() == null)
                 newchain = true;
