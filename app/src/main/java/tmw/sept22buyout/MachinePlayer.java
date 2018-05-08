@@ -2,6 +2,7 @@ package tmw.sept22buyout;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 import static tmw.sept22buyout.PlacementStatus.StatusType.*;
@@ -17,7 +18,7 @@ import static tmw.sept22buyout.PlacementStatus.StatusType.*;
 public class MachinePlayer extends Player {
 
 
-    static private java.util.List<String> machineNames = null;
+    static private List<String> machineNames = null;
     static void setupNames( int N, String[] list ) {
         // We got a list of names and we want to pick N of
         // them.  We will assume N < len(list) since we

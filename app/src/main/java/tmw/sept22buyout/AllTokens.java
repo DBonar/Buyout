@@ -1,5 +1,7 @@
 package tmw.sept22buyout;
 
+import android.util.Log;
+
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -14,6 +16,8 @@ import java.util.List;
 //
 
 public class AllTokens {
+
+    private static final String TAG = AllTokens.class.getSimpleName();
 
     final int NTokensPerPlayer = 6;
 
@@ -32,11 +36,12 @@ public class AllTokens {
         for (int attemptn = 1; attemptn < 10000 && successn < nrandomtokens; attemptn++) {
             Token placer = board.randomUnoccupiedSpace();
             List<Token> neighborList = board.unoccupiedNeighbors(placer);
-            if (neighborList.size() == 0) {
+            if (neighborList.size() == 4) {  // no occupied neighbors
                 // We can occupy placer
                 board.addToken(placer);
                 placedtokens.add(placer);
                 successn++;
+                Log.d(TAG, "Token setup:  " + placer.toString() + " placed.");
            } // if isplacerok
         } // for attemptn
 

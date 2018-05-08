@@ -23,7 +23,6 @@ public class PlayGameAct extends DisplayLogic {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "PlayGameAct.onCreate() has started");
-        Log.d(TAG, "Player = " + AllPlayers.instance().firstPlayer().getPlayerName());
         Instance = this;
 
         setContentView(R.layout.activity_play_game);
@@ -147,6 +146,7 @@ public class PlayGameAct extends DisplayLogic {
     public void startTurnButtonClicked(View view) {
         playerTurnPanel.setVisibility(View.INVISIBLE);
         mainDisplay.setVisibility(View.VISIBLE);
+        msgSet("Please select a token to place on the board.");
     }
 
 //        AllPlayers allplayers = AllPlayers.instance();
@@ -221,6 +221,8 @@ public class PlayGameAct extends DisplayLogic {
 
     public void refreshScreen(Player player) {
         Log.d(TAG, "PlayGameAct.refreshScreen() has started.");
+
+        board.updateView();
 
         Token onetoken;
         ListIterator<Token> ptokens =

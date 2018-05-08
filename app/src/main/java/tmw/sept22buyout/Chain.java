@@ -123,9 +123,9 @@ public class Chain {
         markedlist.add(thisborder);
         // Check each neighbor of thisborder.
         List<BoardSpace> neighborlist = Board.instance().allNeighbors(thisborder);
-        BoardSpace oneneighbor;
         Iterator<BoardSpace> neighbors = neighborlist.iterator();
-        while ((oneneighbor = neighbors.next()) != null) {
+        while (neighbors.hasNext()) {
+            BoardSpace oneneighbor = (BoardSpace) neighbors.next();
             if (oneneighbor.isOccupied()) {
                 // Any unoccupied place is ignored
                 // See if this neighbor has already been checked

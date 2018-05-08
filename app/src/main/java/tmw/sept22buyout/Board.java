@@ -225,6 +225,23 @@ public class Board {
         return layout;
     }
 
+    public void updateView() {
+        if (layout != null) {
+            for (int r = 0; r < nrows; r++) {
+                LinearLayout row = (LinearLayout) layout.getChildAt(r);
+                for (int c = 0; c < ncols; c++) {
+                    TextView cell = (TextView) row.getChildAt(c);
+                    BoardSpace space = data[r][c];
+                    if (space.getChain() != null)
+                        cell.setBackgroundColor(space.getChain().getChainColor());
+                    else if (space.isOccupied())
+                        cell.setBackgroundColor(BOGlobals.ClrFullSpace);
+                    else cell.setBackgroundColor(BOGlobals.ClrEmptySpace);
+                }
+            }
+        }
+    }
+
     public void highlight(Token token) {
         // We know how this display works, we can go ahead and
         // directly index into its children.
