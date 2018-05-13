@@ -1,5 +1,8 @@
 package tmw.sept22buyout;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static tmw.sept22buyout.PlacementStatus.StatusType.*;
 
 /**
@@ -21,19 +24,16 @@ public class Player {
 
     public Player() { }
 
-    public String getPlayerName() { return PlayerName; }
+
     public void setPlayerName(String playername) { PlayerName = playername; }
     public void setNextPlayer(Player nextplayer) { NextPlayer = nextplayer; }
     public Player nextPlayer() { return NextPlayer; }
-    public boolean isMachine() { return IsMachine; }
     public void setMachine() {
         IsMachine = true;
     }
-    public int getMoney() { return Money; }
-    public void incrMoney(int arg) { Money += arg; }
     public LList<Token> getTokens() { return OwnedTokens; }
     public void addToken(Token token) {	OwnedTokens.add(token); }
-    public void removeToken(Token token) { OwnedTokens.remove(token); }
+
     public LList<StockShares> getOwnedStock() { return OwnedStock; }
     public String toString() { return PlayerName; }
 
@@ -65,6 +65,7 @@ public class Player {
         return answer;
     }
 
+
     public void beginTokenSelection() {
         WhereAmIStack.inst().push(new WhereAmI(WhereAmI.PlayPhase.PlayToken));
         PlayGameAct.inst().msgSet("Please select a token to place on the board.");
@@ -73,61 +74,48 @@ public class Player {
         inputTokenSelection();
     }
 
+    //
+    //  Things I need
+    //
+
+    public String getPlayerName() { return PlayerName; }
+    public boolean isMachine() { return IsMachine; }
+
+    // Pointless methods for a human player
+    // These exist only as an interface for Machine players.
+    public Token selectTokenToPlay() { return null; }
+    public List<Chain> buyStock() { return new ArrayList<Chain>(); }
+    public Chain selectNewChain() { return null; }
+
+    public void removeToken(Token token) { OwnedTokens.remove(token); }
+    public boolean fillTokens() {
+        AllTokens at = AllTokens.instance();
+        if (OwnedTokens.length() < at.NTokensPerPlayer) {
+            Token tk = at.takeNextToken();
+            OwnedTokens.add(tk);
+            return (tk != null);
+        }
+        return true;
+    }
+
+    public int getMoney() { return Money; }
+    public void incrMoney(int arg) { Money += arg; }
+
+    //
+    //
+    //
+
     public void inputTokenSelection() {
         PlayGameAct.inst().refreshScreen(this);
     }
 
-    public boolean afterTokenSelection(Token tokentoplay) {
-        BoardSpace space = Board.instance().getSpace(tokentoplay);
+    public PlacementStatus afterTokenSelection(Token tokentoplay) {
         PlacementStatus status = tokentoplay.evaluateForPlacement();
         PlayGameAct.inst().log(tokentoplay.getName() + ".evaluateForPlacement() returns " + status.getStatus());
-        if (status.getStatus() == IllegalSafe) {
-            PlayGameAct.inst().msgSet("You may not merge two safe chains.",
-                    "Please choose another token.");
-            return false; }
-        else if (status.getStatus() == IllegalNoChain) {
-            PlayGameAct.inst().msgSet("There are no more chains available to place on the board.",
-                    "Please choose another token.");
-            return false; }
-        // Token is valid.
-        WhereAmIStack.inst().pop();
-        if (status.getStatus() == SimplePlacement)
-            tokentoplay.moveToBoard(this);
-        else if (status.getStatus() == Join) {
-            tokentoplay.moveToBoard(this);
-            Chain chain = status.getChain();
-            chain.fillIn();
-            chain.testEndGame();
-        } // end status == Join
-        else if (status.getStatus() == NewChain) {
-            // We need to choose a chain to create
-            PlayGameAct.inst().log("Entering Player.afterTokenSelection()/NewChain");
-            LList<Chain> unplacedchains = AllChains.instance().allUnplacedChains();
-            if (unplacedchains.length() == 1) {
-                PlayGameAct.inst().log("Entering Player.afterTokenSelection()/OnlyOneChain");
-                Chain newchain = unplacedchains.getFirst();
-                tokentoplay.moveToBoard(this);
-                newchain.moveToBoard(space);
-                takeStock(newchain, 1);
-                ActionLog.inst().add(this, "has created the " + newchain.toString() + " chain");
-                newchain.testEndGame();
-                // PlayGameAct.inst().refreshScreen();
-            } // end if length == 1
-            else {
-                // We need to ask the user to choose a chain
-                PlayGameAct.inst().log("Entering Player.afterTokenSelection()/UserPicksChain");
-                beginSelectNewChain(tokentoplay, unplacedchains);
-                return true;
-            } // end else
-        } // end if status == newchain
-        else if (status.getStatus() == Merger) {
-            beginSelectBuyingChain(tokentoplay, status.getBuyChains(),
-                    status.getSellChains());
-            return true;
-        } // end if status == merger
-        beginBuyStock();
-        return true;
+        return status;
     } // end afterTokenSelection()
+
+
 
     public void beginSelectNewChain(Token tokentoplay,
                                     LList<Chain> unplacedchains) {
@@ -434,6 +422,11 @@ public class Player {
         return false;
     } // end isATokenPlayable()
 
+    public boolean canAfford(Chain chain) {
+        int price = chain.getPricePerShare();
+        return (Money >= price);
+    }
+
     public boolean existsLegalStockPurchase() {
         Chain onechain;
         ListIterator<Chain> chains =
@@ -461,6 +454,7 @@ public class Player {
         }
         // We previously owned no stock in chain.
         OwnedStock.add(new StockShares(chain, nshares));
+        Money -= chain.getPricePerShare();
         return true;
     } // boolean takeStock()
 

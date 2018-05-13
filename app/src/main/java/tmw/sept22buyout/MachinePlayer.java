@@ -54,16 +54,68 @@ public class MachinePlayer extends Player {
         }
     }
 
+    public Token selectTokenToPlay() {
+        PlayGameAct.inst().log(getPlayerName() + " selecting token to play.");
+        Token token;
+        ListIterator<Token> tokenlist = new ListIterator<Token>(getTokens());
+        while ((token = tokenlist.getNext()) != null) {
+            PlacementStatus status = token.evaluateForPlacement();
+            if (   (status.getStatus() != IllegalSafe)
+                && (status.getStatus() != IllegalNoChain) ) {
+                return token;
+            }
+        }
+        return null;
+    }
+
+    public List<Chain> buyStock() {
+        PlayGameAct.inst().log(getPlayerName() + " selecting stocks to buy.");
+        List<Chain> ret = new ArrayList<Chain>();
+
+        // Buy 1 share of the first thing we can afford.
+        // Buy 2 or 3 shares if we can
+        int cash = getMoney();
+        Chain possibleBuy = null;
+        ListIterator<Chain> it = new ListIterator<Chain>(AllChains.instance().getAllChains());
+        while((possibleBuy = it.getNext()) != null) {
+            if (   possibleBuy.isOnBoard()
+                    && (possibleBuy.getAvailableStock() >= 1)
+                    && (possibleBuy.getPricePerShare() <= cash) ) {
+                ret.add(possibleBuy);
+                if (   (possibleBuy.getAvailableStock() >= 2)
+                        && (possibleBuy.getPricePerShare() * 2 <= cash) ) {
+                    ret.add(possibleBuy);
+                    if (   (possibleBuy.getAvailableStock() >= 3)
+                            && (possibleBuy.getPricePerShare() * 3 <= cash) ) {
+                        ret.add(possibleBuy);
+                    }
+                }
+                return ret;
+            }
+        }
+        // Nothing we could afford
+        return ret;
+    }
+
+    public Chain selectNewChain() {
+        PlayGameAct.inst().log(getPlayerName() + " selecting chain to start.");
+        LList<Chain> chains = AllChains.instance().allUnplacedChains();
+        int n = (int)(Utils.random() * chains.length());
+        return chains.find(n);
+    }
+
+
+
+
     public void inputTokenSelection() {
         if (BOGlobals.EndOfGameOption) {
             // PlayGameAct.inst().startEndGame();
             return;
         }
-        PlacementStatus status = null;
         Token onetoken;
         ListIterator<Token> tokenlist = new ListIterator<Token>(getTokens());
         while ((onetoken = tokenlist.getNext()) != null) {
-            status = onetoken.evaluateForPlacement();
+            PlacementStatus status = onetoken.evaluateForPlacement();
             if (status.getStatus() != IllegalSafe && status.getStatus() != IllegalNoChain) {
                 break;
             }
@@ -91,6 +143,8 @@ public class MachinePlayer extends Player {
                              "has sold " + sharestounload + " shares of " + sellchain.toString());
         currentPlayer.afterUnloadStock();
     }
+
+
 
     public void inputBuyStock() {
         // We will buy up to two shares of the cheapest stock on the board.

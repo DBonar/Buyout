@@ -3,6 +3,7 @@ package tmw.sept22buyout;
 import android.content.Intent;
 import android.graphics.Color;
 import android.renderscript.Byte2;
+import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -10,14 +11,38 @@ import android.util.Log;
 import android.view.View;
 import android.widget.*;
 
+import java.util.List;
+
+import static tmw.sept22buyout.PlacementStatus.StatusType.IllegalNoChain;
+import static tmw.sept22buyout.PlacementStatus.StatusType.IllegalSafe;
+import static tmw.sept22buyout.PlacementStatus.StatusType.Join;
+import static tmw.sept22buyout.PlacementStatus.StatusType.Merger;
+import static tmw.sept22buyout.PlacementStatus.StatusType.NewChain;
+import static tmw.sept22buyout.PlacementStatus.StatusType.SimplePlacement;
+
 public class PlayGameAct extends DisplayLogic {
 
     private static final String TAG = PlayGameAct.class.getSimpleName();
-    private static PlayGameAct Instance;
 
-    Button BtnEndGame;
-    private LinearLayout     mainDisplay;  // created and built in onCreate()
-    private ConstraintLayout playerTurnPanel;
+    // I'd rather this wasn't an explicit singleton, but
+    // for now it is.  Instance is set in onCreate()
+    private static PlayGameAct Instance;
+    public static PlayGameAct inst() { return Instance;  }
+
+    // View items that get manipulated -- mostly different onClick
+    // listeners get set -- as we move between different phases of play
+    Button ContinueButton;
+    Button EndGameButton;
+    private LinearLayout     mainDisplay;      // created and built in onCreate()
+    private ConstraintLayout playerTurnPanel;  // Hides the screen at start of a player's turn.
+    private TextView         playerNameLabel;  // The text on the playerTurnPanel
+
+    // These are used to pass values between different callbacks.
+    // For example, between playing a token and then creating a
+    // new chain at that location.
+    private Token tempToken_newChain;
+    private int temp_stockPurchases;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +53,7 @@ public class PlayGameAct extends DisplayLogic {
         setContentView(R.layout.activity_play_game);
         mainDisplay = (LinearLayout) findViewById(R.id.MainDisplay);
         playerTurnPanel = (ConstraintLayout) findViewById(R.id.PlayerTurnPanel);
+        playerNameLabel = (TextView) findViewById(R.id.PlayerNameLabel);
 
         // Create the display
         // A vertical stack of items.
@@ -47,9 +73,7 @@ public class PlayGameAct extends DisplayLogic {
         this.addContentView(mainDisplay, vlparams);
 
         // Get the common rows giving the callbacks for buttons.
-        java.util.List<LinearLayout> rows = buildLayout(
-                (View btn) -> { tokenBtnCB(btn); },
-                (View btn) -> { chainBtnCB(btn); } );
+        java.util.List<LinearLayout> rows = buildLayout(null, null);
 
         // Add the buttons on the final row.
         // A 'continue button and an 'end game' button
@@ -63,27 +87,17 @@ public class PlayGameAct extends DisplayLogic {
         btnparams.height = LinearLayout.LayoutParams.MATCH_PARENT;
         btnparams.weight = 1;
 
-        Button continuebtn = new Button(this);
-        continuebtn.setText("Continue");
-        continuebtn.setLayoutParams(btnparams);
-        View vcontinue = (View) continuebtn;
-        vcontinue.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View btn) {
-                continueBtnCB(btn);
-            }
-        });
-        rows.get(last).addView(continuebtn);
+        ContinueButton = new Button(this);
+        ContinueButton.setText("Continue");
+        ContinueButton.setLayoutParams(btnparams);
+        ContinueButton.setOnClickListener(this::meaninglessClick);
+        rows.get(last).addView(ContinueButton);
 
-        BtnEndGame = new Button(this);
-        BtnEndGame.setText("");
-        BtnEndGame.setLayoutParams(btnparams);
-        View vendgame = (View) BtnEndGame;
-        vendgame.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View btn) {
-                endGameBtnCB(btn);
-            }
-        });
-        rows.get(last).addView(BtnEndGame);
+        EndGameButton = new Button(this);
+        EndGameButton.setText("");
+        EndGameButton.setLayoutParams(btnparams);
+        EndGameButton.setOnClickListener(this::endGameClicked);
+        rows.get(last).addView(EndGameButton);
 
         // Now add all of these horizontal layouts
         // to the overall vertical layout and refresh
@@ -103,18 +117,86 @@ public class PlayGameAct extends DisplayLogic {
     public void gameLoop() {
         // Start the game loop
         while (!BOGlobals.EndOfGameOption) {
+            Player player = AllPlayers.instance().firstPlayer();
+            log("Starting " + player.getPlayerName() + "'s turn.");
+
             // put up the privacy screen
+            playerNameLabel.setText(player.getPlayerName() + "'s turn.");
             playerTurnPanel.setVisibility(View.VISIBLE);
             mainDisplay.setVisibility(View.INVISIBLE);
 
-            Player player = AllPlayers.instance().firstPlayer();
             refreshScreen(player);
 
             if (player.isMachine()) {
-                player.beginTokenSelection();
+                log( "Player is a machine.");
+                Token token = player.selectTokenToPlay();  // Machine player routine
+
+                if (token != null) {
+                    PlacementStatus status = token.evaluateForPlacement();
+                    playToken(token, null);
+                    if (   (status.getStatus() == IllegalSafe)
+                        || (status.getStatus() == IllegalNoChain) ) {
+                        msgSet(player.getPlayerName() + " tried to play an illegal token.");
+                        //Oops, now what?
+                    } else {
+                        // put the token on the board
+                        // and do whatever else we need to do
+                        log("Playing token " + token.toString());
+                        if (status.getStatus() == SimplePlacement) {
+                            log( "Simple placement, add the token and buy stock");
+                            board.addToken(token);
+                            player.removeToken(token);
+                            setForBuyStock();
+                            List<Chain> buys = player.buyStock();  // Machine player routine
+                            for (int i = 0; i < buys.size(); i++) {
+                                buyStock((Chain) buys.get(i));
+                            }
+                            setForAfterBuyingStock();
+                            // That's it, fall through to the end of the while
+
+                        } else if (status.getStatus() == Join) {
+                            log( "Adding to an existing chain, then buy stock.");
+                            board.addToken(token);
+                            player.removeToken(token);
+                            Chain chain = status.getChain();
+                            chain.fillIn();
+                            chain.testEndGame();
+                            setForBuyStock();
+                            List<Chain> buys = player.buyStock(); // Machine player routine
+                            for (int i = 0; i < buys.size(); i++) {
+                                buyStock((Chain) buys.get(i));
+                            }
+                            setForAfterBuyingStock();
+                            // That's it, fall through to the end of the while
+
+                        } else if (status.getStatus() == NewChain) {
+                            log( "Creating a new chain.);");
+                            board.addToken(token);
+                            player.removeToken(token);
+                            tempToken_newChain = token;
+                            setForCreateNewChain();
+                            Chain chain = player.selectNewChain();  // Machine player routine
+                            createNewChain(chain);
+                            setForBuyStock();
+                            List<Chain> buys = player.buyStock();  // Machine player routine
+                            for (int i = 0; i < buys.size(); i++) {
+                                buyStock((Chain) buys.get(i));
+                            }
+                            setForAfterBuyingStock();
+                            // That's it, fall through to the end of the while
+
+                        } else if (status.getStatus() == Merger) {
+                            log( "Merging two chains.  Not really implemented.");
+                            //beginSelectBuyingChain(tokentoplay, status.getBuyChains(),
+                            //        status.getSellChains());
+
+                        }
+                    }
+                }
             } else {
                 // Wait for interaction with the buttons to get
-                // us done.  N.B. Control flow will not come back
+                // us done.
+                // N.B. Control flow will not come back
                 // into this loop.  Instead, buttons will have
                 // to be pressed which ultimately call the
                 // checkGameEnd(), nextPlayer(), saveGameState()
@@ -129,10 +211,27 @@ public class PlayGameAct extends DisplayLogic {
             // restored with data intact.  N.B.  state is only saved
             // at the end of the turn, so coming through onRestore
             // again will restart the turn.
-            checkGameEnd();
-            AllPlayers.instance().nextPlayer();
-            saveGameState();
+            nextTurn();
         }
+    }
+
+    public void nextTurn() {
+        Player player = AllPlayers.instance().firstPlayer();
+        if (! player.fillTokens()) {
+            gameEnd();
+        }
+        log("Ending " + player.getPlayerName() + "'s turn.");
+        checkGameEnd();
+        AllPlayers.instance().nextPlayer();
+        saveGameState();
+    }
+    public void nextTurnClicked(View view) {
+        // This was clicked because it was a human's turn.
+        // So we were not in the game loop, but had returned
+        // out of it.  We need to enter it again now in case
+        // the next player is a machine.
+        nextTurn();
+        gameLoop();
     }
 
     public void checkGameEnd() {
@@ -143,108 +242,39 @@ public class PlayGameAct extends DisplayLogic {
         //  Should save the state in case the app is backgrounded and killed
     }
 
-    public void startTurnButtonClicked(View view) {
-        playerTurnPanel.setVisibility(View.INVISIBLE);
-        mainDisplay.setVisibility(View.VISIBLE);
-        msgSet("Please select a token to place on the board.");
+    public void gameEnd() {
+        // Now what?
     }
 
-//        AllPlayers allplayers = AllPlayers.instance();
-//        for (BOGlobals.CurrentPlayer =
-//                     ((BOGlobals.CurrentPlayer == null) ?
-//                             allplayers.firstPlayer() :
-//                             BOGlobals.CurrentPlayer.nextPlayer());
-//             (!BOGlobals.EndOfGameOption);
-//             BOGlobals.CurrentPlayer = BOGlobals.CurrentPlayer.nextPlayer()) {
-//
-//            Player player = BOGlobals.CurrentPlayer;
-//            refreshScreen();
-//
-//            if (!player.isMachine()) {
-//                // A human player.
-//                // They will hit the button to lower the privacy
-//                // screen and then interact with the rest of the controls.
-//            } else {
-//                // the player is a machine.  To avoid indefinite recursion, we make the
-//                // move and return here.
-//                player.beginTokenSelection();
-//                if (WhereAmIStack.inst().look() != null) {
-//                    // This player's turn is not over, but control has been handed to
-//                    // another player (presumably MergerSellAct.)  So we allow this
-//                    // thread to die.
-//                    return;
-//                }
-//                // Otherwise, we continue on with the next player.
-//                if (BOGlobals.EndOfGameOption) {
-//                    Intent intent = new Intent(this, EndGameAct.class);
-//                    startActivity(intent);
-//                    return;
-//                }
-//            }
-//        }
-//    }
 
-//        WhereAmIStack stack = WhereAmIStack.inst();
-//        WhereAmI wai = stack.look();
-//        if (BOGlobals.CurrentPlayer.isMachine())
-//            msgSet("This is the Machine's turn.  Please click 'Continue'");
-//        if (wai == null) BOGlobals.CurrentPlayer.beginTokenSelection();
-//        else if (wai.getPlayPhase() == WhereAmI.PlayPhase.PlayToken)
-//            msgSet("Please select a token");
-//        else if (wai.getPlayPhase() == WhereAmI.PlayPhase.SelectNewChain)
-//            msgSet("Please select the chain you wish to create.");
-//        else if (wai.getPlayPhase() == WhereAmI.PlayPhase.SelectBuyingChain)
-//            msgSet("Which chain is the buying chain?");
-//        else if (wai.getPlayPhase() == WhereAmI.PlayPhase.UnloadStock)
-//            BOGlobals.CurrentPlayer.afterUnloadStock();
-//        else if (wai.getPlayPhase() == WhereAmI.PlayPhase.BuyStock)
-//            msgSet("You may buy stock");
-//        else if (wai.getPlayPhase() == WhereAmI.PlayPhase.TakeTile)
-//            msgSet("Please click 'Continue' to end your turn");
-//        else {
-//            Log.d(TAG, "Unexpected Play Phase!  Attempting to continue.");
-//            BOGlobals.CurrentPlayer.beginTokenSelection();
-//        }
-//    } // end onCreate()
-
-//    protected void initializeGame() {
-//        AllPlayers allplayers = AllPlayers.instance(Intro2Act.NPlayers, Intro2Act.NMachines);
-//        Board.instance();
-//        AllChains.instance();
-//        AllTokens.instance();
-//        BOGlobals.CurrentPlayer = allplayers.firstPlayer();
-//    }
-
-    public static PlayGameAct inst() {
-        return Instance;
-    }
+    @Override
+    public void onBackPressed() {}
 
     public void refreshScreen(Player player) {
-        Log.d(TAG, "PlayGameAct.refreshScreen() has started.");
+       board.updateView();
 
-        board.updateView();
-
-        Token onetoken;
-        ListIterator<Token> ptokens =
+       Token onetoken;
+       ListIterator<Token> ptokens =
                 new ListIterator<Token>(player.getTokens());
-        for (int tn = 0; (tn < AllTokens.instance().NTokensPerPlayer); tn++) {
-            onetoken = ptokens.getNext();
-            if (onetoken == null) break;
-            TokenButton tbutton = BtnScnTokens[tn];
-            tbutton.setToken(onetoken);
-            tbutton.setText(onetoken.getName());
-            board.highlight( onetoken );
-        }
-        LblCash.setText("$" + player.getMoney());
+       for (int tn = 0; (tn < AllTokens.instance().NTokensPerPlayer); tn++) {
+           onetoken = ptokens.getNext();
+           if (onetoken == null) break;
+           TokenButton tbutton = BtnScnTokens[tn];
+           tbutton.setToken(onetoken);
+           tbutton.setText(onetoken.getName());
+           board.highlight( onetoken );
+       }
+       LblCash.setText("$" + player.getMoney());
 
-        for (int cn = 0; (cn < BtnScnChains.length); cn++) {
-            ChainButton btnonechain = BtnScnChains[cn];
-            Chain onechain = btnonechain.getChain();
-            TextView lblonechain = LblScnChains[cn];
-            lblonechain.setText(onechain.toFullString(player));
-        }
-        if (BOGlobals.EndOfGameOption) BtnEndGame.setText("End Game");
-        else BtnEndGame.setText("Show Log");
+       for (int cn = 0; (cn < BtnScnChains.length); cn++) {
+           ChainButton btnonechain = BtnScnChains[cn];
+           Chain onechain = btnonechain.getChain();
+           TextView lblonechain = LblScnChains[cn];
+           lblonechain.setText(onechain.toFullString(player));
+       }
+
+       if (BOGlobals.EndOfGameOption) EndGameButton.setText("End Game");
+       else EndGameButton.setText("Show Log");
     } // end refreshScreen()
 
     public void refreshScreen(Token tokentohighlight) {
@@ -275,60 +305,201 @@ public class PlayGameAct extends DisplayLogic {
     }
 
 
-
     public void log(String msg) { Log.d(TAG, msg); }
 
-    public void tokenBtnCB(View view) {
-        // Ignore token click if we are not asking for a token.
-        WhereAmI wai = WhereAmIStack.inst().look();
-        if ((wai == null) ||
-                (wai.getPlayPhase() != WhereAmI.PlayPhase.PlayToken)) return;
+    public void meaninglessClick(View view) {
+    }
+
+    //
+    //   This is a key point in the logic
+    //  The turn has started, the main choice is which
+    //  token to play.
+    //  From here we go to one of 4 phases.
+    //  * rejecting the selection as not allowed
+    //  * accepting the play and starting to buy stock
+    //  * accepting the play and creating a new chain
+    //  * accepting the play and causing a merger.
+    //
+    public void setForPlayToken(View view) {
+        playerTurnPanel.setVisibility(View.INVISIBLE);
+        mainDisplay.setVisibility(View.VISIBLE);
+        for (int i = 0; i < BtnScnTokens.length; i++) {
+            BtnScnTokens[i].setOnClickListener(this::playTokenClicked);
+        }
+        for (int i = 0; i < BtnScnChains.length; i++) {
+            BtnScnChains[i].setOnClickListener(this::meaninglessClick);
+        }
+        ContinueButton.setOnClickListener(this::meaninglessClick);
+        msgSet("Please select a token to place on the board.");
+    }
+
+    public void playToken(Token token, @Nullable TokenButton btn) {
+        Player player = AllPlayers.instance().firstPlayer();
+        PlacementStatus status = token.evaluateForPlacement();
+        log(token.getName() + ".evaluateForPlacement() returns " + status.getStatus());
+        //AllPlayers.instance().firstPlayer().afterTokenSelection(token);
+        if (status.getStatus() == IllegalSafe) {
+            PlayGameAct.inst().msgSet("You may not merge two safe chains.",
+                    "Please choose another token.");
+            if (btn != null) {
+                btn.setText("");
+                btn.setOnClickListener(this::meaninglessClick);
+            }
+        } else if (status.getStatus() == IllegalNoChain) {
+            PlayGameAct.inst().msgSet("There are no more chains available to place on the board.",
+                    "Please choose another token.");
+            if (btn != null) {
+                btn.setText("");
+                btn.setOnClickListener(this::meaninglessClick);
+            }
+        } else if (status.getStatus() == SimplePlacement) {
+            board.addToken(token);
+            player.removeToken(token);
+            setForBuyStock();
+        } else if (status.getStatus() == Join) {
+            board.addToken(token);
+            player.removeToken(token);
+            Chain chain = status.getChain();
+            chain.fillIn();
+            chain.testEndGame();
+        } // end status == Join
+        else if (status.getStatus() == NewChain) {
+            // We need to choose a chain to create
+            board.addToken(token);
+            player.removeToken(token);
+            // We need to ask the user to choose a chain
+            // (We could have a sepecial case where there is only 1
+            //  chain, no choice, but simpler for now to always
+            //  have the same control flow).
+            log("Entering Player.afterTokenSelection()/UserPicksChain");
+            tempToken_newChain = token;
+            setForCreateNewChain();
+        } // end if status == newchain
+        else if (status.getStatus() == Merger) {
+            //beginSelectBuyingChain(tokentoplay, status.getBuyChains(),
+            //        status.getSellChains());
+        } // end if status == merger
+    }
+
+    public void playTokenClicked(View view) {
         TokenButton btn = (TokenButton) view;
-        Token token = btn.getToken();
-        boolean success = AllPlayers.instance().firstPlayer().afterTokenSelection(token);
-        if (! success) {
-            btn.setText("");
-        }
-    } // end tokenBtnCB()
+        playToken(btn.getToken(), btn);
+    }
 
-    public void chainBtnCB(View view) {
-        WhereAmI.PlayPhase phase = WhereAmIStack.inst().look().getPlayPhase();
-        if (phase == WhereAmI.PlayPhase.SelectNewChain) {
-            ChainButton btn = (ChainButton) view;
-            Chain chain = btn.getChain();
-            boolean success = AllPlayers.instance().firstPlayer().afterSelectNewChain(chain);
-        }
-        else if (phase == WhereAmI.PlayPhase.SelectBuyingChain) {
-            ChainButton btn = (ChainButton) view;
-            Chain chain = btn.getChain();
-            boolean success = AllPlayers.instance().firstPlayer().afterSelectBuyingChain(chain);
-            if (!success)
-                msgSet("That chain is not one of the chains being merged.",
-                        "Please select the buying chain.");
-        }
-        else if (phase == WhereAmI.PlayPhase.BuyStock) {
-            ChainButton btn = (ChainButton) view;
-            Chain chain = btn.getChain();
-            boolean success = AllPlayers.instance().firstPlayer().afterBuyStock(chain);
-        }
-    } // end chainBtnCB()
 
-    public void continueBtnCB(View view) {
-        WhereAmI wai = WhereAmIStack.inst().look();
-        if (wai == null || AllPlayers.instance().firstPlayer().isMachine()) {
-            gameLoop();
-            return;
+    //
+    //  Buying Stock
+    //  The player token buttons are meaningless
+    //  The chain labels are valid buttons for buying
+    //  You can buy at most 3 shares.
+    //  The phase ends when you click the Continue button.
+    //  The next phase is moving on to the next player's turn.
+    //
+    public void setForBuyStock() {
+        temp_stockPurchases = 0;
+        for (int i = 0; i < BtnScnTokens.length; i++) {
+            BtnScnTokens[i].setOnClickListener(this::meaninglessClick);
         }
-        WhereAmI.PlayPhase phase = wai.getPlayPhase();
-        if (phase == WhereAmI.PlayPhase.BuyStock) {
-            AllPlayers.instance().firstPlayer().afterBuyStock(null);
+        for (int i = 0; i < BtnScnChains.length; i++) {
+            BtnScnChains[i].setOnClickListener(this::buyStockClick);
         }
-        else if (phase == WhereAmI.PlayPhase.TakeTile) {
-            AllPlayers.instance().firstPlayer().afterTakeTile();
+        ContinueButton.setOnClickListener(this::nextTurnClicked);
+        msgSet("Click on a chain to buy stock or 'Continue' to end your turn.");
+    }
+
+    public void setForAfterBuyingStock() {
+        for (int i = 0; i < BtnScnTokens.length; i++) {
+            BtnScnTokens[i].setOnClickListener(this::meaninglessClick);
+        }
+        for (int i = 0; i < BtnScnChains.length; i++) {
+            BtnScnChains[i].setOnClickListener(this::meaninglessClick);
+        }
+        ContinueButton.setOnClickListener(this::nextTurnClicked);
+        // set the continue button
+        msgSet("Click to end your turn.");
+    }
+
+    public void buyStock(Chain chain) {
+        if (!chain.isOnBoard()) {
+            msgSet("Sorry.  That chain is not on the board.",
+                    "Please choose a different chain, or click 'Continue'.");
+        } else {
+            // See if we can afford it
+            Player player = AllPlayers.instance().firstPlayer();
+            if (!player.canAfford(chain)) { // He cannot afford it
+                PlayGameAct.inst().msgSet("Sorry.  You cannot afford that issue.",
+                        "Please choose a different chain, or click 'Continue'.");
+            }
+
+            if (player.takeStock(chain, 1)) {
+                // We have successfully purchased the share
+                refreshScreen(player);
+            } else {
+                PlayGameAct.inst().msgSet("Sorry.  There are no more shares of that stock available.",
+                        "Please choose a different chain, or click 'Continue'.");
+            }
+
+            temp_stockPurchases += 1;
+            if (temp_stockPurchases == 3) {
+                // can't buy any more
+                setForAfterBuyingStock();
+            }
         }
     }
 
-    public void endGameBtnCB(View view) {
+    public void buyStockClick(View view) {
+        ChainButton btn = (ChainButton) view;
+        Chain chain = btn.getChain();
+        buyStock(chain);
+    }
+
+
+    //
+    //  Create a new chain
+    //  The player token buttons are meaningless
+    //  The chain labels are valid buttons for selecting
+    //  The continue button is meaningless
+    //  The phase ends when you have selected a valid chain
+    //  The next phase is buying stock.
+    //
+    public void setForCreateNewChain() {
+        for (int i = 0; i < BtnScnTokens.length; i++) {
+            BtnScnTokens[i].setOnClickListener(this::meaninglessClick);
+        }
+        for (int i = 0; i < BtnScnChains.length; i++) {
+            BtnScnChains[i].setOnClickListener(this::createNewChainClick);
+        }
+        msgSet("Please select the chain you wish to create.");
+    }
+
+    public void createNewChain(Chain chain) {
+        if (chain.isOnBoard()) {
+            msgSet("Sorry.  That chain is on the board already.",
+                    "Please choose a different chain.");
+        } else {
+            BoardSpace space = board.getSpace(tempToken_newChain);
+            chain.moveToBoard(space);
+            Player player = AllPlayers.instance().firstPlayer();
+            if (chain.getAvailableStock() > 0) {
+                player.takeStock(chain, 1);
+            }
+            refreshScreen(player);
+            // Chain has been created, so move to buying stock
+            setForBuyStock();
+        }
+    }
+
+    public void createNewChainClick(View view) {
+        ChainButton btn = (ChainButton) view;
+        createNewChain(btn.getChain());
+    }
+
+
+
+
+
+
+    public void endGameClicked(View view) {
         if (BOGlobals.EndOfGameOption) {
             startEndGame();
         }
@@ -349,8 +520,6 @@ public class PlayGameAct extends DisplayLogic {
         startActivity(intent);
     }
 
-    @Override
-    public void onBackPressed() {
-    }
+
 
 } // end chain PlayGameAct
