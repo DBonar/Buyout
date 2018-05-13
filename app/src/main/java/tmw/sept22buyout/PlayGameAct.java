@@ -44,6 +44,12 @@ public class PlayGameAct extends DisplayLogic {
     private int temp_stockPurchases;
 
 
+    //
+    // Create the layout in the onCreate method.
+    // Later, call refreshScreen as necessary to
+    // update the state based on current data.
+    //
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,6 +113,63 @@ public class PlayGameAct extends DisplayLogic {
         }
 
     }
+    public void refreshScreen(Player player) {
+        board.updateView();
+
+        Token onetoken;
+        ListIterator<Token> ptokens =
+                new ListIterator<Token>(player.getTokens());
+        for (int tn = 0; (tn < AllTokens.instance().NTokensPerPlayer); tn++) {
+            onetoken = ptokens.getNext();
+            if (onetoken == null) break;
+            TokenButton tbutton = BtnScnTokens[tn];
+            tbutton.setToken(onetoken);
+            tbutton.setText(onetoken.getName());
+            board.highlight( onetoken );
+        }
+        LblCash.setText("$" + player.getMoney());
+
+        for (int cn = 0; (cn < BtnScnChains.length); cn++) {
+            ChainButton btnonechain = BtnScnChains[cn];
+            Chain onechain = btnonechain.getChain();
+            TextView lblonechain = LblScnChains[cn];
+            lblonechain.setText(onechain.toFullString(player));
+        }
+
+        if (BOGlobals.EndOfGameOption) EndGameButton.setText("End Game");
+        else EndGameButton.setText("Show Log");
+    } // end refreshScreen()
+
+    public void refreshScreen(Token tokentohighlight) {
+        Board.instance().chosen(tokentohighlight);
+    }
+
+    public void msgSet(String msg) {
+        if (LblMessage1 != null) {
+            LblMessage1.setText("");
+            LblMessage3.setText(AllPlayers.instance().firstPlayer().getPlayerName()
+                    + ": " + msg);
+        }
+    }
+
+    public void msgSet(String errmsg, String msg) {
+        if (LblMessage1 != null) {
+            LblMessage1.setText(errmsg);
+            LblMessage3.setText(AllPlayers.instance().firstPlayer().getPlayerName()
+                    + ": " + msg);
+        }
+    }
+
+    public void msgSet(Player player, String msg) {
+        if (LblMessage1 != null) {
+            LblMessage1.setText("");
+            LblMessage3.setText(player.getPlayerName() + ": " + msg);
+        }
+    }
+
+    public void log(String msg) { Log.d(TAG, msg); }
+
+
 
     @Override
     public void onResume() {
@@ -194,16 +257,21 @@ public class PlayGameAct extends DisplayLogic {
                     }
                 }
             } else {
+                // Human player
+                //
                 // Wait for interaction with the buttons to get
                 // us done.
-                // N.B. Control flow will not come back
+                // N.B. Control flow will _not_ come back
                 // into this loop.  Instead, buttons will have
                 // to be pressed which ultimately call the
-                // checkGameEnd(), nextPlayer(), saveGameState()
-                // triple and then call this function again.
+                // nextTurn() method and then call this method
+                // (gameLoop()) again is the game didn't end.
                 return;
             }
 
+            // We get here when a machine player is done with
+            // its turn.
+            //
             // Game end will break out of the loop.
             // If the game doesn't end, we do the simple housekeeping
             // (advance to the next player) and then we save the
@@ -250,66 +318,10 @@ public class PlayGameAct extends DisplayLogic {
     @Override
     public void onBackPressed() {}
 
-    public void refreshScreen(Player player) {
-       board.updateView();
-
-       Token onetoken;
-       ListIterator<Token> ptokens =
-                new ListIterator<Token>(player.getTokens());
-       for (int tn = 0; (tn < AllTokens.instance().NTokensPerPlayer); tn++) {
-           onetoken = ptokens.getNext();
-           if (onetoken == null) break;
-           TokenButton tbutton = BtnScnTokens[tn];
-           tbutton.setToken(onetoken);
-           tbutton.setText(onetoken.getName());
-           board.highlight( onetoken );
-       }
-       LblCash.setText("$" + player.getMoney());
-
-       for (int cn = 0; (cn < BtnScnChains.length); cn++) {
-           ChainButton btnonechain = BtnScnChains[cn];
-           Chain onechain = btnonechain.getChain();
-           TextView lblonechain = LblScnChains[cn];
-           lblonechain.setText(onechain.toFullString(player));
-       }
-
-       if (BOGlobals.EndOfGameOption) EndGameButton.setText("End Game");
-       else EndGameButton.setText("Show Log");
-    } // end refreshScreen()
-
-    public void refreshScreen(Token tokentohighlight) {
-        Board.instance().chosen(tokentohighlight);
-    }
-
-    public void msgSet(String msg) {
-        if (LblMessage1 != null) {
-            LblMessage1.setText("");
-            LblMessage3.setText(AllPlayers.instance().firstPlayer().getPlayerName()
-                    + ": " + msg);
-        }
-    }
-
-    public void msgSet(String errmsg, String msg) {
-        if (LblMessage1 != null) {
-            LblMessage1.setText(errmsg);
-            LblMessage3.setText(AllPlayers.instance().firstPlayer().getPlayerName()
-                     + ": " + msg);
-        }
-    }
-
-    public void msgSet(Player player, String msg) {
-        if (LblMessage1 != null) {
-            LblMessage1.setText("");
-            LblMessage3.setText(player.getPlayerName() + ": " + msg);
-        }
-    }
-
-
-    public void log(String msg) { Log.d(TAG, msg); }
-
     public void meaninglessClick(View view) {
     }
 
+    
     //
     //   This is a key point in the logic
     //  The turn has started, the main choice is which
