@@ -30,7 +30,7 @@ public class Intro1Act extends AppCompatActivity {
         Log.d(TAG, "Log is working");
 
         // Set up button arrays
-        for (int i = 1; i <= 6; i++) {
+        for (int i = 0; i <= 6; i++) {
             int hResID = getResources().getIdentifier("HButton" + Integer.toString(i),
                                                        "id", getPackageName() );
             humanButtons.put( hResID, (Button) findViewById(hResID) );

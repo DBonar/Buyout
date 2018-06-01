@@ -30,8 +30,6 @@ public class DisplayLogic extends AppCompatActivity {
     protected java.util.List<LinearLayout> buildLayout(@Nullable View.OnClickListener tokenCallback,
                                                        @Nullable View.OnClickListener chainCallback ) {
 
-        // TODO This works on a big screen, but not a small one
-        
         // We are making a vertical stack made of a number
         // of horizontal rows.  We'll create the rows as
         // more LinearLayouts and partially initialize them.

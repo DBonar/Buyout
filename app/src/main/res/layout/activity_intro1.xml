@@ -48,6 +48,14 @@
             android:orientation="horizontal"
             android:gravity="center" >
             <Button
+                android:id="@+id/HButton0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:background="@drawable/custom_button"
+                android:onClick="buttonClick"
+                />
+            <Button
                 android:id="@+id/HButton1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -130,6 +138,14 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center" >
+            <Button
+                android:id="@+id/MButton0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:background="@drawable/custom_button"
+                android:onClick="buttonClick"
+                />
             <Button
                 android:id="@+id/MButton1"
                 android:layout_width="wrap_content"
