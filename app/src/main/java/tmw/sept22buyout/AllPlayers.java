@@ -160,7 +160,6 @@ public class AllPlayers {
             TokenButton tbutton = tiles[tn];
             tbutton.setToken(onetoken);
             tbutton.setText(onetoken.getName());
-            Board.instance().highlight( onetoken );
         }
         cash.setText("$" + player.getMoney());
     }

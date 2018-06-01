@@ -210,7 +210,7 @@ public class Board {
         // that it's height is based on its content just as
         // the height of the individual rows in it is based on
         // content.  So the size of this element should be
-        // mostly independant of the screen size.
+        // mostly independent of the screen size.
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setLayoutParams(row_params);
 
@@ -241,7 +241,7 @@ public class Board {
         return layout;
     }
 
-    public void updateView() {
+    public void updateHighlights(Player player) {
         if (layout != null) {
             for (int r = 0; r < nrows; r++) {
                 LinearLayout row = (LinearLayout) layout.getChildAt(r);
@@ -256,11 +256,20 @@ public class Board {
                 }
             }
         }
+        Token onetoken;
+        ListIterator<Token> ptokens =
+                new ListIterator<Token>(player.getTokens());
+        for (int tn = 0; (tn < AllTokens.instance().NTokensPerPlayer); tn++) {
+            onetoken = ptokens.getNext();
+            if (onetoken == null) break;
+            Board.instance().highlight( onetoken );
+        }
     }
 
-    public void highlight(Token token) {
+    private void highlight(Token token) {
         // We know how this display works, we can go ahead and
         // directly index into its children.
+        // Would be cool to make the space a button in this call.
         if (layout != null) {
             LinearLayout row = (LinearLayout) layout.getChildAt(token.getRow());
             TextView cell = (TextView) row.getChildAt(token.getCol());

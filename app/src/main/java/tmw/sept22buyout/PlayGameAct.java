@@ -114,7 +114,7 @@ public class PlayGameAct extends DisplayLogic {
 
     }
     public void refreshScreen(Player player) {
-        Board.instance().updateView();
+        Board.instance().updateHighlights(player);
         AllPlayers.instance().updatePlayerData(player);
         AllChains.instance().updateLabels(player);
 
