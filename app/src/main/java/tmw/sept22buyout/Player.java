@@ -101,6 +101,7 @@ public class Player {
     public int getMoney() { return Money; }
     public void incrMoney(int arg) { Money += arg; }
 
+
     //
     //
     //
@@ -117,20 +118,6 @@ public class Player {
 
 
 
-    public void beginSelectNewChain(Token tokentoplay,
-                                    LList<Chain> unplacedchains) {
-        PlayGameAct.inst().log("Entering Player.beginSelectNewChain()");
-        WhereAmI phase = new WhereAmI(WhereAmI.PlayPhase.SelectNewChain);
-        phase.setToken(tokentoplay);
-        phase.setChainList(unplacedchains);
-        WhereAmIStack.inst().push(phase);
-        PlayGameAct.inst().msgSet("Please select the chain you wish to create.");
-        inputSelectNewChain(tokentoplay, unplacedchains);
-    }
-
-    public void inputSelectNewChain(Token tokentoplay, LList<Chain> unplacedchains) {
-        PlayGameAct.inst().refreshScreen(tokentoplay);
-    }
 
     public boolean afterSelectNewChain(Chain chain) {
         // Make sure chain is a valid option
@@ -154,27 +141,6 @@ public class Player {
         return true;
     } // end afterSelectNewChain()
 
-    public void beginSelectBuyingChain(Token tokentoplay, LList<Chain> buychains,
-                                       LList<Chain> sellchains) {
-        // First, determine which chain is buying the others
-        WhereAmI wai = new WhereAmI(WhereAmI.PlayPhase.SelectBuyingChain);
-        wai.setToken(tokentoplay);
-        wai.setChainList(buychains);
-        wai.setSellChains(sellchains);
-        WhereAmIStack.inst().push(wai);
-        if (buychains.length() == 1)
-            afterSelectBuyingChain(buychains.getFirst());
-            // If there's more than one, the user needs to select one.
-        else {
-            PlayGameAct.inst().msgSet("Which chain is the buying chain?");
-            inputSelectBuyingChain(tokentoplay, buychains, sellchains);
-        }
-    }
-
-    public void inputSelectBuyingChain(Token tokentoplay, LList<Chain> buychains,
-                                       LList<Chain> sellchains) {
-        PlayGameAct.inst().refreshScreen(this);
-    }
 
     public boolean afterSelectBuyingChain(Chain chain) {
         // User has selected chain as the buyer.

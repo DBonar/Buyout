@@ -97,6 +97,22 @@ public class Board {
             TextView cell = (TextView) row.getChildAt(col_num);
             cell.setBackgroundColor(chain.getChainColor());
         }
+
+        // Now color all newly attached neighbors
+        List<BoardSpace> border = allNeighbors(row_num, col_num);
+        for (int i = 0; i < border.size(); i++) {
+            BoardSpace space = (BoardSpace) border.get(i);
+            if (   space.isOccupied()
+                && (space.getChain() == null)) {
+                space.setChain(chain);
+                if (layout != null) {
+                    LinearLayout row = (LinearLayout) layout.getChildAt(space.getRow());
+                    TextView cell = (TextView) row.getChildAt(space.getCol());
+                    cell.setBackgroundColor(chain.getChainColor());
+                }
+                border.addAll( allNeighbors(space) );
+            }
+        }
     }
 
     private List<BoardSpace> allNeighbors(int row, int col) {

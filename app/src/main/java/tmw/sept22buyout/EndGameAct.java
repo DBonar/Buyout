@@ -39,7 +39,7 @@ public class EndGameAct extends AppCompatActivity {
         // Pay the shareholder bonuses for all chains
         Chain onechain;
         ListIterator<Chain> chainiter =
-                new ListIterator<Chain>(AllChains.instance().getAllChains());
+                new ListIterator<Chain>(AllChains.instance().allPlacedChains());
         while ((onechain = chainiter.getNext()) != null)
             output += onechain.payShareholderBonuses(null);
         // Write log to output.

@@ -76,17 +76,16 @@ public class MachinePlayer extends Player {
         // Buy 2 or 3 shares if we can
         int cash = getMoney();
         Chain possibleBuy = null;
-        ListIterator<Chain> it = new ListIterator<Chain>(AllChains.instance().getAllChains());
+        ListIterator<Chain> it = new ListIterator<Chain>(AllChains.instance().allPlacedChains());
         while((possibleBuy = it.getNext()) != null) {
-            if (   possibleBuy.isOnBoard()
-                    && (possibleBuy.getAvailableStock() >= 1)
-                    && (possibleBuy.getPricePerShare() <= cash) ) {
+            if (   (possibleBuy.getAvailableStock() >= 1)
+                && (possibleBuy.getPricePerShare() <= cash) ) {
                 ret.add(possibleBuy);
                 if (   (possibleBuy.getAvailableStock() >= 2)
-                        && (possibleBuy.getPricePerShare() * 2 <= cash) ) {
+                    && (possibleBuy.getPricePerShare() * 2 <= cash) ) {
                     ret.add(possibleBuy);
                     if (   (possibleBuy.getAvailableStock() >= 3)
-                            && (possibleBuy.getPricePerShare() * 3 <= cash) ) {
+                         && (possibleBuy.getPricePerShare() * 3 <= cash) ) {
                         ret.add(possibleBuy);
                     }
                 }
@@ -153,15 +152,13 @@ public class MachinePlayer extends Player {
         Chain bestchain = null;
         Chain onechain;
         ListIterator<Chain> chainlist =
-                new ListIterator<Chain>(AllChains.instance().getAllChains());
+                new ListIterator<Chain>(AllChains.instance().allPlacedChains());
         while ((onechain = chainlist.getNext()) != null) {
-            if (onechain.isOnBoard()) {
-                if (onechain.getAvailableStock() >= 1) {
-                    int pps = onechain.getPricePerShare();
-                    if (pps <= getMoney()) {
-                        if (bestchain == null || pps <= bestchain.getPricePerShare())
-                            bestchain = onechain;
-                    }
+            if (onechain.getAvailableStock() >= 1) {
+                int pps = onechain.getPricePerShare();
+                if (pps <= getMoney()) {
+                    if (bestchain == null || pps <= bestchain.getPricePerShare())
+                        bestchain = onechain;
                 }
             }
         }

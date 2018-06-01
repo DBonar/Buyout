@@ -114,27 +114,9 @@ public class PlayGameAct extends DisplayLogic {
 
     }
     public void refreshScreen(Player player) {
-        board.updateView();
-
-        Token onetoken;
-        ListIterator<Token> ptokens =
-                new ListIterator<Token>(player.getTokens());
-        for (int tn = 0; (tn < AllTokens.instance().NTokensPerPlayer); tn++) {
-            onetoken = ptokens.getNext();
-            if (onetoken == null) break;
-            TokenButton tbutton = BtnScnTokens[tn];
-            tbutton.setToken(onetoken);
-            tbutton.setText(onetoken.getName());
-            board.highlight( onetoken );
-        }
-        LblCash.setText("$" + player.getMoney());
-
-        for (int cn = 0; (cn < BtnScnChains.length); cn++) {
-            ChainButton btnonechain = BtnScnChains[cn];
-            Chain onechain = btnonechain.getChain();
-            TextView lblonechain = LblScnChains[cn];
-            lblonechain.setText(onechain.toFullString(player));
-        }
+        Board.instance().updateView();
+        AllPlayers.instance().updatePlayerData(player);
+        AllChains.instance().updateLabels(player);
 
         if (BOGlobals.EndOfGameOption) EndGameButton.setText("End Game");
         else EndGameButton.setText("Show Log");
@@ -180,6 +162,7 @@ public class PlayGameAct extends DisplayLogic {
     public void gameLoop() {
         // Start the game loop
         while (!BOGlobals.EndOfGameOption) {
+            Board board = Board.instance();
             Player player = AllPlayers.instance().firstPlayer();
             log("Starting " + player.getPlayerName() + "'s turn.");
 
@@ -335,21 +318,18 @@ public class PlayGameAct extends DisplayLogic {
     public void setForPlayToken(View view) {
         playerTurnPanel.setVisibility(View.INVISIBLE);
         mainDisplay.setVisibility(View.VISIBLE);
-        for (int i = 0; i < BtnScnTokens.length; i++) {
-            BtnScnTokens[i].setOnClickListener(this::playTokenClicked);
-        }
-        for (int i = 0; i < BtnScnChains.length; i++) {
-            BtnScnChains[i].setOnClickListener(this::meaninglessClick);
-        }
+        AllPlayers.instance().updateCallbacks(this::playTokenClicked);
+        AllChains.instance().updateCallbacks(this::meaninglessClick );
         ContinueButton.setOnClickListener(this::meaninglessClick);
         msgSet("Please select a token to place on the board.");
     }
 
     public void playToken(Token token, @Nullable TokenButton btn) {
+        Board board = Board.instance();
         Player player = AllPlayers.instance().firstPlayer();
         PlacementStatus status = token.evaluateForPlacement();
         log(token.getName() + ".evaluateForPlacement() returns " + status.getStatus());
-        //AllPlayers.instance().firstPlayer().afterTokenSelection(token);
+
         if (status.getStatus() == IllegalSafe) {
             PlayGameAct.inst().msgSet("You may not merge two safe chains.",
                     "Please choose another token.");
@@ -368,12 +348,12 @@ public class PlayGameAct extends DisplayLogic {
             board.addToken(token);
             player.removeToken(token);
             setForBuyStock();
-        } else if (status.getStatus() == Join) {
-            board.addToken(token);
-            player.removeToken(token);
+        } else if (status.getStatus() == Join) { // i.e. add to a chain
             Chain chain = status.getChain();
-            chain.fillIn();
+            board.setChain(token, chain);
+            player.removeToken(token);
             chain.testEndGame();
+            setForBuyStock();
         } // end status == Join
         else if (status.getStatus() == NewChain) {
             // We need to choose a chain to create
@@ -409,23 +389,15 @@ public class PlayGameAct extends DisplayLogic {
     //
     public void setForBuyStock() {
         temp_stockPurchases = 0;
-        for (int i = 0; i < BtnScnTokens.length; i++) {
-            BtnScnTokens[i].setOnClickListener(this::meaninglessClick);
-        }
-        for (int i = 0; i < BtnScnChains.length; i++) {
-            BtnScnChains[i].setOnClickListener(this::buyStockClick);
-        }
+        AllPlayers.instance().updateCallbacks(this::meaninglessClick);
+        AllChains.instance().updateCallbacks(this::buyStockClick );
         ContinueButton.setOnClickListener(this::nextTurnClicked);
         msgSet("Click on a chain to buy stock or 'Continue' to end your turn.");
     }
 
     public void setForAfterBuyingStock() {
-        for (int i = 0; i < BtnScnTokens.length; i++) {
-            BtnScnTokens[i].setOnClickListener(this::meaninglessClick);
-        }
-        for (int i = 0; i < BtnScnChains.length; i++) {
-            BtnScnChains[i].setOnClickListener(this::meaninglessClick);
-        }
+        AllPlayers.instance().updateCallbacks(this::meaninglessClick);
+        AllChains.instance().updateCallbacks(this::meaninglessClick);
         ContinueButton.setOnClickListener(this::nextTurnClicked);
         // set the continue button
         msgSet("Click to end your turn.");
@@ -475,12 +447,8 @@ public class PlayGameAct extends DisplayLogic {
     //  The next phase is buying stock.
     //
     public void setForCreateNewChain() {
-        for (int i = 0; i < BtnScnTokens.length; i++) {
-            BtnScnTokens[i].setOnClickListener(this::meaninglessClick);
-        }
-        for (int i = 0; i < BtnScnChains.length; i++) {
-            BtnScnChains[i].setOnClickListener(this::createNewChainClick);
-        }
+        AllPlayers.instance().updateCallbacks(this::meaninglessClick);
+        AllChains.instance().updateCallbacks(this::createNewChainClick);
         msgSet("Please select the chain you wish to create.");
     }
 
@@ -489,6 +457,7 @@ public class PlayGameAct extends DisplayLogic {
             msgSet("Sorry.  That chain is on the board already.",
                     "Please choose a different chain.");
         } else {
+            Board board = Board.instance();
             BoardSpace space = board.getSpace(tempToken_newChain);
             chain.moveToBoard(space);
             Player player = AllPlayers.instance().firstPlayer();

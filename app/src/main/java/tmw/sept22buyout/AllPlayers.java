@@ -13,6 +13,12 @@ package tmw.sept22buyout;
 // refer to it with AllPlayers.instance()
 //
 
+import android.content.Context;
+import android.support.annotation.Nullable;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
 import java.lang.Math;
 
 public class AllPlayers {
@@ -85,4 +91,83 @@ public class AllPlayers {
     public Player firstPlayer() { return Players[n]; }
     public void nextPlayer() { n = n + 1; if (n == NPlayers) n = 0;}
 
+
+    private TextView cash;
+    private TokenButton[] tiles;
+    public LinearLayout buildLayout(Context context,
+                                    @Nullable View.OnClickListener tokenCallback) {
+        LinearLayout ret = new LinearLayout(context);
+
+        LinearLayout.LayoutParams row_params =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.MATCH_PARENT);
+        row_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
+        row_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        row_params.bottomMargin = 2;
+        ret.setOrientation((LinearLayout.HORIZONTAL));
+        ret.setLayoutParams(row_params);
+
+        TextView lblTokens = new TextView(context);
+        lblTokens.setText("Tokens:");
+        LinearLayout.LayoutParams label_params =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+        label_params.width = 0;
+        label_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        label_params.weight = 1;
+        lblTokens.setLayoutParams(label_params);
+        ret.addView(lblTokens);
+
+        LinearLayout.LayoutParams token_params =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+        token_params.width = 0;
+        token_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        token_params.weight = 1;
+        tiles = new TokenButton[AllTokens.instance().NTokensPerPlayer];
+        for (int tn = 0; (tn < AllTokens.instance().NTokensPerPlayer); tn++) {
+            TokenButton token = new TokenButton(context);
+            token.setText("Button");
+            token.setLayoutParams(token_params);
+            token.setMinHeight(1);
+            token.setMinimumHeight(1);
+            tiles[tn] = token;
+            if (tokenCallback != null) {
+                View vtoke = (View) token;
+                vtoke.setOnClickListener(tokenCallback);
+            }
+            ret.addView(token);
+        }
+
+        cash = new TextView(context);
+        cash.setText("$" + 30000);
+        cash.setLayoutParams(label_params);
+        ret.addView(cash);
+
+        return ret;
+    }
+
+    public void updatePlayerData(Player player) {
+        Token onetoken;
+        ListIterator<Token> ptokens =
+                new ListIterator<Token>(player.getTokens());
+        for (int tn = 0; (tn < AllTokens.instance().NTokensPerPlayer); tn++) {
+            onetoken = ptokens.getNext();
+            if (onetoken == null) break;
+            TokenButton tbutton = tiles[tn];
+            tbutton.setToken(onetoken);
+            tbutton.setText(onetoken.getName());
+            Board.instance().highlight( onetoken );
+        }
+        cash.setText("$" + player.getMoney());
+    }
+
+    public void updateCallbacks(@Nullable View.OnClickListener tokenCallback) {
+        for (int i = 0; i < tiles.length; i++) {
+            tiles[i].setOnClickListener(tokenCallback);
+        }
+    }
 }
