@@ -1,6 +1,7 @@
 package tmw.sept22buyout;
 
 import android.widget.TextView;
+import android.content.Context;
 
 /**
  * Created by Tim Weinrich on 10/13/2017.
@@ -11,27 +12,38 @@ import android.widget.TextView;
 // One space on the game board for Buyout game
 //
 
-public class BoardSpace extends NamedLoc {
+public class BoardSpace extends Token {
 
-    private TextView Display = null;
-    private boolean IsOccupied = false;
-    private Chain Chain = null;
+    private boolean isOccupied = false;
+    private Chain chain = null;
 
-    public BoardSpace(int col, int row) {
-        super(col, row);
+    public BoardSpace(int r, int c, Context context) {
+        super(r, c, context);
     }
 
-    public TextView getDisplay() { return Display; }
-    public void setDisplay(TextView newdisplay) { Display = newdisplay; }
-    public void setOccupied() { IsOccupied = true; }
-    public boolean isOccupied() { return IsOccupied; }
-    public Chain getChain() { return Chain; }
+    public void setOccupied() {
+        isOccupied = true;
+        this.setBackgroundColor(BOGlobals.ClrFullSpace);
+    }
+    public boolean isOccupied() { return isOccupied; }
 
     public void setChain(Chain newchain) {
-        if (Chain == newchain) return;
-        if (Chain != null) Chain.decrBoardCount();
+        if (chain == newchain) return;
+        if (chain != null) chain.decrBoardCount();
         newchain.incrBoardCount();
-        Chain = newchain;
+        isOccupied = true;
+        chain = newchain;
+        this.setBackgroundColor(newchain.getChainColor());
     }
+    public void removeChain() {
+        if (chain == null) return;
+        chain.decrBoardCount();
+        isOccupied = false;
+        chain = null;
+        this.setBackgroundColor(BOGlobals.ClrEmptySpace);
+    }
+    public Chain getChain() { return chain; }
+
+
 
 } // class BoardSpace

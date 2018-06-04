@@ -34,7 +34,7 @@ public class Board {
         return Instance;
     }
 
-    public static Board initialize(Context context, int nRows, int nCols) {
+    public static Board initialize(int nRows, int nCols, Context context) {
         if (Instance != null) {
             if ((nRows != Instance.nrows) || (nCols != Instance.ncols)) {
                 throw new RuntimeException("Board is already initialized");
@@ -42,7 +42,7 @@ public class Board {
                 return Instance;
             }
         }
-        Instance = new Board(context, nRows, nCols);
+        Instance = new Board(nRows, nCols, context);
         BoardXSize = Instance.ncols;
         BoardYSize = Instance.nrows;
         return Instance;
@@ -52,108 +52,93 @@ public class Board {
     private int nrows;
     private int ncols;
 
-    private Board(Context context, int nRows, int nCols) {
+    private Board(int nRows, int nCols, Context context) {
         nrows = nRows;
         ncols = nCols;
         layout = null;
-        fillData();
-    }
-
-    private void fillData() {
         data = new BoardSpace[nrows][ncols];
         for (int r = 0; r < nrows; r++) {
             for (int c = 0; c < ncols; c++) {
-                data[r][c] = new BoardSpace(c, r);  // BoardSpace expects (col,row)
+                data[r][c] = new BoardSpace(r, c, context);
             }
         }
     }
+
+
 
 
     //
     // The main external functions
     //
 
-    public BoardSpace getSpace(Token token) {
-        return data[token.getRow()][token.getCol()];
+    public void playToken(Token token) {
+        data[token.getRow()][token.getCol()].setOccupied();
     }
 
-    public void addToken(Token token) {
-        int row_num = token.getRow();
-        int col_num = token.getCol();
-        data[row_num][col_num].setOccupied();
-        if (layout != null) {
-            LinearLayout row = (LinearLayout) layout.getChildAt(row_num);
-            TextView cell = (TextView) row.getChildAt(col_num);
-            cell.setBackgroundColor(BOGlobals.ClrFullSpace);
-        }
-    }
+    public void addToChain(Token token, Chain chain) {
+        BoardSpace space = data[token.getRow()][token.getCol()];
+        if (space.getChain() != chain) {
+            space.setChain(chain);
 
-    public void setChain(Token token, Chain chain) {
-        int row_num = token.getRow();
-        int col_num = token.getCol();
-        data[row_num][col_num].setChain(chain);
-        if (layout != null) {
-            LinearLayout row = (LinearLayout) layout.getChildAt(row_num);
-            TextView cell = (TextView) row.getChildAt(col_num);
-            cell.setBackgroundColor(chain.getChainColor());
-        }
-
-        // Now color all newly attached neighbors
-        List<BoardSpace> border = allNeighbors(row_num, col_num);
-        for (int i = 0; i < border.size(); i++) {
-            BoardSpace space = (BoardSpace) border.get(i);
-            if (   space.isOccupied()
-                && (space.getChain() == null)) {
-                space.setChain(chain);
-                if (layout != null) {
-                    LinearLayout row = (LinearLayout) layout.getChildAt(space.getRow());
-                    TextView cell = (TextView) row.getChildAt(space.getCol());
-                    cell.setBackgroundColor(chain.getChainColor());
+            // Now color all newly attached neighbors
+            List<BoardSpace> border = allNeighbors(space);
+            for (int i = 0; i < border.size(); i++) {
+                BoardSpace neighbor = border.get(i);
+                if (neighbor.isOccupied()
+                        && (neighbor.getChain() == null)) {
+                    neighbor.setChain(chain);
+                    border.addAll(allNeighbors(neighbor));
                 }
-                border.addAll( allNeighbors(space) );
             }
         }
     }
 
-    private List<BoardSpace> allNeighbors(int row, int col) {
+    public void removeChain(Token token, Chain chain) {
+        BoardSpace space = data[token.getRow()][token.getCol()];
+        space.removeChain();
+
+        // Now color all newly attached neighbors
+        List<BoardSpace> border = allNeighbors(space);
+        for (int i = 0; i < border.size(); i++) {
+            BoardSpace neighbor = border.get(i);
+            if (   neighbor.isOccupied()
+                    && (neighbor.getChain() == chain)) {
+                neighbor.removeChain();
+                chain.decrBoardCount();
+                border.addAll( allNeighbors(neighbor) );
+            }
+        }
+    }
+
+    public List<BoardSpace> allNeighbors(Token token) {
+        int row = token.getRow();
+        int col = token.getCol();
         List<BoardSpace> result = new ArrayList<BoardSpace>();
         col++;
-        if (col >= 0 && col < BoardXSize &&
-                row >= 0 && row < BoardYSize)
+        if (col >= 0 && col < ncols &&
+                row >= 0 && row < nrows)
             result.add(data[row][col]);
         col -= 2;
-        if (col >= 0 && col < BoardXSize &&
-                row >= 0 && row < BoardYSize)
+        if (col >= 0 && col < ncols &&
+                row >= 0 && row < nrows)
             result.add(data[row][col]);
         col++;
         row++;
-        if (col >= 0 && col < BoardXSize &&
-                row >= 0 && row < BoardYSize)
+        if (col >= 0 && col < ncols &&
+                row >= 0 && row < nrows)
             result.add(data[row][col]);
         row -= 2;
-        if (col >= 0 && col < BoardXSize &&
-                row >= 0 && row < BoardYSize)
+        if (col >= 0 && col < ncols &&
+                row >= 0 && row < nrows)
             result.add(data[row][col]);
         return result;
-    } // LList<BoardSpace> allNeighbors
-    public List<BoardSpace> allNeighbors(BoardSpace bs) {
-        return allNeighbors(bs.getRow(),bs.getCol());
-    }
-    public List<Token> allNeighbors(Token token) {
-        List neighbors = allNeighbors(token.getRow(), token.getCol());
-        List<Token> ret = new ArrayList<Token>();
-        for (int i = 0; i < neighbors.size(); i++) {
-            BoardSpace bs = (BoardSpace) neighbors.get(i);
-            ret.add(new Token(bs.getCol(), bs.getRow()));
-        }
-        return ret;
     }
     public List<Token> unoccupiedNeighbors(Token token) {
-        List<Token> neighbors = allNeighbors(token);
+        List<BoardSpace> neighbors = allNeighbors(token);
         List<Token> ret = new ArrayList<Token>();
         for (int i = 0; i < neighbors.size(); i++) {
-            Token tok = (Token) neighbors.get(i);
-            if (!data[tok.getRow()][tok.getCol()].isOccupied()) {
+            BoardSpace tok = (BoardSpace) neighbors.get(i);
+            if (!tok.isOccupied()) {
                 ret.add(tok);
             }
         }
@@ -171,7 +156,7 @@ public class Board {
         for (int r = 0; r < nrows; r++) {
             for (int c = 0; c < ncols; c++) {
                 if (! data[r][c].isOccupied()) {
-                    rec.add( new Token(c,r) );  // Token expects (col, row)
+                    rec.add( data[r][c] );
                 }
             }
         }
@@ -182,106 +167,75 @@ public class Board {
     //  Layout related bits
     //
     public LinearLayout buildLayout(Context context) {
-        layout = new LinearLayout(context);
+        if (layout == null) {
+            layout = new LinearLayout(context);
 
-        // Each hoizontal line needs to be sized.  So, we
-        // can't just use the params from above, we need one
-        // that is sized based on the Text boxes it contains.
-        LinearLayout.LayoutParams row_params =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.MATCH_PARENT);
-        row_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
-        row_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
-        row_params.weight = 1;
-        row_params.bottomMargin = 2;
+            // The overall layout needs a bit of buffter space
+            LinearLayout.LayoutParams params =
+                    new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.MATCH_PARENT);
+            params.width = LinearLayout.LayoutParams.MATCH_PARENT;
+            params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+            params.weight = 1;
+            params.topMargin = 3;
+            params.bottomMargin = 10;
+            layout.setOrientation(LinearLayout.VERTICAL);
+            layout.setLayoutParams(params);
 
-        // TODO It would be nice to have the text more centered
-        LinearLayout.LayoutParams cell_params =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT);
-        cell_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
-        cell_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
-        cell_params.weight = 1;
-        cell_params.leftMargin = 2;
+            // Each hoizontal line needs to be sized.  So, we
+            // can't just use the params from above, we need one
+            // that is sized based on the Text boxes it contains.
+            LinearLayout.LayoutParams row_params =
+                    new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.MATCH_PARENT);
+            row_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
+            row_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+            row_params.weight = 1;
+            row_params.bottomMargin = 2;
 
-        // This is the overall element for the board.  Note
-        // that it's height is based on its content just as
-        // the height of the individual rows in it is based on
-        // content.  So the size of this element should be
-        // mostly independent of the screen size.
-        layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setLayoutParams(row_params);
+            // It will have YSize rows each of which is a
+            // horizontal LinearLayout holding XSize 'buttons'
+            for (int rln = 0; rln < nrows; rln++) {
+                LinearLayout row = new LinearLayout(context);
+                row.setOrientation((LinearLayout.HORIZONTAL));
+                row.setLayoutParams(row_params);
 
-        // It will have YSize rows each of which is a
-        // horizontal LinearLayout holding XSize 'buttons'
-        for (int rln = 0; rln < nrows; rln++) {
-            LinearLayout row = new LinearLayout(context);
-            row.setOrientation((LinearLayout.HORIZONTAL));
-            row.setLayoutParams(row_params);
+                for (int cln = 0; cln < ncols; cln++) {
+                    BoardSpace space = data[rln][cln];
+                    row.addView(space);
+                }
 
-            for (int cln = 0; cln < ncols; cln++) {
-                BoardSpace space = data[rln][cln];
-                String spacename = space.getName();
-                TextView cell = new TextView(context);
-                cell.setPadding(8,0,0,10);
-                cell.setText(spacename);
-                cell.setLayoutParams(cell_params);
-                if (space.getChain() != null)
-                    cell.setBackgroundColor(space.getChain().getChainColor());
-                else if (space.isOccupied())
-                    cell.setBackgroundColor(BOGlobals.ClrFullSpace);
-                else cell.setBackgroundColor(BOGlobals.ClrEmptySpace);
-                row.addView(cell);
+                layout.addView(row);
             }
-
-            layout.addView(row);
         }
         return layout;
     }
 
     public void updateHighlights(Player player) {
-        if (layout != null) {
-            for (int r = 0; r < nrows; r++) {
-                LinearLayout row = (LinearLayout) layout.getChildAt(r);
-                for (int c = 0; c < ncols; c++) {
-                    TextView cell = (TextView) row.getChildAt(c);
-                    BoardSpace space = data[r][c];
-                    if (space.getChain() != null)
-                        cell.setBackgroundColor(space.getChain().getChainColor());
-                    else if (space.isOccupied())
-                        cell.setBackgroundColor(BOGlobals.ClrFullSpace);
-                    else cell.setBackgroundColor(BOGlobals.ClrEmptySpace);
-                }
+        // TODO set the callbacks so highlighted space are really buttons
+        // remove old highlights
+        for (int r = 0; r < nrows; r++) {
+            for (int c = 0; c < ncols; c++) {
+                BoardSpace space = data[r][c];
+                if (!space.isOccupied())
+                    space.setBackgroundColor(BOGlobals.ClrEmptySpace);
             }
         }
-        Token onetoken;
-        ListIterator<Token> ptokens =
-                new ListIterator<Token>(player.getTokens());
-        for (int tn = 0; (tn < AllTokens.instance().NTokensPerPlayer); tn++) {
-            onetoken = ptokens.getNext();
-            if (onetoken == null) break;
-            Board.instance().highlight( onetoken );
+        // Add the ones for this player
+        List<Token> player_tiles = player.getTokens();
+        for (int i = 0; i < player_tiles.size(); i++) {
+            Token tile = (Token) player_tiles.get(i);
+            highlight( tile );
         }
     }
 
     private void highlight(Token token) {
-        // We know how this display works, we can go ahead and
-        // directly index into its children.
-        // Would be cool to make the space a button in this call.
-        if (layout != null) {
-            LinearLayout row = (LinearLayout) layout.getChildAt(token.getRow());
-            TextView cell = (TextView) row.getChildAt(token.getCol());
-            cell.setBackgroundColor(BOGlobals.ClrTokenSpace);
-        }
+        data[token.getRow()][token.getCol()].setBackgroundColor(BOGlobals.ClrTokenSpace);
     }
 
     public void chosen(Token token) {
-        if (layout != null) {
-            LinearLayout row = (LinearLayout) layout.getChildAt(token.getRow());
-            TextView cell = (TextView) row.getChildAt(token.getCol());
-            cell.setBackgroundColor(BOGlobals.ClrChoseSpace);
-        }
+        data[token.getRow()][token.getCol()].setBackgroundColor(BOGlobals.ClrChoseSpace);
     }
 }

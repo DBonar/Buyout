@@ -122,9 +122,6 @@ public class PlayGameAct extends DisplayLogic {
         else EndGameButton.setText("Show Log");
     } // end refreshScreen()
 
-    public void refreshScreen(Token tokentohighlight) {
-        Board.instance().chosen(tokentohighlight);
-    }
 
     public void msgSet(String msg) {
         if (LblMessage1 != null) {
@@ -179,7 +176,7 @@ public class PlayGameAct extends DisplayLogic {
 
                 if (token != null) {
                     PlacementStatus status = token.evaluateForPlacement();
-                    playToken(token, null);
+                    playToken(token);
                     if (   (status.getStatus() == IllegalSafe)
                         || (status.getStatus() == IllegalNoChain) ) {
                         msgSet(player.getPlayerName() + " tried to play an illegal token.");
@@ -190,8 +187,8 @@ public class PlayGameAct extends DisplayLogic {
                         log("Playing token " + token.toString());
                         if (status.getStatus() == SimplePlacement) {
                             log( "Simple placement, add the token and buy stock");
-                            board.addToken(token);
                             player.removeToken(token);
+                            board.playToken(token);
                             setForBuyStock();
                             List<Chain> buys = player.buyStock();  // Machine player routine
                             for (int i = 0; i < buys.size(); i++) {
@@ -202,10 +199,9 @@ public class PlayGameAct extends DisplayLogic {
 
                         } else if (status.getStatus() == Join) {
                             log( "Adding to an existing chain, then buy stock.");
-                            board.addToken(token);
                             player.removeToken(token);
                             Chain chain = status.getChain();
-                            chain.fillIn();
+                            board.addToChain(token, chain);
                             chain.testEndGame();
                             setForBuyStock();
                             List<Chain> buys = player.buyStock(); // Machine player routine
@@ -217,8 +213,8 @@ public class PlayGameAct extends DisplayLogic {
 
                         } else if (status.getStatus() == NewChain) {
                             log( "Creating a new chain.);");
-                            board.addToken(token);
                             player.removeToken(token);
+                            board.playToken(token);
                             tempToken_newChain = token;
                             setForCreateNewChain();
                             Chain chain = player.selectNewChain();  // Machine player routine
@@ -273,7 +269,7 @@ public class PlayGameAct extends DisplayLogic {
         }
         log("Ending " + player.getPlayerName() + "'s turn.");
         checkGameEnd();
-        AllPlayers.instance().nextPlayer();
+        AllPlayers.instance().advanceToNextPlayer();
         saveGameState();
     }
     public void nextTurnClicked(View view) {
@@ -324,7 +320,7 @@ public class PlayGameAct extends DisplayLogic {
         msgSet("Please select a token to place on the board.");
     }
 
-    public void playToken(Token token, @Nullable TokenButton btn) {
+    private void playToken(Token token) {
         Board board = Board.instance();
         Player player = AllPlayers.instance().firstPlayer();
         PlacementStatus status = token.evaluateForPlacement();
@@ -333,32 +329,33 @@ public class PlayGameAct extends DisplayLogic {
         if (status.getStatus() == IllegalSafe) {
             PlayGameAct.inst().msgSet("You may not merge two safe chains.",
                     "Please choose another token.");
-            if (btn != null) {
-                btn.setText("");
-                btn.setOnClickListener(this::meaninglessClick);
-            }
+            token.setText("");
+            token.setOnClickListener(this::meaninglessClick);
+
         } else if (status.getStatus() == IllegalNoChain) {
             PlayGameAct.inst().msgSet("There are no more chains available to place on the board.",
                     "Please choose another token.");
-            if (btn != null) {
-                btn.setText("");
-                btn.setOnClickListener(this::meaninglessClick);
-            }
+            token.setText("");
+            token.setOnClickListener(this::meaninglessClick);
+
         } else if (status.getStatus() == SimplePlacement) {
-            board.addToken(token);
             player.removeToken(token);
+            board.playToken(token);
             setForBuyStock();
+
         } else if (status.getStatus() == Join) { // i.e. add to a chain
-            Chain chain = status.getChain();
-            board.setChain(token, chain);
             player.removeToken(token);
+            Chain chain = status.getChain();
+            board.addToChain(token, chain);
             chain.testEndGame();
+            refreshScreen(player);
             setForBuyStock();
+
         } // end status == Join
         else if (status.getStatus() == NewChain) {
             // We need to choose a chain to create
-            board.addToken(token);
             player.removeToken(token);
+            board.playToken(token);
             // We need to ask the user to choose a chain
             // (We could have a sepecial case where there is only 1
             //  chain, no choice, but simpler for now to always
@@ -366,16 +363,18 @@ public class PlayGameAct extends DisplayLogic {
             log("Entering Player.afterTokenSelection()/UserPicksChain");
             tempToken_newChain = token;
             setForCreateNewChain();
+
         } // end if status == newchain
         else if (status.getStatus() == Merger) {
             //beginSelectBuyingChain(tokentoplay, status.getBuyChains(),
             //        status.getSellChains());
+
         } // end if status == merger
     }
 
     public void playTokenClicked(View view) {
-        TokenButton btn = (TokenButton) view;
-        playToken(btn.getToken(), btn);
+        Token btn = (Token) view;
+        playToken(btn);
     }
 
 
@@ -415,7 +414,7 @@ public class PlayGameAct extends DisplayLogic {
                         "Please choose a different chain, or click 'Continue'.");
             }
 
-            if (player.takeStock(chain, 1)) {
+            if (player.purchaseStock(chain, 1)) {
                 // We have successfully purchased the share
                 refreshScreen(player);
             } else {
@@ -458,8 +457,7 @@ public class PlayGameAct extends DisplayLogic {
                     "Please choose a different chain.");
         } else {
             Board board = Board.instance();
-            BoardSpace space = board.getSpace(tempToken_newChain);
-            chain.moveToBoard(space);
+            chain.moveToBoard(tempToken_newChain);
             Player player = AllPlayers.instance().firstPlayer();
             if (chain.getAvailableStock() > 0) {
                 player.takeStock(chain, 1);

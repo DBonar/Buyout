@@ -38,9 +38,7 @@ public class MachinePlayer extends Player {
         }
         Collections.shuffle(machineNames);
     }
-    private String machineName(int n ) {
-        return machineNames.get(n);
-    }
+
 
     // If N is the total number of machine players
     // n is the index number of this player n \in [1,N]
@@ -56,17 +54,18 @@ public class MachinePlayer extends Player {
 
     public Token selectTokenToPlay() {
         PlayGameAct.inst().log(getPlayerName() + " selecting token to play.");
-        Token token;
-        ListIterator<Token> tokenlist = new ListIterator<Token>(getTokens());
-        while ((token = tokenlist.getNext()) != null) {
-            PlacementStatus status = token.evaluateForPlacement();
-            if (   (status.getStatus() != IllegalSafe)
-                && (status.getStatus() != IllegalNoChain) ) {
-                return token;
+        List<Token> tiles = getTokens();
+        for (int i = 0; i < tiles.size(); i++) {
+            Token tile = (Token) tiles.get(i);
+            PlacementStatus status = tile.evaluateForPlacement();
+            if ((status.getStatus() != IllegalSafe)
+                    && (status.getStatus() != IllegalNoChain)) {
+                return tile;
             }
         }
         return null;
     }
+
 
     public List<Chain> buyStock() {
         PlayGameAct.inst().log(getPlayerName() + " selecting stocks to buy.");
@@ -106,30 +105,6 @@ public class MachinePlayer extends Player {
 
 
 
-    public void inputTokenSelection() {
-        if (BOGlobals.EndOfGameOption) {
-            // PlayGameAct.inst().startEndGame();
-            return;
-        }
-        Token onetoken;
-        ListIterator<Token> tokenlist = new ListIterator<Token>(getTokens());
-        while ((onetoken = tokenlist.getNext()) != null) {
-            PlacementStatus status = onetoken.evaluateForPlacement();
-            if (status.getStatus() != IllegalSafe && status.getStatus() != IllegalNoChain) {
-                break;
-            }
-        }
-        afterTokenSelection(onetoken);
-    }
-
-    public void inputSelectNewChain(Token tokentoplay, LList<Chain> unplacedchains) {
-        afterSelectNewChain(unplacedchains.getFirst());
-    }
-
-    public void inputSelectBuyingChain(Token tokentoplay, LList<Chain> buychains,
-                                       LList<Chain> sellchains) {
-        afterSelectBuyingChain(buychains.getFirst());
-    }
 
     public void inputUnloadStock(Token tokentoplay,
                                  Chain buychain,

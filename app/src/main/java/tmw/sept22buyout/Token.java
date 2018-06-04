@@ -1,24 +1,74 @@
 package tmw.sept22buyout;
 
-/**
- * Created by Tim Weinrich on 10/15/2017.
- *
- * Token.java
- *
- * One token, corresponding to one space on the Buyout board.
- *
- */
+import android.content.Context;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import java.util.Iterator;
 import java.util.List;
 
-import static tmw.sept22buyout.PlacementStatus.StatusType.*;
+import static tmw.sept22buyout.PlacementStatus.StatusType.IllegalNoChain;
+import static tmw.sept22buyout.PlacementStatus.StatusType.IllegalSafe;
+import static tmw.sept22buyout.PlacementStatus.StatusType.Join;
+import static tmw.sept22buyout.PlacementStatus.StatusType.Merger;
+import static tmw.sept22buyout.PlacementStatus.StatusType.NewChain;
+import static tmw.sept22buyout.PlacementStatus.StatusType.SimplePlacement;
 
-public class Token extends NamedLoc {
+/**
+ * Created by Tim Weinrich on 10/18/2017.
+ */
 
-    public Token(int col, int row) {
-        super(col, row);
+public class Token extends Button {
+
+    private int row;
+    private int col;
+    private String name;
+    private TextView Display = null;
+
+    public int getCol() { return col; }
+    public int getRow() { return row; }
+    public String getName() { return name; }
+
+    public void setData(Token token) {
+        if (token != null) {
+            row = token.row;
+            col = token.col;
+            name = token.name;
+        } else {
+            row = 0;
+            col = 0;
+            name = "";
+        }
+        setText(name);
     }
+
+    public Token(int r, int c, Context context) {
+        super(context);
+        row = r;
+        col = c;
+        name = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".substring(col, col + 1) +
+                      Integer.toString(row + 1);
+
+        // TODO It would be nice to have the text more centered
+        LinearLayout.LayoutParams cell_params =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+        cell_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
+        cell_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        cell_params.weight = 1;
+        cell_params.leftMargin = 2;
+
+        this.setPadding(8,0,0,10);
+        this.setText(name);
+        this.setLayoutParams(cell_params);
+        this.setMinHeight(1);
+        this.setMinimumHeight(1);
+        setBackgroundColor(BOGlobals.ClrTokenSpace);
+    }
+
+
 
     public PlacementStatus evaluateForPlacement() {
         // This evaluates the consequences of placing this token on the board
@@ -28,7 +78,7 @@ public class Token extends NamedLoc {
         // and which other chains are being merged.
         PlacementStatus result = new PlacementStatus();
         Board board = Board.instance();
-        BoardSpace boardspace = board.getSpace(this);
+
         // See if there are neighboring chains or occupied spaces
         boolean newchain = false; // true iff there is a neighbor which is
         // occupied, but not part of a chain. Note that a value of true does
@@ -38,7 +88,7 @@ public class Token extends NamedLoc {
         Chain asafechain = null; // a neighboring chain that is safe
         boolean istwosafechains = false; // true iff at least two neighboring
         // chains are safe
-        List<BoardSpace> neighborlist = board.allNeighbors(boardspace);
+        List<BoardSpace> neighborlist = board.allNeighbors(this);
         Iterator<BoardSpace> neighbors = neighborlist.iterator();
         // for each neighbor
         while (neighbors.hasNext()) {
@@ -145,8 +195,8 @@ public class Token extends NamedLoc {
     public void moveToBoard(Player player) {
         Board board = Board.instance();
         player.removeToken(this);
-        board.addToken(this);
+        board.playToken(this);
         ActionLog.inst().add(player, "has placed the token " + this.toString());
     }
 
-} // end class Token
+}

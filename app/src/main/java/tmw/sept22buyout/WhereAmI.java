@@ -19,9 +19,7 @@ public class WhereAmI {
     private Player PPlayer = null;
     private Player PEndPlayer = null;
     private int PNShares = 0;
-    //private LList<Chain> PChainLList = new LList<Chain>();
-    //private LList<Chain> FinishedChains = new LList<Chain>();
-    //private int NTokensToBuy = 0;
+
 
     public WhereAmI(PlayPhase newphasename) {
         PhaseName = newphasename;

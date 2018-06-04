@@ -61,7 +61,7 @@ public class DisplayLogic extends AppCompatActivity {
         spacer_params.weight = 1;
 
         // Create the board, AllTokens need to be initialized after the board.
-        Board board = Board.initialize(this, 9, 12);
+        Board board = Board.initialize(9, 12, this);
         AllTokens.instance();
         hlayout.set(rownum++, board.buildLayout(this) );
         hlayout.set(rownum++, AllPlayers.instance().buildLayout(this, tokenCallback ) );

@@ -20,6 +20,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.lang.Math;
+import java.util.List;
 
 public class AllPlayers {
 
@@ -62,10 +63,6 @@ public class AllPlayers {
                 Players[playern] = Players[randindex];
                 Players[randindex] = swapvalue;
             } // if randindex
-            if (playern != 0)
-                Players[playern - 1].setNextPlayer(Players[playern]);
-            if (playern == nplayers - 1)
-                Players[playern].setNextPlayer(Players[0]);
         } // for playern = 0
         n = 0;  // i.e. the first player is the first player
     } // AllPlayers()
@@ -89,11 +86,23 @@ public class AllPlayers {
     }
 
     public Player firstPlayer() { return Players[n]; }
-    public void nextPlayer() { n = n + 1; if (n == NPlayers) n = 0;}
+    public Player nextPlayer(Player player) {
+        for (int i = 0; i < Players.length; i++) {
+            if (Players[i].getPlayerName() == player.getPlayerName()) {
+                if (i < Players.length - 1) {
+                    return Players[i + 1];
+                } else {
+                    return Players[0];
+                }
+            }
+        }
+        throw new RuntimeException("Player " + player.getPlayerName() + " is not on the player list.");
+    }
+    public void advanceToNextPlayer() { n = n + 1; if (n == NPlayers) n = 0;}
 
 
     private TextView cash;
-    private TokenButton[] tiles;
+    private Token[] tiles;
     public LinearLayout buildLayout(Context context,
                                     @Nullable View.OnClickListener tokenCallback) {
         LinearLayout ret = new LinearLayout(context);
@@ -104,7 +113,8 @@ public class AllPlayers {
                         LinearLayout.LayoutParams.MATCH_PARENT);
         row_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
         row_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
-        row_params.bottomMargin = 2;
+        row_params.topMargin = 2;
+        row_params.bottomMargin = 10;
         ret.setOrientation((LinearLayout.HORIZONTAL));
         ret.setLayoutParams(row_params);
 
@@ -127,9 +137,9 @@ public class AllPlayers {
         token_params.width = 0;
         token_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
         token_params.weight = 1;
-        tiles = new TokenButton[AllTokens.instance().NTokensPerPlayer];
+        tiles = new Token[AllTokens.instance().NTokensPerPlayer];
         for (int tn = 0; (tn < AllTokens.instance().NTokensPerPlayer); tn++) {
-            TokenButton token = new TokenButton(context);
+            Token token = new Token(1,1, context); // replaced later
             token.setText("Button");
             token.setLayoutParams(token_params);
             token.setMinHeight(1);
@@ -151,15 +161,18 @@ public class AllPlayers {
     }
 
     public void updatePlayerData(Player player) {
-        Token onetoken;
-        ListIterator<Token> ptokens =
-                new ListIterator<Token>(player.getTokens());
-        for (int tn = 0; (tn < AllTokens.instance().NTokensPerPlayer); tn++) {
-            onetoken = ptokens.getNext();
-            if (onetoken == null) break;
-            TokenButton tbutton = tiles[tn];
-            tbutton.setToken(onetoken);
-            tbutton.setText(onetoken.getName());
+        // Update the tiles and cash amount in the layout
+        // to reflect the data for the given player
+        List<Token> tokens = player.getTokens();
+        int i = 0;
+        for (; i < tokens.size(); i++) {
+            Token player_tile = (Token) tokens.get(i);
+            Token display_tile = tiles[i];
+            display_tile.setData( player_tile );
+        }
+        for (; i < tiles.length; i++) {
+            Token display_tile = tiles[i];
+            display_tile.setData(null);
         }
         cash.setText("$" + player.getMoney());
     }

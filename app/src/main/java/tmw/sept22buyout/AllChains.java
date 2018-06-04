@@ -103,6 +103,8 @@ public class AllChains {
                         LinearLayout.LayoutParams.MATCH_PARENT);
         overall_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
         overall_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        overall_params.topMargin = 2;
+        overall_params.bottomMargin = 10;
         ret.setOrientation((LinearLayout.VERTICAL));
         ret.setLayoutParams(overall_params);
 

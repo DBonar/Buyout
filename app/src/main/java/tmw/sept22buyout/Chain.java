@@ -30,24 +30,23 @@ public class Chain {
 
     private String Name;
     private BankClass ChainClass;
-    private boolean OnBoard = false;
-    private BoardSpace ChainSeed = null; // Position of one tile of this chain
-    private int BoardCount = 0;
-    private int StockAvailable = 25;
     private @ColorInt int ChainColor;
+
+    private int BoardCount = 0;
+    private Token initialSpace = null;
+    private int StockAvailable = 25;
+
 
     public Chain(String chainname, BankClass newvalue, @ColorInt int newcolor) {
         Name = chainname;
         ChainClass = newvalue;
-        OnBoard = false;
-        ChainSeed = null;
         BoardCount = 0;
         ChainColor = newcolor;
     }
 
     public String getName() { return Name; }
     public String getChainClass() { return ChainClass.name(); }
-    public boolean isOnBoard() { return OnBoard; }
+    public boolean isOnBoard() { return (BoardCount > 0); }
     public boolean isSafe() { return (getBoardCount() >= MinSafeChainSize); };
     public int getBoardCount() { return BoardCount; }
     public void incrBoardCount() { BoardCount++; }
@@ -82,61 +81,20 @@ public class Chain {
                 ", Unsold=" + StockAvailable; }
     // public String toFullString() { return Name + " " + ChainClass.name() + " " + ChainSeed + " " + BoardCount + " " + StockAvailable; }
 
-    public void moveToBoard(BoardSpace space) {
+    public void moveToBoard(Token space) {
         // put this chain on the board
-        Board board = Board.instance();
-        OnBoard = true;
-        ChainSeed = space;
-        ChainSeed.setChain(this);
-        fillIn();
+        // Save the initial space for removing it later.
+        // Incrementing the board count is handled in the board logic
+        initialSpace = space;
+        Board.instance().addToChain(space, this);
     }
 
     public void removeFromBoard() {
-        // take this chain off the board.  We assume the chain has been bought
-        // by another chain, and the boardspaces will be converted by its call
-        // to fillIn().
-        OnBoard = false;
-        ChainSeed = null;
-        // BoardCount will be reset by fillIn()
+        // take this chain off the board.
+        // Decrementing the board count is handled in the board logic
+        Board.instance().removeChain(initialSpace, this);
     }
 
-    public void fillIn() {
-        // Find all occupied spaces which can reach the ChainSeed by way of
-        // occupied spaces.  Mark them all as part of this Chain.
-        LList<BoardSpace> borderlist = new LList<BoardSpace>();
-        LList<BoardSpace> markedlist = new LList<BoardSpace>();
-        borderlist.add(ChainSeed);
-        fillInRecurse(borderlist, markedlist);
-    }
-
-    public void fillInRecurse(LList<BoardSpace> borderlist,
-                              LList<BoardSpace> markedlist) {
-        // borderlist is a list of nodes to be checked.
-        // markedlist is a list of nodes which have already been checked.
-        // If this is too slow, we can rewrite this using markers.
-        // Except when this is first called, we can depend that every member of
-        // borderlist is occupied.
-        BoardSpace thisborder = borderlist.takeFirst();
-        if (thisborder == null) return;
-        thisborder.setChain(this);
-        // Mark this space as already checked
-        markedlist.add(thisborder);
-        // Check each neighbor of thisborder.
-        List<BoardSpace> neighborlist = Board.instance().allNeighbors(thisborder);
-        Iterator<BoardSpace> neighbors = neighborlist.iterator();
-        while (neighbors.hasNext()) {
-            BoardSpace oneneighbor = (BoardSpace) neighbors.next();
-            if (oneneighbor.isOccupied()) {
-                // Any unoccupied place is ignored
-                // See if this neighbor has already been checked
-                if (markedlist.find(oneneighbor) == false) {
-                    // It has not been checked, so it needs to be
-                    borderlist.add(oneneighbor);
-                    fillInRecurse(borderlist, markedlist);
-                }
-            } // if (oneneighbor.isOccupied)
-        } // while
-    } // void fillInRecurse()
 
     public String payShareholderBonuses(Player turnplayer) {
         // Find who owns the most shares of this chain, and who owns the
