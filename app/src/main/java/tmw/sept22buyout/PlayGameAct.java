@@ -22,7 +22,7 @@ import static tmw.sept22buyout.PlacementStatus.StatusType.Merger;
 import static tmw.sept22buyout.PlacementStatus.StatusType.NewChain;
 import static tmw.sept22buyout.PlacementStatus.StatusType.SimplePlacement;
 
-public class PlayGameAct extends DisplayLogic {
+public class PlayGameAct extends AppCompatActivity {
 
     private static final String TAG = PlayGameAct.class.getSimpleName();
 
@@ -39,6 +39,7 @@ public class PlayGameAct extends DisplayLogic {
     private LinearLayout     mainDisplay;      // created and built in onCreate()
     private ConstraintLayout playerTurnPanel;  // Hides the screen at start of a player's turn.
     private TextView         playerNameLabel;  // The text on the playerTurnPanel
+    private TextView         LblMessage;       // Used for instructional messages
 
     // These are used to pass values between different callbacks.
     // For example, between playing a token and then creating a
@@ -82,12 +83,78 @@ public class PlayGameAct extends DisplayLogic {
         this.addContentView(mainDisplay, vlparams);
 
         // Get the common rows giving the callbacks for buttons.
-        List<LinearLayout> rows = buildLayout(null, null);
+        // We are making a vertical stack made of a number
+        // of horizontal rows.  We'll create the rows as
+        // more LinearLayouts and partially initialize them.
+        // Since they all will have different weights, we'll
+        // do the final initializations (setLayoutParams) later
+        // 1 for the board
+        // 1 for player's tiles and cash
+        // 1 for the chains
+        // 1 for the message
+        // and a final row (details left to the caller)
+        int totalnrows = 5;
+        ArrayList<LinearLayout> hlayout = new ArrayList<LinearLayout>(totalnrows);
+        for (int lln = 0; (lln < totalnrows); lln++) {
+            LinearLayout temp = new LinearLayout(this);
+            temp.setOrientation((LinearLayout.HORIZONTAL));
+            hlayout.add(lln, temp);
+        }
+        int rownum = 0;  // will keep track of which row we're inserting
 
-        // Add the buttons on the final row.
+        // Create the board, AllTokens need to be initialized after the board.
+        Board board = Board.initialize(9, 12, this);
+        AllTokens.instance();
+
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.addView( board.buildLayout(this));
+        mainDisplay.addView(row);
+
+        row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.addView( AllPlayers.instance().buildLayout(this, null));
+        mainDisplay.addView(row);
+
+        row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.addView( AllChains.instance().buildLayout(this, null));
+        mainDisplay.addView(row);
+
+        // Add the bottom bits
+        // message location
+        {
+            LinearLayout.LayoutParams spacer_params =
+                    new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.MATCH_PARENT);
+            spacer_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
+            spacer_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+            spacer_params.weight = 2;
+
+            LinearLayout temp = new LinearLayout(this);
+            temp.setOrientation(LinearLayout.HORIZONTAL);
+            temp.setLayoutParams(spacer_params);
+            LblMessage = new TextView(this);
+            LblMessage.setText("Please click the token you wish to place.");
+            temp.addView(LblMessage);
+            mainDisplay.addView(temp);
+        }
+
+        // And space for the last row
         // A 'continue button and an 'end game' button
-        // This row needs height as well.
-        int last = rows.size() - 1;
+        LinearLayout.LayoutParams bottom_params =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.MATCH_PARENT);
+        bottom_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
+        bottom_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        bottom_params.weight = 1;
+
+        row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setLayoutParams(bottom_params);
+
         LinearLayout.LayoutParams btnparams =
                 new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
@@ -102,7 +169,7 @@ public class PlayGameAct extends DisplayLogic {
         ContinueButton.setOnClickListener(this::meaninglessClick);
         ContinueButton.setMinHeight(1);
         ContinueButton.setMinimumHeight(1);
-        rows.get(last).addView(ContinueButton);
+        row.addView(ContinueButton);
 
         EndGameButton = new Button(this);
         EndGameButton.setText("");
@@ -110,16 +177,11 @@ public class PlayGameAct extends DisplayLogic {
         EndGameButton.setOnClickListener(this::endGameClicked);
         EndGameButton.setMinHeight(1);
         EndGameButton.setMinimumHeight(1);
-        rows.get(last).addView(EndGameButton);
+        row.addView(EndGameButton);
 
-        // Now add all of these horizontal layouts
-        // to the overall vertical layout and refresh
-        // the screen to show it all
-        for (int lln = 0; (lln < rows.size()); lln++) {
-            mainDisplay.addView(rows.get(lln));
-        }
-
+        mainDisplay.addView(row);
     }
+
     public void refreshScreen(Player player) {
         Board.instance().updateHighlights(player);
         AllPlayers.instance().updatePlayerData(player);
@@ -777,8 +839,6 @@ public class PlayGameAct extends DisplayLogic {
 
 
     public void startNewPlayerSell() {
-        Intent intent = new Intent(this, NewPlayerSellAct.class);
-        startActivity(intent);
     }
 
     public void startEndGame() {

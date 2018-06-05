@@ -120,52 +120,6 @@ public class MachinePlayer extends Player {
     }
 
 
-    public void inputUnloadStock(Token tokentoplay,
-                                 Chain buychain,
-                                 Chain sellchain,
-                                 Player seller, int sharestounload) {
-        seller.sellStock(sellchain, sharestounload);
-        Player currentPlayer = AllPlayers.instance().firstPlayer();
-        ActionLog.inst().add(currentPlayer,
-                             seller,
-                             "has sold " + sharestounload + " shares of " + sellchain.toString());
-        currentPlayer.afterUnloadStock();
-    }
 
-
-
-    public void inputBuyStock() {
-        // We will buy up to two shares of the cheapest stock on the board.
-        // It is necessary to make sure that there are shares left, before buying.
-        // It is necessary to make sure we can afford it, before buying.
-        Chain bestchain = null;
-        Chain onechain;
-        ListIterator<Chain> chainlist =
-                new ListIterator<Chain>(AllChains.instance().allPlacedChains());
-        while ((onechain = chainlist.getNext()) != null) {
-            if (onechain.getAvailableStock() >= 1) {
-                int pps = onechain.getPricePerShare();
-                if (pps <= getMoney()) {
-                    if (bestchain == null || pps <= bestchain.getPricePerShare())
-                        bestchain = onechain;
-                }
-            }
-        }
-        // We typically buy two shares
-        afterBuyStock(bestchain);
-        if (bestchain != null && bestchain.getPricePerShare() <= getMoney())
-            // We can afford a second share.
-            afterBuyStock(bestchain);
-        afterBuyStock(null);
-    } // end inputBuyStock()
-
-    public void inputTakeTile() {
-        afterTakeTile();
-    }
-
-    public boolean afterTakeTile() {
-        WhereAmIStack.inst().pop();
-        return true;
-    }
 
 } // end Class MachinePlayer
