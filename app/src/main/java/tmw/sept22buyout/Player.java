@@ -59,6 +59,11 @@ public class Player {
     public Token selectTokenToPlay() { return null; }
     public List<Chain> buyStock() { return new ArrayList<Chain>(); }
     public Chain selectNewChain() { return null; }
+    public Chain selectSurvivor(List<Chain> potentials) { return potentials.get(0); }
+    public Chain selectVictom(List<Chain> potentials) { return potentials.get(0); }
+    public List<Integer> mergeActions(Chain victom, Chain survivor) {
+        return new ArrayList<Integer>();
+    }
 
     public void removeToken(Token token) {
         // We can't remove by object identity

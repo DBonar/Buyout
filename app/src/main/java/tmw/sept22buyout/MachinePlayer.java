@@ -102,8 +102,22 @@ public class MachinePlayer extends Player {
         return chains.find(n);
     }
 
+    public Chain selectSurvivor(List<Chain> potentials) {
+        return potentials.get(0);
+    }
 
+    public Chain selectVictom(List<Chain> potentials) {
+        return potentials.get(0);
+    }
 
+    // The 3 integers are how many to (sell, trade, keep)
+    public List<Integer> mergeActions(Chain victom, Chain survivor) {
+        List<Integer> ret = new ArrayList<Integer>();
+        ret.add( getChainNShares(victom) );  // sell everything
+        ret.add(0);
+        ret.add(0);
+        return ret;
+    }
 
 
     public void inputUnloadStock(Token tokentoplay,

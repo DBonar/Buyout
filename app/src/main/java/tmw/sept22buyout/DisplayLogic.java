@@ -19,9 +19,7 @@ public class DisplayLogic extends AppCompatActivity {
 
     // Common variables referred to in the
     // common routine below
-    TextView LblMessage1;
-    TextView LblMessage2;
-    TextView LblMessage3;
+    TextView LblMessage;
 
 
     // This is the real reason to add this class.
@@ -38,11 +36,9 @@ public class DisplayLogic extends AppCompatActivity {
         // 1 for the board
         // 1 for player's tiles and cash
         // 1 for the chains
-        // 1 for a spacer
         // 1 for the message
-        // 2 more for a spacer
         // and a final row (details left to the caller)
-        int totalnrows = 8;
+        int totalnrows = 5;
         ArrayList<LinearLayout> hlayout = new ArrayList<LinearLayout>(totalnrows);
         for (int lln = 0; (lln < totalnrows); lln++) {
             LinearLayout temp = new LinearLayout(this);
@@ -50,15 +46,6 @@ public class DisplayLogic extends AppCompatActivity {
             hlayout.add(lln, temp);
         }
         int rownum = 0;  // will keep track of which row we're inserting
-
-        // layout for some board rows.  weight 1
-        LinearLayout.LayoutParams spacer_params =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.MATCH_PARENT);
-        spacer_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
-        spacer_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
-        spacer_params.weight = 1;
 
         // Create the board, AllTokens need to be initialized after the board.
         Board board = Board.initialize(9, 12, this);
@@ -70,30 +57,31 @@ public class DisplayLogic extends AppCompatActivity {
         // Finally, add the bottom bits
         // message location
         {
+            LinearLayout.LayoutParams spacer_params =
+                    new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.MATCH_PARENT);
+            spacer_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
+            spacer_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+            spacer_params.weight = 2;
+
             LinearLayout temp = hlayout.get(rownum++);
             temp.setLayoutParams(spacer_params);
-            LblMessage1 = new TextView(this);
-            LblMessage1.setText("Please click the token you wish to place.");
-            temp.addView(LblMessage1);
+            LblMessage = new TextView(this);
+            LblMessage.setText("Please click the token you wish to place.");
+            temp.addView(LblMessage);
         }
 
-        // and two spacer rows
-        {
-            LinearLayout spacer1 = hlayout.get(rownum++);
-            spacer1.setLayoutParams(spacer_params);
-            LblMessage2 = new TextView(this);
-            LblMessage2.setText("");
-            spacer1.addView(LblMessage2);
+        // And space for the last row
+        LinearLayout.LayoutParams bottom_params =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.MATCH_PARENT);
+        bottom_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
+        bottom_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        bottom_params.weight = 1;
 
-            LinearLayout spacer2 = hlayout.get(rownum++);
-            spacer2.setLayoutParams(spacer_params);
-            LblMessage3 = new TextView(this);
-            LblMessage3.setText("");
-            spacer2.addView(LblMessage3);
-        }
-
-        // set the params for the last row
-        hlayout.get(rownum++).setLayoutParams(spacer_params);
+        hlayout.get(rownum++).setLayoutParams(bottom_params);
 
         return hlayout;
     }

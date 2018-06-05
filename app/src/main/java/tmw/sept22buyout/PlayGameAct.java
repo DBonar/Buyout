@@ -11,6 +11,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.*;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import static tmw.sept22buyout.PlacementStatus.StatusType.IllegalNoChain;
@@ -26,6 +28,7 @@ public class PlayGameAct extends DisplayLogic {
 
     // I'd rather this wasn't an explicit singleton, but
     // for now it is.  Instance is set in onCreate()
+    // This seems to be used for logging messages.
     private static PlayGameAct Instance;
     public static PlayGameAct inst() { return Instance;  }
 
@@ -79,7 +82,7 @@ public class PlayGameAct extends DisplayLogic {
         this.addContentView(mainDisplay, vlparams);
 
         // Get the common rows giving the callbacks for buttons.
-        java.util.List<LinearLayout> rows = buildLayout(null, null);
+        List<LinearLayout> rows = buildLayout(null, null);
 
         // Add the buttons on the final row.
         // A 'continue button and an 'end game' button
@@ -97,12 +100,16 @@ public class PlayGameAct extends DisplayLogic {
         ContinueButton.setText("Continue");
         ContinueButton.setLayoutParams(btnparams);
         ContinueButton.setOnClickListener(this::meaninglessClick);
+        ContinueButton.setMinHeight(1);
+        ContinueButton.setMinimumHeight(1);
         rows.get(last).addView(ContinueButton);
 
         EndGameButton = new Button(this);
         EndGameButton.setText("");
         EndGameButton.setLayoutParams(btnparams);
         EndGameButton.setOnClickListener(this::endGameClicked);
+        EndGameButton.setMinHeight(1);
+        EndGameButton.setMinimumHeight(1);
         rows.get(last).addView(EndGameButton);
 
         // Now add all of these horizontal layouts
@@ -124,26 +131,17 @@ public class PlayGameAct extends DisplayLogic {
 
 
     public void msgSet(String msg) {
-        if (LblMessage1 != null) {
-            LblMessage1.setText("");
-            LblMessage3.setText(AllPlayers.instance().firstPlayer().getPlayerName()
+        LblMessage.setText(AllPlayers.instance().firstPlayer().getPlayerName()
                     + ": " + msg);
-        }
     }
 
     public void msgSet(String errmsg, String msg) {
-        if (LblMessage1 != null) {
-            LblMessage1.setText(errmsg);
-            LblMessage3.setText(AllPlayers.instance().firstPlayer().getPlayerName()
+        LblMessage.setText(AllPlayers.instance().firstPlayer().getPlayerName()
                     + ": " + msg);
-        }
     }
 
     public void msgSet(Player player, String msg) {
-        if (LblMessage1 != null) {
-            LblMessage1.setText("");
-            LblMessage3.setText(player.getPlayerName() + ": " + msg);
-        }
+        LblMessage.setText(player.getPlayerName() + ": " + msg);
     }
 
     public void log(String msg) { Log.d(TAG, msg); }
@@ -176,7 +174,7 @@ public class PlayGameAct extends DisplayLogic {
 
                 if (token != null) {
                     PlacementStatus status = token.evaluateForPlacement();
-                    playToken(token);
+                    //playToken(token);
                     if (   (status.getStatus() == IllegalSafe)
                         || (status.getStatus() == IllegalNoChain) ) {
                         msgSet(player.getPlayerName() + " tried to play an illegal token.");
@@ -212,7 +210,7 @@ public class PlayGameAct extends DisplayLogic {
                             // That's it, fall through to the end of the while
 
                         } else if (status.getStatus() == NewChain) {
-                            log( "Creating a new chain.);");
+                            log( "Creating a new chain.");
                             player.removeToken(token);
                             board.playToken(token);
                             tempToken_newChain = token;
@@ -228,10 +226,50 @@ public class PlayGameAct extends DisplayLogic {
                             // That's it, fall through to the end of the while
 
                         } else if (status.getStatus() == Merger) {
-                            log( "Merging two chains.  Not really implemented.");
-                            //beginSelectBuyingChain(tokentoplay, status.getBuyChains(),
-                            //        status.getSellChains());
-
+                            log ("Merging chains.");
+                            player.removeToken(token);
+                            board.playToken(token);
+                            List<BoardSpace> neighbors = board.allNeighbors(token);
+                            List<Chain> potentials = new ArrayList<Chain>();
+                            for (int i = 0; i < neighbors.size(); i++) {
+                                Chain temp = neighbors.get(i).getChain();
+                                if (   (temp != null)
+                                        && ! potentials.contains(temp) ) {
+                                    potentials.add(temp);
+                                }
+                            }
+                            temp_Potentials = potentials;
+                            setForSelectMergeSurvivor();
+                            if (temp_Survivor.size() > 1) {
+                                Chain chain = player.selectSurvivor(temp_Potentials);
+                                List<Chain> temp = new ArrayList<Chain>();
+                                temp.add( chain );
+                                temp_Potentials.remove( chain );
+                                temp_Survivor = temp;
+                            }
+                            while (temp_Potentials.size() > 0) {
+                                // select the next victom
+                                int largest = 0;
+                                for (int i = 0; i < temp_Potentials.size(); i++) {
+                                    if (temp_Potentials.get(i).getBoardCount() > largest)
+                                        largest = temp_Potentials.get(i).getBoardCount();
+                                }
+                                List<Chain> temp = new ArrayList<Chain>();
+                                for (int i = 0; i < temp_Potentials.size(); i++) {
+                                    if (temp_Potentials.get(i).getBoardCount() == largest)
+                                        temp.add( temp_Potentials.get(i) );
+                                }
+                                if (temp.size() > 1) {
+                                    Chain chain = player.selectVictom(temp);
+                                    List<Chain> temp2 = new ArrayList<Chain>();
+                                    temp2.add( chain );
+                                    temp_Potentials.remove( chain );
+                                    temp_Victom = temp2;
+                                } else {
+                                    temp_Victom = temp;
+                                }
+                                // do the merge of temp_Victom into temp_Survivor
+                            }
                         }
                     }
                 }
@@ -366,8 +404,20 @@ public class PlayGameAct extends DisplayLogic {
 
         } // end if status == newchain
         else if (status.getStatus() == Merger) {
-            //beginSelectBuyingChain(tokentoplay, status.getBuyChains(),
-            //        status.getSellChains());
+            log ("Merging chains.");
+            player.removeToken(token);
+            board.playToken(token);
+            List<BoardSpace> neighbors = board.allNeighbors(token);
+            List<Chain> potentials = new ArrayList<Chain>();
+            for (int i = 0; i < neighbors.size(); i++) {
+                Chain temp = neighbors.get(i).getChain();
+                if (   (temp != null)
+                    && ! potentials.contains(temp) ) {
+                    potentials.add(temp);
+                }
+            }
+            temp_Potentials = potentials;
+            setForSelectMergeSurvivor();
 
         } // end if status == merger
     }
@@ -448,6 +498,7 @@ public class PlayGameAct extends DisplayLogic {
     public void setForCreateNewChain() {
         AllPlayers.instance().updateCallbacks(this::meaninglessClick);
         AllChains.instance().updateCallbacks(this::createNewChainClick);
+        ContinueButton.setOnClickListener(this::meaninglessClick);
         msgSet("Please select the chain you wish to create.");
     }
 
@@ -474,9 +525,245 @@ public class PlayGameAct extends DisplayLogic {
     }
 
 
+    //
+    // Merge chains
+    //
+    // Based on the rules I found online, the largest chain
+    // before the mergers will always be the survivor.  If
+    // there are multiple chains tied for largest, the merging
+    // player decides which is the survivor.  Then the chains
+    // are merged into that survivor chain one at a time from
+    // largest to smallest (seems backwards, but that's what it
+    // said).  Merging player breaks ties.
+    //
+    // So we need a few different states.
+    // [  pick surviving chaing  ]
+    // loop over chains being merged
+    //     [  pick chain to merge    ]
+    //     loop over players
+    //        sell, trade or keep?
+    // Finally, after the merge, we go to buying stock.
+    //
+    // The privacy shield should be up when it is a machine's
+    // turn, lowered when the player need to interact.  The
+    // difference for each state is in the displayed message and
+    // the callback for the chain buttons.
+    //
+
+    //
+    // First, optional, state.  End with temp_Survivor having one entry.
+    // Could chain immediately into setForSelectVictom or setForMerger
+    // if we have no ambiguity.
+    List<Chain> temp_Potentials;
+    List<Chain> temp_Survivor;
+    List<Chain> temp_Victom;
+    Player temp_mergePlayer;
+    public void setForSelectMergeSurvivor() {
+        int largest = 0;
+        for (int i = 0; i < temp_Potentials.size(); i++) {
+            if (temp_Potentials.get(i).getBoardCount() > largest) {
+                largest = temp_Potentials.get(i).getBoardCount();
+            }
+        }
+        List<Chain> large = new ArrayList<Chain>();
+        for (int i = 0; i < temp_Potentials.size(); i++) {
+            if (temp_Potentials.get(i).getBoardCount() == largest) {
+                large.add( temp_Potentials.get(i) );
+            }
+        }
+        if (large.size() == 1) {
+            temp_Survivor = large;
+            temp_Potentials.remove(temp_Survivor.get(0));
+            setForSelectMergeVictom();
+        } else {
+            // set up to select which one survives
+            AllPlayers.instance().updateCallbacks(this::meaninglessClick);
+            AllChains.instance().updateCallbacks(this::selectSurvivorClick);
+            ContinueButton.setOnClickListener(this::meaninglessClick);
+            temp_Survivor = temp_Potentials;
+            String msg = "Please select which chain survives. ";
+            for (int i = 0; i < temp_Potentials.size(); i++) {
+                msg += " " + temp_Potentials.get(i).getName();
+                if (i < temp_Potentials.size() - 1) {
+                    msg += ",";
+                } else {
+                    msg += " or";
+                }
+            }
+            msgSet(msg);
+        }
+    }
+
+    public void selectSurvivorClick(View view) {
+        ChainButton cbtn = (ChainButton) view;
+        Chain chain = cbtn.getChain();
+        if (temp_Survivor.contains(chain)) {
+            List<Chain> temp = new ArrayList<Chain>();
+            temp.add(chain);
+            temp_Survivor = temp;
+            temp_Potentials.remove(chain);
+            setForSelectMergeVictom();
+        } else {
+            return; // a no-op
+        }
+    }
+
+
+    //
+    // Second, optional, state.  End with temp_Victom having one entry.
+    // Could chain immediately into setForMerger
+    public void setForSelectMergeVictom() {
+        int largest = 0;
+        for (int i = 0; i < temp_Potentials.size(); i++) {
+            if (temp_Potentials.get(i).getBoardCount() > largest) {
+                largest = temp_Potentials.get(i).getBoardCount();
+            }
+        }
+        List<Chain> large = new ArrayList<Chain>();
+        for (int i = 0; i < temp_Potentials.size(); i++) {
+            if (temp_Potentials.get(i).getBoardCount() == largest) {
+                large.add( temp_Potentials.get(i) );
+            }
+        }
+        if (large.size() == 1) {
+            temp_Victom = large;
+            temp_Potentials.remove(temp_Victom.get(0));
+            temp_mergePlayer = AllPlayers.instance().firstPlayer();
+            setForMerge();
+            merge();
+        } else {
+            // set up to select which one survives
+            AllPlayers.instance().updateCallbacks(this::meaninglessClick);
+            AllChains.instance().updateCallbacks(this::selectVictomClick);
+            ContinueButton.setOnClickListener(this::meaninglessClick);
+            temp_Victom = temp_Potentials;
+            String msg = "Please select which chain merges first. ";
+            for (int i = 0; i < temp_Potentials.size(); i++) {
+                msg += " " + temp_Potentials.get(i).getName();
+                if (i < temp_Potentials.size() - 1) {
+                    msg += ",";
+                } else {
+                    msg += " or";
+                }
+            }
+            msgSet(msg);
+        }
+    }
+
+    public void selectVictomClick(View view) {
+        ChainButton cbtn = (ChainButton) view;
+        Chain chain = cbtn.getChain();
+        if (temp_Victom.contains(chain)) {
+            List<Chain> temp = new ArrayList<Chain>();
+            temp.add(chain);
+            temp_Victom = temp;
+            temp_Potentials.remove(chain);
+            temp_mergePlayer = AllPlayers.instance().firstPlayer();
+            while (temp_mergePlayer.getChainNShares(chain) == 0) {
+                // We know at least one player has a share of the chain.
+                temp_mergePlayer = AllPlayers.instance().nextPlayer(temp_mergePlayer);
+            }
+            setForMerge();
+            merge();
+        } else {
+            return; // a no-op
+        }
+    }
+
+
+    //
+    // Now do the merge
+    // Each player in turn merges temp_Victom into temp_Survivor
+    public void setForMerge() {
+        AllPlayers.instance().updateCallbacks(this::meaninglessClick);
+        AllChains.instance().updateCallbacks(this::mergeClick);
+        ContinueButton.setOnClickListener(this::meaninglessClick);
+        msgSet("Click on " + temp_Victom.get(0).getName() + " to sell a share.\n" +
+              "Click on " + temp_Survivor.get(0).getName() + " aquire 1 share.\n" +
+              "Click 'Continue' to keep the rest of your shares.");
+    }
+
+    public void mergeClick(View view) {
+        ChainButton cbtn = (ChainButton) view;
+        Chain chain = cbtn.getChain();
+        Chain victom = temp_Victom.get(0);
+        Chain survivor = temp_Survivor.get(0);
+
+        if (chain == victom) {
+            // Sell 1 share of the victom for cash
+            temp_mergePlayer.purchaseStock(victom, -1);
+            if (   temp_mergePlayer.getChainNShares(victom) == 0) {
+                ContinueButton.setOnClickListener(this::endMergeClick);
+            }
+        } else if (  (chain == survivor)
+                   || (temp_mergePlayer.getChainNShares(victom) > 1)
+                   || (survivor.getAvailableStock() > 0) ) {
+            // Change 2 shares of the victom for 1 of the victor
+            temp_mergePlayer.takeStock(survivor, 1 );
+            temp_mergePlayer.takeStock(victom, -2);
+            if (   temp_mergePlayer.getChainNShares(victom) == 0) {
+                ContinueButton.setOnClickListener(this::endMergeClick);
+            }
+        } else {
+            // no-op, ignore it.
+
+        }
+        refreshScreen(temp_mergePlayer);
+    }
+
+    public void merge() {
+        if (temp_mergePlayer.isMachine()) {
+            playerNameLabel.setText(temp_mergePlayer.getPlayerName() + "'s turn.");
+            playerTurnPanel.setVisibility(View.VISIBLE);
+            mainDisplay.setVisibility(View.INVISIBLE);
+
+            // ask the player how many shares to
+            // (sell, trade, keep)
+            Chain victom = temp_Victom.get(0);
+            Chain survivor = temp_Survivor.get(0);
+            List<Integer> actions = temp_mergePlayer.mergeActions(victom,
+                                                                  survivor);
+            if (   (actions.size() != 3)
+                || (actions.get(0) + actions.get(1) + actions.get(2)
+                        != temp_mergePlayer.getChainNShares(victom) )
+                || (actions.get(1) % 2 != 0) ) {
+                throw new RuntimeException("Error in machine player merge actions.");
+            }
+            temp_mergePlayer.purchaseStock(victom, - actions.get(0));
+            temp_mergePlayer.takeStock(survivor, actions.get(1) / 2);
+            temp_mergePlayer.takeStock(victom, - actions.get(1));
+
+            endMergeClick(null); // The view doesn't matter
+
+        } else {
+            playerNameLabel.setText(temp_mergePlayer.getPlayerName() + "'s turn.");
+            playerTurnPanel.setVisibility(View.INVISIBLE);
+            mainDisplay.setVisibility(View.VISIBLE);
+            // now exit this and wait for the click callbacks
+        }
+    }
+
+    public void endMergeClick(View view) {
+        // Go to the next player or on to the next turn.
+        temp_mergePlayer = AllPlayers.instance().nextPlayer(temp_mergePlayer);
+        while (  temp_mergePlayer.getChainNShares(temp_Victom.get(0)) == 0
+               && temp_mergePlayer != AllPlayers.instance().firstPlayer() ) {
+            temp_mergePlayer = AllPlayers.instance().nextPlayer(temp_mergePlayer);
+        }
+        if (temp_mergePlayer == AllPlayers.instance().firstPlayer()) {
+            // We're done,
+            nextTurnClicked(view);
+        } else {
+            // Back to the merge logic
+            merge();
+        }
+    }
 
 
 
+    //
+    //  Left over bits
+    //
 
     public void endGameClicked(View view) {
         if (BOGlobals.EndOfGameOption) {

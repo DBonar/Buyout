@@ -97,7 +97,7 @@ public class MergerSellAct extends DisplayLogic {
     } // end refreshScreen()
 
     public void msgSet(Player player, String msg) {
-        LblMessage1.setText(player.getPlayerName() + ": " + msg);
+        LblMessage.setText(player.getPlayerName() + ": " + msg);
     }
 
     public void sellBtnCB(View view) {
