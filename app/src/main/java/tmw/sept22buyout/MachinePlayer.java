@@ -53,6 +53,13 @@ public class MachinePlayer extends Player {
         }
     }
 
+
+    //
+    //  These are basic overrides.
+    //  It would be better to have better logic.
+    //
+
+    @Override
     public Token selectTokenToPlay() {
         PlayGameAct.inst().log(getPlayerName() + " selecting token to play.");
         List<Token> tiles = getTokens();
@@ -67,7 +74,7 @@ public class MachinePlayer extends Player {
         return null;
     }
 
-
+    @Override
     public List<Chain> buyStock() {
         PlayGameAct.inst().log(getPlayerName() + " selecting stocks to buy.");
         List<Chain> ret = new ArrayList<Chain>();
@@ -97,6 +104,7 @@ public class MachinePlayer extends Player {
         return ret;
     }
 
+    @Override
     public Chain selectNewChain() {
         PlayGameAct.inst().log(getPlayerName() + " selecting chain to start.");
         List<Chain> chains = AllChains.instance().allUnplacedChains();
@@ -104,18 +112,21 @@ public class MachinePlayer extends Player {
         return chains.get(n);
     }
 
+    @Override
     public Chain selectSurvivor(List<Chain> potentials) {
         return potentials.get(0);
     }
 
-    public Chain selectVictom(List<Chain> potentials) {
+    @Override
+    public Chain selectVictim(List<Chain> potentials) {
         return potentials.get(0);
     }
 
+    @Override
     // The 3 integers are how many to (sell, trade, keep)
-    public List<Integer> mergeActions(Chain victom, Chain survivor) {
+    public List<Integer> mergeActions(Chain victim, Chain survivor) {
         List<Integer> ret = new ArrayList<Integer>();
-        ret.add( getChainNShares(victom) );  // sell everything
+        ret.add( getChainNShares(victim) );  // sell everything
         ret.add(0);
         ret.add(0);
         return ret;

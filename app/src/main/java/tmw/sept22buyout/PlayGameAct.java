@@ -49,7 +49,7 @@ public class PlayGameAct extends AppCompatActivity {
     // between the steps involved in handling mergers
     private List<Chain> temp_Potentials;
     private List<Chain> temp_Survivor;
-    private List<Chain> temp_Victom;
+    private List<Chain> temp_Victim;
     private Player temp_mergePlayer;
 
 
@@ -288,7 +288,7 @@ public class PlayGameAct extends AppCompatActivity {
                                 temp_Survivor = temp;
                             }
                             while (temp_Potentials.size() > 0) {
-                                // select the next victom
+                                // select the next victim
                                 int largest = 0;
                                 for (int i = 0; i < temp_Potentials.size(); i++) {
                                     if (temp_Potentials.get(i).getBoardCount() > largest)
@@ -300,15 +300,15 @@ public class PlayGameAct extends AppCompatActivity {
                                         temp.add( temp_Potentials.get(i) );
                                 }
                                 if (temp.size() > 1) {
-                                    Chain chain = player.selectVictom(temp);
+                                    Chain chain = player.selectVictim(temp);
                                     List<Chain> temp2 = new ArrayList<Chain>();
                                     temp2.add( chain );
                                     temp_Potentials.remove( chain );
-                                    temp_Victom = temp2;
+                                    temp_Victim = temp2;
                                 } else {
-                                    temp_Victom = temp;
+                                    temp_Victim = temp;
                                 }
-                                // do the merge of temp_Victom into temp_Survivor
+                                // do the merge of temp_Victim into temp_Survivor
                             }
                         }
                     }
@@ -592,7 +592,7 @@ public class PlayGameAct extends AppCompatActivity {
 
     //
     // First, optional, state.  End with temp_Survivor having one entry.
-    // Could chain immediately into setForSelectVictom or setForMerger
+    // Could chain immediately into setForSelectVictim or setForMerger
     // if we have no ambiguity.
     public void setForSelectMergeSurvivor() {
         int largest = 0;
@@ -610,7 +610,7 @@ public class PlayGameAct extends AppCompatActivity {
         if (large.size() == 1) {
             temp_Survivor = large;
             temp_Potentials.remove(temp_Survivor.get(0));
-            setForSelectMergeVictom();
+            setForSelectMergeVictim();
         } else {
             // set up to select which one survives
             AllPlayers.instance().updateCallbacks(this::meaninglessClick);
@@ -638,7 +638,7 @@ public class PlayGameAct extends AppCompatActivity {
             temp.add(chain);
             temp_Survivor = temp;
             temp_Potentials.remove(chain);
-            setForSelectMergeVictom();
+            setForSelectMergeVictim();
         } else {
             return; // a no-op
         }
@@ -648,7 +648,7 @@ public class PlayGameAct extends AppCompatActivity {
     //
     // Second, optional, state.  End with temp_Victom having one entry.
     // Could chain immediately into setForMerger
-    public void setForSelectMergeVictom() {
+    public void setForSelectMergeVictim() {
         int largest = 0;
         for (int i = 0; i < temp_Potentials.size(); i++) {
             if (temp_Potentials.get(i).getBoardCount() > largest) {
@@ -662,17 +662,17 @@ public class PlayGameAct extends AppCompatActivity {
             }
         }
         if (large.size() == 1) {
-            temp_Victom = large;
-            temp_Potentials.remove(temp_Victom.get(0));
+            temp_Victim = large;
+            temp_Potentials.remove(temp_Victim.get(0));
             temp_mergePlayer = AllPlayers.instance().firstPlayer();
             setForMerge();
             merge();
         } else {
             // set up to select which one survives
             AllPlayers.instance().updateCallbacks(this::meaninglessClick);
-            AllChains.instance().updateCallbacks(this::selectVictomClick);
+            AllChains.instance().updateCallbacks(this::selectVictimClick);
             ContinueButton.setOnClickListener(this::meaninglessClick);
-            temp_Victom = temp_Potentials;
+            temp_Victim = temp_Potentials;
             String msg = "Please select which chain merges first. ";
             for (int i = 0; i < temp_Potentials.size(); i++) {
                 msg += " " + temp_Potentials.get(i).getName();
@@ -686,13 +686,13 @@ public class PlayGameAct extends AppCompatActivity {
         }
     }
 
-    public void selectVictomClick(View view) {
+    public void selectVictimClick(View view) {
         ChainButton cbtn = (ChainButton) view;
         Chain chain = cbtn.getChain();
-        if (temp_Victom.contains(chain)) {
+        if (temp_Victim.contains(chain)) {
             List<Chain> temp = new ArrayList<Chain>();
             temp.add(chain);
-            temp_Victom = temp;
+            temp_Victim = temp;
             temp_Potentials.remove(chain);
             temp_mergePlayer = AllPlayers.instance().firstPlayer();
             while (temp_mergePlayer.getChainNShares(chain) == 0) {
@@ -709,12 +709,12 @@ public class PlayGameAct extends AppCompatActivity {
 
     //
     // Now do the merge
-    // Each player in turn merges temp_Victom into temp_Survivor
+    // Each player in turn merges temp_Victim into temp_Survivor
     public void setForMerge() {
         AllPlayers.instance().updateCallbacks(this::meaninglessClick);
         AllChains.instance().updateCallbacks(this::mergeClick);
         ContinueButton.setOnClickListener(this::meaninglessClick);
-        msgSet("Click on " + temp_Victom.get(0).getName() + " to sell a share.\n" +
+        msgSet("Click on " + temp_Victim.get(0).getName() + " to sell a share.\n" +
               "Click on " + temp_Survivor.get(0).getName() + " aquire 1 share.\n" +
               "Click 'Continue' to keep the rest of your shares.");
     }
@@ -722,22 +722,22 @@ public class PlayGameAct extends AppCompatActivity {
     public void mergeClick(View view) {
         ChainButton cbtn = (ChainButton) view;
         Chain chain = cbtn.getChain();
-        Chain victom = temp_Victom.get(0);
+        Chain victim = temp_Victim.get(0);
         Chain survivor = temp_Survivor.get(0);
 
-        if (chain == victom) {
-            // Sell 1 share of the victom for cash
-            temp_mergePlayer.purchaseStock(victom, -1);
-            if (   temp_mergePlayer.getChainNShares(victom) == 0) {
+        if (chain == victim) {
+            // Sell 1 share of the victim for cash
+            temp_mergePlayer.purchaseStock(victim, -1);
+            if (   temp_mergePlayer.getChainNShares(victim) == 0) {
                 ContinueButton.setOnClickListener(this::endMergeClick);
             }
         } else if (  (chain == survivor)
-                   || (temp_mergePlayer.getChainNShares(victom) > 1)
+                   || (temp_mergePlayer.getChainNShares(victim) > 1)
                    || (survivor.getAvailableStock() > 0) ) {
-            // Change 2 shares of the victom for 1 of the victor
+            // Change 2 shares of the victim for 1 of the victor
             temp_mergePlayer.takeStock(survivor, 1 );
-            temp_mergePlayer.takeStock(victom, -2);
-            if (   temp_mergePlayer.getChainNShares(victom) == 0) {
+            temp_mergePlayer.takeStock(victim, -2);
+            if (   temp_mergePlayer.getChainNShares(victim) == 0) {
                 ContinueButton.setOnClickListener(this::endMergeClick);
             }
         } else {
@@ -755,19 +755,19 @@ public class PlayGameAct extends AppCompatActivity {
 
             // ask the player how many shares to
             // (sell, trade, keep)
-            Chain victom = temp_Victom.get(0);
+            Chain victim = temp_Victim.get(0);
             Chain survivor = temp_Survivor.get(0);
-            List<Integer> actions = temp_mergePlayer.mergeActions(victom,
+            List<Integer> actions = temp_mergePlayer.mergeActions(victim,
                                                                   survivor);
             if (   (actions.size() != 3)
                 || (actions.get(0) + actions.get(1) + actions.get(2)
-                        != temp_mergePlayer.getChainNShares(victom) )
+                        != temp_mergePlayer.getChainNShares(victim) )
                 || (actions.get(1) % 2 != 0) ) {
                 throw new RuntimeException("Error in machine player merge actions.");
             }
-            temp_mergePlayer.purchaseStock(victom, - actions.get(0));
+            temp_mergePlayer.purchaseStock(victim, - actions.get(0));
             temp_mergePlayer.takeStock(survivor, actions.get(1) / 2);
-            temp_mergePlayer.takeStock(victom, - actions.get(1));
+            temp_mergePlayer.takeStock(victim, - actions.get(1));
 
             endMergeClick(null); // The view doesn't matter
 
@@ -782,7 +782,7 @@ public class PlayGameAct extends AppCompatActivity {
     public void endMergeClick(View view) {
         // Go to the next player or on to the next turn.
         temp_mergePlayer = AllPlayers.instance().nextPlayer(temp_mergePlayer);
-        while (  temp_mergePlayer.getChainNShares(temp_Victom.get(0)) == 0
+        while (  temp_mergePlayer.getChainNShares(temp_Victim.get(0)) == 0
                && temp_mergePlayer != AllPlayers.instance().firstPlayer() ) {
             temp_mergePlayer = AllPlayers.instance().nextPlayer(temp_mergePlayer);
         }

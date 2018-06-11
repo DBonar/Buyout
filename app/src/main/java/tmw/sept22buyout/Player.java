@@ -51,15 +51,39 @@ public class Player {
     public String getPlayerName() { return PlayerName; }
     public boolean isMachine() { return IsMachine; }
 
+    //
     // Pointless methods for a human player
     // These exist only as an interface for Machine players.
+    //
+
+    // Implement this to select a token to play on the machine
+    // player's turn.
     public Token selectTokenToPlay() { return null; }
+
+    // Implement this to select which stocks to buy.  You
+    // are expected to get information about what chains
+    // exist from AllChains.instance()
     public List<Chain> buyStock() { return new ArrayList<Chain>(); }
+
+    // Implement this to select which chain to start when
+    // creating a chain.  You are expected to get information
+    // about which chains can be created from AllChains.instance()
     public Chain selectNewChain() { return null; }
+
+    // Implement this to pick which chain (from the list of potentials)
+    // is the merge survivor.
     public Chain selectSurvivor(List<Chain> potentials) { return potentials.get(0); }
-    public Chain selectVictom(List<Chain> potentials) { return potentials.get(0); }
-    public List<Integer> mergeActions(Chain victom, Chain survivor) {
-        return new ArrayList<Integer>();
+    // Implement this to pick which chain (from the list of potentials)
+    // is the next merge victim.
+    public Chain selectVictim(List<Chain> potentials) { return potentials.get(0); }
+    // Implement this to return the machine player's merge actions.
+    // The return value is a tuple of the number of shares to sell,
+    // the number of shares to trade and the number of shares to keep.
+    // The 3 numbers must add up to the machine player's initial number of
+    // shares in the victim chain, all values must be positive and
+    // the number of shares to trade must be even.
+    public List<Integer> mergeActions(Chain viciom, Chain survivor) {
+        return new ArrayList<Integer>(); // error if not overridden
     }
 
     public void removeToken(Token token) {
