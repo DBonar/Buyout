@@ -34,18 +34,23 @@ public class PlayGameAct extends AppCompatActivity {
 
     // View items that get manipulated -- mostly different onClick
     // listeners get set -- as we move between different phases of play
-    Button ContinueButton;
-    Button EndGameButton;
+    private Button           ContinueButton;
+    private Button           EndGameButton;
     private LinearLayout     mainDisplay;      // created and built in onCreate()
     private ConstraintLayout playerTurnPanel;  // Hides the screen at start of a player's turn.
     private TextView         playerNameLabel;  // The text on the playerTurnPanel
     private TextView         LblMessage;       // Used for instructional messages
 
     // These are used to pass values between different callbacks.
-    // For example, between playing a token and then creating a
-    // new chain at that location.
+    // between playing a token and a new chain at that location
     private Token tempToken_newChain;
+    // between the rounds of stock purchases
     private int temp_stockPurchases;
+    // between the steps involved in handling mergers
+    private List<Chain> temp_Potentials;
+    private List<Chain> temp_Survivor;
+    private List<Chain> temp_Victom;
+    private Player temp_mergePlayer;
 
 
     //
@@ -65,11 +70,12 @@ public class PlayGameAct extends AppCompatActivity {
         playerTurnPanel = (ConstraintLayout) findViewById(R.id.PlayerTurnPanel);
         playerNameLabel = (TextView) findViewById(R.id.PlayerNameLabel);
 
-        // Create the display
-        // A vertical stack of items.
-        // Overall they will fill the parent space.
-        // Individual items will have different weights to get
-        // different amounts of space.
+        // Create the display, a vertical stack of items.
+        // 1 for the board
+        // 1 for player's tiles and cash
+        // 1 for the chains
+        // 1 for the message
+        // and a final row (details left to the caller)
         LinearLayout.LayoutParams vlparams =
                 new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
@@ -82,47 +88,16 @@ public class PlayGameAct extends AppCompatActivity {
         mainDisplay.setLayoutParams(vlparams);
         this.addContentView(mainDisplay, vlparams);
 
-        // Get the common rows giving the callbacks for buttons.
-        // We are making a vertical stack made of a number
-        // of horizontal rows.  We'll create the rows as
-        // more LinearLayouts and partially initialize them.
-        // Since they all will have different weights, we'll
-        // do the final initializations (setLayoutParams) later
-        // 1 for the board
-        // 1 for player's tiles and cash
-        // 1 for the chains
-        // 1 for the message
-        // and a final row (details left to the caller)
-        int totalnrows = 5;
-        ArrayList<LinearLayout> hlayout = new ArrayList<LinearLayout>(totalnrows);
-        for (int lln = 0; (lln < totalnrows); lln++) {
-            LinearLayout temp = new LinearLayout(this);
-            temp.setOrientation((LinearLayout.HORIZONTAL));
-            hlayout.add(lln, temp);
-        }
-        int rownum = 0;  // will keep track of which row we're inserting
-
         // Create the board, AllTokens need to be initialized after the board.
         Board board = Board.initialize(9, 12, this);
         AllTokens.instance();
 
-        LinearLayout row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.addView( board.buildLayout(this));
-        mainDisplay.addView(row);
+        // The three main areas, each drawn by the associated class.
+        mainDisplay.addView( board.buildLayout(this) );
+        mainDisplay.addView( AllPlayers.instance().buildLayout(this, null) );
+        mainDisplay.addView( AllChains.instance().buildLayout(this, null) );
 
-        row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.addView( AllPlayers.instance().buildLayout(this, null));
-        mainDisplay.addView(row);
-
-        row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.addView( AllChains.instance().buildLayout(this, null));
-        mainDisplay.addView(row);
-
-        // Add the bottom bits
-        // message location
+        // The space for displaying messages / instructions
         {
             LinearLayout.LayoutParams spacer_params =
                     new LinearLayout.LayoutParams(
@@ -132,54 +107,57 @@ public class PlayGameAct extends AppCompatActivity {
             spacer_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
             spacer_params.weight = 2;
 
-            LinearLayout temp = new LinearLayout(this);
-            temp.setOrientation(LinearLayout.HORIZONTAL);
-            temp.setLayoutParams(spacer_params);
+            LinearLayout row = new LinearLayout(this);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.setLayoutParams(spacer_params);
             LblMessage = new TextView(this);
             LblMessage.setText("Please click the token you wish to place.");
-            temp.addView(LblMessage);
-            mainDisplay.addView(temp);
+            row.addView(LblMessage);
+
+            mainDisplay.addView(row);
         }
 
-        // And space for the last row
-        // A 'continue button and an 'end game' button
-        LinearLayout.LayoutParams bottom_params =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.MATCH_PARENT);
-        bottom_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
-        bottom_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
-        bottom_params.weight = 1;
+        // And space for the last row, a 'continue' button and an 'end game' button
+        {
+            LinearLayout.LayoutParams bottom_params =
+                    new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.MATCH_PARENT);
+            bottom_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
+            bottom_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+            bottom_params.weight = 1;
 
-        row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setLayoutParams(bottom_params);
+            LinearLayout row = new LinearLayout(this);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.setLayoutParams(bottom_params);
 
-        LinearLayout.LayoutParams btnparams =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT);
-        btnparams.width = 0;
-        btnparams.height = LinearLayout.LayoutParams.MATCH_PARENT;
-        btnparams.weight = 1;
+            LinearLayout.LayoutParams btnparams =
+                    new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT);
+            btnparams.width = 0;
+            btnparams.height = LinearLayout.LayoutParams.MATCH_PARENT;
+            btnparams.weight = 1;
 
-        ContinueButton = new Button(this);
-        ContinueButton.setText("Continue");
-        ContinueButton.setLayoutParams(btnparams);
-        ContinueButton.setOnClickListener(this::meaninglessClick);
-        ContinueButton.setMinHeight(1);
-        ContinueButton.setMinimumHeight(1);
-        row.addView(ContinueButton);
+            ContinueButton = new Button(this);
+            ContinueButton.setText("Continue");
+            ContinueButton.setLayoutParams(btnparams);
+            ContinueButton.setOnClickListener(this::meaninglessClick);
+            ContinueButton.setMinHeight(1);
+            ContinueButton.setMinimumHeight(1);
+            row.addView(ContinueButton);
 
-        EndGameButton = new Button(this);
-        EndGameButton.setText("");
-        EndGameButton.setLayoutParams(btnparams);
-        EndGameButton.setOnClickListener(this::endGameClicked);
-        EndGameButton.setMinHeight(1);
-        EndGameButton.setMinimumHeight(1);
-        row.addView(EndGameButton);
+            EndGameButton = new Button(this);
+            EndGameButton.setText("");
+            EndGameButton.setLayoutParams(btnparams);
+            EndGameButton.setOnClickListener(this::endGameClicked);
+            EndGameButton.setMinHeight(1);
+            EndGameButton.setMinimumHeight(1);
+            row.addView(EndGameButton);
 
-        mainDisplay.addView(row);
+            mainDisplay.addView(row);
+        }
+
     }
 
     public void refreshScreen(Player player) {
@@ -616,10 +594,6 @@ public class PlayGameAct extends AppCompatActivity {
     // First, optional, state.  End with temp_Survivor having one entry.
     // Could chain immediately into setForSelectVictom or setForMerger
     // if we have no ambiguity.
-    List<Chain> temp_Potentials;
-    List<Chain> temp_Survivor;
-    List<Chain> temp_Victom;
-    Player temp_mergePlayer;
     public void setForSelectMergeSurvivor() {
         int largest = 0;
         for (int i = 0; i < temp_Potentials.size(); i++) {

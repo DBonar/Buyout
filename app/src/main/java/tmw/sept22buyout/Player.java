@@ -20,7 +20,7 @@ public class Player {
     private boolean IsMachine = false;
     private int Money = 30000;
     private List<Token> OwnedTokens = new ArrayList<Token>();
-    private LList<StockShares> OwnedStock = new LList<StockShares>();
+    private List<StockShares> OwnedStock = new ArrayList<StockShares>();
 
     public Player() { }
 
@@ -32,17 +32,14 @@ public class Player {
     public List<Token> getTokens() { return OwnedTokens; }
     public void addToken(Token token) {	OwnedTokens.add(token); }
 
-    public LList<StockShares> getOwnedStock() { return OwnedStock; }
+    public List<StockShares> getOwnedStock() { return OwnedStock; }
     public String toString() { return PlayerName; }
 
 
     public int getChainNShares(Chain chain) {
-        StockShares onechain = null;
-        ListIterator<StockShares> ownedstockpile =
-                new ListIterator<StockShares>(OwnedStock);
-        while ((onechain = ownedstockpile.getNext()) != null) {
-            if (onechain.getChain() == chain)
-                return onechain.getNShares(); }
+        for (int i = 0; i < OwnedStock.size(); i++)
+            if (OwnedStock.get(i).getChain() == chain)
+                return OwnedStock.get(i).getNShares();
         return 0;
     }
 
@@ -97,31 +94,21 @@ public class Player {
         return (Money >= price);
     }
 
-    public boolean existsLegalStockPurchase() {
-        Chain onechain;
-        ListIterator<Chain> chains =
-                new ListIterator<Chain>(AllChains.instance().allPlacedChains());
-        while ((onechain = chains.getNext()) != null) {
-            if ((onechain.getAvailableStock() > 0) &&
-                    onechain.getPricePerShare() <= getMoney())
-                return true;
-        }
-        return false;
-    }
 
     public boolean takeStock(Chain chain, int nshares) {
         // Takes nshares shares of stock from chain.
         if (chain.getAvailableStock() < nshares)
             return false;
+
         chain.decreaseStock(nshares);
-        StockShares onechain = null;
-        ListIterator<StockShares> ownedstockpile =
-                new ListIterator<StockShares>(OwnedStock);
-        while ((onechain = ownedstockpile.getNext()) != null) {
-            if (onechain.getChain() == chain) {
-                onechain.addStock(nshares);
-                return true; }
+
+        for (int i = 0; i < OwnedStock.size(); i++) {
+            if (OwnedStock.get(i).getChain() == chain) {
+                OwnedStock.get(i).addStock(nshares);
+                return true;
+            }
         }
+
         // We previously owned no stock in chain.
         OwnedStock.add(new StockShares(chain, nshares));
         return true;
@@ -148,14 +135,14 @@ public class Player {
 
     public boolean giveStock(Chain chain, int nshares) {
         chain.increaseStock(nshares);
-        StockShares onechain = null;
-        ListIterator<StockShares> ownedstockpile =
-                new ListIterator<StockShares>(OwnedStock);
-        while ((onechain = ownedstockpile.getNext()) != null) {
-            if (onechain.getChain() == chain) {
-                onechain.subtractStock(nshares);
-                return true; }
+
+        for (int i = 0; i < OwnedStock.size(); i++) {
+            if (OwnedStock.get(i).getChain() == chain) {
+                OwnedStock.get(i).subtractStock(nshares);
+                return true;
+            }
         }
+
         System.out.println("Failure in Player.giveStock()");
         System.exit(1);
         return false;

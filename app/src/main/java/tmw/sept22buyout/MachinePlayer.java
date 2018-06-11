@@ -2,6 +2,7 @@ package tmw.sept22buyout;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -74,9 +75,10 @@ public class MachinePlayer extends Player {
         // Buy 1 share of the first thing we can afford.
         // Buy 2 or 3 shares if we can
         int cash = getMoney();
-        Chain possibleBuy = null;
-        ListIterator<Chain> it = new ListIterator<Chain>(AllChains.instance().allPlacedChains());
-        while((possibleBuy = it.getNext()) != null) {
+        Iterator<Chain> it = AllChains.instance().allPlacedChains().iterator();
+        while (it.hasNext()) {
+            Chain possibleBuy = it.next();
+
             if (   (possibleBuy.getAvailableStock() >= 1)
                 && (possibleBuy.getPricePerShare() <= cash) ) {
                 ret.add(possibleBuy);
@@ -97,9 +99,9 @@ public class MachinePlayer extends Player {
 
     public Chain selectNewChain() {
         PlayGameAct.inst().log(getPlayerName() + " selecting chain to start.");
-        LList<Chain> chains = AllChains.instance().allUnplacedChains();
-        int n = (int)(Utils.random() * chains.length());
-        return chains.find(n);
+        List<Chain> chains = AllChains.instance().allUnplacedChains();
+        int n = (int)(Utils.random() * chains.size());
+        return chains.get(n);
     }
 
     public Chain selectSurvivor(List<Chain> potentials) {

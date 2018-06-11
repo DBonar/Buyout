@@ -6,6 +6,8 @@ package tmw.sept22buyout;
         import android.view.View;
         import android.widget.TextView;
 
+        import java.util.Iterator;
+
 public class EndGameAct extends AppCompatActivity {
 
     private static final String TAG = EndGameAct.class.getSimpleName();
@@ -36,12 +38,13 @@ public class EndGameAct extends AppCompatActivity {
         while ((record = logiter.getNext()) != null)
             output += record.toString() + "\n";
         output += "These are the end-game bonuses:\n";
+
         // Pay the shareholder bonuses for all chains
-        Chain onechain;
-        ListIterator<Chain> chainiter =
-                new ListIterator<Chain>(AllChains.instance().allPlacedChains());
-        while ((onechain = chainiter.getNext()) != null)
-            output += onechain.payShareholderBonuses(null);
+        Iterator<Chain> chainiter = AllChains.instance().allPlacedChains().iterator();
+        while (chainiter.hasNext()) {
+            output += chainiter.next().payShareholderBonuses(null);
+        }
+
         // Write log to output.
         // Sell each players stock
         AllPlayers allplayers = AllPlayers.instance();
@@ -49,10 +52,10 @@ public class EndGameAct extends AppCompatActivity {
             Player player = allplayers.getPlayerN(playern);
             output += "\n";
             output += "Player #" + (playern+1) + ": " + player.getPlayerName() + "\n";
-            StockShares oneshareset = null;
-            ListIterator<StockShares> stockpile =
-                    new ListIterator<StockShares>(player.getOwnedStock());
-            while ((oneshareset = stockpile.getNext()) != null) {
+
+            Iterator<StockShares> stockpile = player.getOwnedStock().iterator();
+            while (stockpile.hasNext()) {
+                StockShares oneshareset = stockpile.next();
                 if (oneshareset.getNShares() != 0) {
                     int stockvalue = oneshareset.getChain().getPricePerShare() *
                             oneshareset.getNShares();
@@ -65,6 +68,7 @@ public class EndGameAct extends AppCompatActivity {
             } // while oneshareset
             output += "    Final total = $" + player.getMoney() + "\n";
         } // for playern
+
         // Find the winner(s)
         Player bestplayer = null;
         Boolean tiedgame = false;

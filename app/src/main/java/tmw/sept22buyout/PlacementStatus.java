@@ -17,11 +17,9 @@ public class PlacementStatus {
 
     public StatusType getStatus() { return PStatus; }
     public void setStatus(StatusType newstatus) { PStatus = newstatus; }
+
+    // for the Join status
     public Chain getChain() { return PChain; }
     public void setChain(Chain newchain) { PChain = newchain; }
-    public LList<Chain> getBuyChains() { return PBuyChains; }
-    public void setBuyChains(LList<Chain> newbuychains) { PBuyChains = newbuychains; }
-    public LList<Chain> getSellChains() { return PSellChains; }
-    public void setSellChains(LList<Chain> newsellchains) { PSellChains = newsellchains; }
 
 }

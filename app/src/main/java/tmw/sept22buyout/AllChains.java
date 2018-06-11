@@ -11,13 +11,17 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 public class AllChains {
 
     private static AllChains Instance = null;
-    private LList<Chain> AllBankChains;
+    private List<Chain> AllBankChains;
 
     protected AllChains() {
-        AllBankChains = new LList<Chain>();
+        AllBankChains = new ArrayList<Chain>();
         // Note that chain list will come out in the opposite sequence that
         // they are added (since we add to the beginning of a list).
         AllBankChains.add(new Chain("Stearns",  Chain.BankClass.Investment,
@@ -41,58 +45,44 @@ public class AllChains {
         return Instance;
     }
 
-    private LList<Chain> getAllChains() { return AllBankChains; }
-    private int nChains() { return AllBankChains.length(); }
+    private List<Chain> getAllChains() { return AllBankChains; }
+    private int nChains() { return AllBankChains.size(); }
 
-    public LList<Chain> allUnplacedChains() {
-        LList<Chain> result = new LList<Chain>();
-        Chain onechain;
-        ListIterator<Chain> chains = new ListIterator<Chain>(AllBankChains);
-        while ((onechain = chains.getNext()) != null) {
-            if (! onechain.isOnBoard()) result.append(onechain);
+    public List<Chain> allUnplacedChains() {
+        List<Chain> result = new ArrayList<Chain>();
+        Iterator<Chain> chains = AllBankChains.iterator();
+        while (chains.hasNext()) {
+            Chain chain = chains.next();
+            if (! chain.isOnBoard()) result.add(chain);
         }
         return result;
     }
 
-    public LList<Chain> allPlacedChains() {
-        LList<Chain> result = new LList<Chain>();
-        Chain onechain;
-        ListIterator<Chain> chains = new ListIterator<Chain>(AllBankChains);
-        while ((onechain = chains.getNext()) != null) {
-            if (onechain.isOnBoard()) result.append(onechain);
+    public List<Chain> allPlacedChains() {
+        List<Chain> result = new ArrayList<Chain>();
+        Iterator<Chain> chains = AllBankChains.iterator();
+        while (chains.hasNext()) {
+            Chain chain = chains.next();
+            if (chain.isOnBoard()) result.add(chain);
         }
         return result;
     }
 
-    public Chain findabbr(String chainnameabbr) {
-        // Find a chain whose name looks similar to chainnameabbr.
-        // For now, we just compare the first letter (caselessly).
-        if (chainnameabbr.length() < 1) return null;
-        String compname = chainnameabbr.substring(0, 1).toUpperCase();
-        Chain onechain;
-        ListIterator<Chain> chains = new ListIterator<Chain>(AllBankChains);
-        while ((onechain = chains.getNext()) != null) {
-            if (compname.equals(onechain.
-                    getName().substring(0, 1).toUpperCase()))
-                return onechain;
-        }
-        return null;
-    }
 
     public boolean isAllOnBoardChainsSafe() {
-        Chain onechain;
-        ListIterator<Chain> chains = new ListIterator<Chain>(AllBankChains);
-        while ((onechain = chains.getNext()) != null) {
-            if (onechain.getBoardCount() > 0 &&
-                    onechain.getBoardCount() < Chain.MinSafeChainSize)
+        Iterator<Chain> chains = AllBankChains.iterator();
+        while (chains.hasNext()) {
+            Chain chain = chains.next();
+            if (   chain.getBoardCount() > 0
+                && chain.getBoardCount() < Chain.MinSafeChainSize)
                 return false;
         }
         return true;
     }
 
 
-    ChainButton[] buttons;
-    TextView[] texts;
+    private ChainButton[] buttons;
+    private TextView[] texts;
     public LinearLayout buildLayout(Context context,
                                     @Nullable View.OnClickListener chainCallback ) {
         LinearLayout ret = new LinearLayout(context);
@@ -134,23 +124,22 @@ public class AllChains {
 
         buttons = new ChainButton[nChains()];
         texts = new TextView[nChains()];
-        Chain onechain;
-        ListIterator<Chain> chains = new ListIterator<Chain>(AllChains.instance().getAllChains());
-        int chainn = 0;
-        while ((onechain = chains.getNext()) != null) {
+        for (int i = 0; i < AllBankChains.size(); i++) {
+            Chain chain = AllBankChains.get(i);
+
             LinearLayout chain_row = new LinearLayout(context);
             chain_row.setOrientation(LinearLayout.HORIZONTAL);
             chain_row.setLayoutParams(row_params);
             chain_row.setBaselineAligned(false);
 
-            ChainButton chainbtn = new ChainButton(context, onechain);
-            chainbtn.setText(onechain.toString());
+            ChainButton chainbtn = new ChainButton(context, chain);
+            chainbtn.setText(chain.toString());
             chainbtn.setLayoutParams(label_params);
             chainbtn.setIncludeFontPadding(false);
             chainbtn.setMinHeight(1);
             chainbtn.setMinimumHeight(1);
-            chainbtn.setBackgroundColor(onechain.getChainColor());
-            buttons[chainn] = chainbtn;
+            chainbtn.setBackgroundColor(chain.getChainColor());
+            buttons[i] = chainbtn;
 
             if (chainCallback != null) {
                 chainbtn.setOnClickListener(chainCallback);
@@ -160,7 +149,7 @@ public class AllChains {
             TextView lblChainStatus = new TextView(context);
             lblChainStatus.setText("is not on board.\n second line");
             lblChainStatus.setLayoutParams(wide_params);
-            texts[chainn++] = lblChainStatus;
+            texts[i] = lblChainStatus;
             chain_row.addView(lblChainStatus);
 
             ret.addView(chain_row);
@@ -170,20 +159,14 @@ public class AllChains {
     }
 
     public void updateLabels(Player player) {
-        Chain onechain;
-        ListIterator<Chain> chains = new ListIterator<Chain>(AllChains.instance().getAllChains());
-        int chainn = 0;
-        while ((onechain = chains.getNext()) != null) {
-            texts[chainn++].setText(onechain.toFullString(player));
+        for (int i = 0; i < AllBankChains.size(); i++) {
+            texts[i].setText(AllBankChains.get(i).toFullString(player));
         }
     }
 
     public void updateCallbacks(View.OnClickListener chainCallback) {
-        Chain onechain;
-        ListIterator<Chain> chains = new ListIterator<Chain>(AllChains.instance().getAllChains());
-        int chainn = 0;
-        while ((onechain = chains.getNext()) != null) {
-            buttons[chainn++].setOnClickListener(chainCallback);
+        for (int i = 0; i < AllBankChains.size(); i++) {
+            buttons[i].setOnClickListener(chainCallback);
         }
     }
 }
