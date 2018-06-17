@@ -86,6 +86,15 @@ public class Player {
         return new ArrayList<Integer>(); // error if not overridden
     }
 
+
+    //
+    //  Utility functions you shouldn't override
+    //
+    public Player nextPlayer() {
+        Players players = Players.instance();
+        return players.nextPlayer(this);
+    }
+
     public void removeToken(Token token) {
         // We can't remove by object identity
         Iterator<Token> it = OwnedTokens.iterator();

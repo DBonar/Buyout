@@ -706,7 +706,7 @@ public class PlayGameAct extends AppCompatActivity {
             temp_mergePlayer = Players.instance().firstPlayer();
             while (temp_mergePlayer.getChainNShares(chain) == 0) {
                 // We know at least one player has a share of the chain.
-                temp_mergePlayer = Players.instance().nextPlayer(temp_mergePlayer);
+                temp_mergePlayer = temp_mergePlayer.nextPlayer();
             }
             setForMerge();
             merge();
@@ -794,10 +794,10 @@ public class PlayGameAct extends AppCompatActivity {
 
     public void endMergeClick(View view) {
         // Go to the next player or on to the next turn.
-        temp_mergePlayer = Players.instance().nextPlayer(temp_mergePlayer);
+        temp_mergePlayer = temp_mergePlayer.nextPlayer();
         while (  temp_mergePlayer.getChainNShares(temp_Victim.get(0)) == 0
                && temp_mergePlayer != Players.instance().firstPlayer() ) {
-            temp_mergePlayer = Players.instance().nextPlayer(temp_mergePlayer);
+            temp_mergePlayer = temp_mergePlayer.nextPlayer();
         }
         if (temp_mergePlayer == Players.instance().firstPlayer()) {
             // Change the settings of the board and we're done

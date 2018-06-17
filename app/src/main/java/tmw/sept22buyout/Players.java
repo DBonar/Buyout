@@ -101,6 +101,9 @@ public class Players {
     public void advanceToNextPlayer() { n = n + 1; if (n == NPlayers) n = 0;}
 
 
+    //
+    //  Layout stuff
+    //
     private TextView cash;
     private Token[] tiles;
     public LinearLayout buildLayout(Context context,
