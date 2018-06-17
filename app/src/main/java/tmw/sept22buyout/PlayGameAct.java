@@ -88,9 +88,8 @@ public class PlayGameAct extends AppCompatActivity {
         mainDisplay.setLayoutParams(vlparams);
         this.addContentView(mainDisplay, vlparams);
 
-        // Create the board, AllTokens need to be initialized after the board.
+        // Create the board
         Board board = Board.initialize(9, 12, this);
-        AllTokens.instance();
 
         // The three main areas, each drawn by the associated class.
         mainDisplay.addView( board.buildLayout(this) );
@@ -244,6 +243,7 @@ public class PlayGameAct extends AppCompatActivity {
                             setForBuyStock();
                             List<Chain> buys = player.buyStock(); // Machine player routine
                             for (int i = 0; i < buys.size(); i++) {
+                                log( "Buying: " + buys.get(i).toString());
                                 buyStock((Chain) buys.get(i));
                             }
                             setForAfterBuyingStock();
@@ -256,10 +256,12 @@ public class PlayGameAct extends AppCompatActivity {
                             tempToken_newChain = token;
                             setForCreateNewChain();
                             Chain chain = player.selectNewChain();  // Machine player routine
+                            log( "Creating chain " + chain.toString());
                             createNewChain(chain);
                             setForBuyStock();
                             List<Chain> buys = player.buyStock();  // Machine player routine
                             for (int i = 0; i < buys.size(); i++) {
+                                log( "Buying: " + buys.get(i).toString());
                                 buyStock((Chain) buys.get(i));
                             }
                             setForAfterBuyingStock();
@@ -279,7 +281,9 @@ public class PlayGameAct extends AppCompatActivity {
                                 }
                             }
                             temp_Potentials = potentials;
+                            log( "    " + temp_Potentials.size() + " merging chains.");
                             setForSelectMergeSurvivor();
+                            log( "    " + temp_Survivor.size() + " possible survivors.");
                             if (temp_Survivor.size() > 1) {
                                 Chain chain = player.selectSurvivor(temp_Potentials);
                                 List<Chain> temp = new ArrayList<Chain>();
@@ -287,6 +291,7 @@ public class PlayGameAct extends AppCompatActivity {
                                 temp_Potentials.remove( chain );
                                 temp_Survivor = temp;
                             }
+                            log( "    " + temp_Survivor.get(0).toString() + " is the survivor.");
                             while (temp_Potentials.size() > 0) {
                                 // select the next victim
                                 int largest = 0;
@@ -306,9 +311,13 @@ public class PlayGameAct extends AppCompatActivity {
                                     temp_Potentials.remove( chain );
                                     temp_Victim = temp2;
                                 } else {
+                                    temp_Potentials.remove( temp.get(0) );
                                     temp_Victim = temp;
                                 }
+                                log( "    " + temp_Victim.get(0).toString() + " is first victim.");
                                 // do the merge of temp_Victim into temp_Survivor
+                                temp_mergePlayer = player;
+                                merge();
                             }
                         }
                     }
@@ -463,8 +472,8 @@ public class PlayGameAct extends AppCompatActivity {
     }
 
     public void playTokenClicked(View view) {
-        Token btn = (Token) view;
-        playToken(btn);
+        Token token = (Token) view;
+        playToken(token);
     }
 
 
@@ -748,8 +757,8 @@ public class PlayGameAct extends AppCompatActivity {
     }
 
     public void merge() {
+        playerNameLabel.setText(temp_mergePlayer.getPlayerName() + "'s merge turn.");
         if (temp_mergePlayer.isMachine()) {
-            playerNameLabel.setText(temp_mergePlayer.getPlayerName() + "'s turn.");
             playerTurnPanel.setVisibility(View.VISIBLE);
             mainDisplay.setVisibility(View.INVISIBLE);
 
@@ -762,9 +771,13 @@ public class PlayGameAct extends AppCompatActivity {
             if (   (actions.size() != 3)
                 || (actions.get(0) + actions.get(1) + actions.get(2)
                         != temp_mergePlayer.getChainNShares(victim) )
+                || (actions.get(0) < 0 || actions.get(1) < 0 || actions.get(2) < 0)
                 || (actions.get(1) % 2 != 0) ) {
                 throw new RuntimeException("Error in machine player merge actions.");
             }
+            log( "    sell: " + actions.get(0) +
+                         "  trade: " + actions.get(1) +
+                         "  keep: " + actions.get(2) );
             temp_mergePlayer.purchaseStock(victim, - actions.get(0));
             temp_mergePlayer.takeStock(survivor, actions.get(1) / 2);
             temp_mergePlayer.takeStock(victim, - actions.get(1));
@@ -787,7 +800,7 @@ public class PlayGameAct extends AppCompatActivity {
             temp_mergePlayer = AllPlayers.instance().nextPlayer(temp_mergePlayer);
         }
         if (temp_mergePlayer == AllPlayers.instance().firstPlayer()) {
-            // We're done,
+            // Change the settings of the board and we're done
             nextTurnClicked(view);
         } else {
             // Back to the merge logic

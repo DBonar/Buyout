@@ -30,6 +30,7 @@ public class Token extends Button {
     public int getCol() { return col; }
     public int getRow() { return row; }
     public String getName() { return name; }
+    public String toString() { return name; }
 
     public void setData(Token token) {
         if (token != null) {

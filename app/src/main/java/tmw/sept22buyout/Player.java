@@ -100,7 +100,7 @@ public class Player {
     }
 
     public boolean fillTokens() {
-        AllTokens at = AllTokens.instance();
+        Board at = Board.instance();
         if (OwnedTokens.size() < at.NTokensPerPlayer) {
             Token tk = at.takeNextToken();
             OwnedTokens.add(tk);

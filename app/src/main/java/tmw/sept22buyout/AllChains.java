@@ -24,20 +24,20 @@ public class AllChains {
         AllBankChains = new ArrayList<Chain>();
         // Note that chain list will come out in the opposite sequence that
         // they are added (since we add to the beginning of a list).
-        AllBankChains.add(new Chain("Stearns",  Chain.BankClass.Investment,
-                BOGlobals.ClrInvChain2));
-        AllBankChains.add(new Chain("Peoples",  Chain.BankClass.Investment,
-                BOGlobals.ClrInvChain1));
-        AllBankChains.add(new Chain("NatWest",  Chain.BankClass.SnL,
-                BOGlobals.ClrSnLChain3));
-        AllBankChains.add(new Chain("Morgan",   Chain.BankClass.SnL,
-                BOGlobals.ClrSnLChain2));
-        AllBankChains.add(new Chain("Fleet",    Chain.BankClass.SnL,
-                BOGlobals.ClrSnLChain1));
-        AllBankChains.add(new Chain("Downtown", Chain.BankClass.Community,
-                BOGlobals.ClrCommChain2));
         AllBankChains.add(new Chain("Chemical", Chain.BankClass.Community,
                 BOGlobals.ClrCommChain1));
+        AllBankChains.add(new Chain("Downtown", Chain.BankClass.Community,
+                BOGlobals.ClrCommChain2));
+        AllBankChains.add(new Chain("Fleet",    Chain.BankClass.SnL,
+                BOGlobals.ClrSnLChain1));
+        AllBankChains.add(new Chain("Morgan",   Chain.BankClass.SnL,
+                BOGlobals.ClrSnLChain2));
+        AllBankChains.add(new Chain("NatWest",  Chain.BankClass.SnL,
+                BOGlobals.ClrSnLChain3));
+        AllBankChains.add(new Chain("Peoples",  Chain.BankClass.Investment,
+                BOGlobals.ClrInvChain1));
+        AllBankChains.add(new Chain("Stearns",  Chain.BankClass.Investment,
+                BOGlobals.ClrInvChain2));
     }
 
     static public AllChains instance() {

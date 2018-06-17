@@ -137,8 +137,8 @@ public class AllPlayers {
         token_params.width = 0;
         token_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
         token_params.weight = 1;
-        tiles = new Token[AllTokens.instance().NTokensPerPlayer];
-        for (int tn = 0; (tn < AllTokens.instance().NTokensPerPlayer); tn++) {
+        tiles = new Token[Board.instance().NTokensPerPlayer];
+        for (int tn = 0; (tn < Board.instance().NTokensPerPlayer); tn++) {
             Token token = new Token(1,1, context); // replaced later
             token.setText("Button");
             token.setLayoutParams(token_params);

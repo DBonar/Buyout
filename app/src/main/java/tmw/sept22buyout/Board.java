@@ -3,10 +3,12 @@ package tmw.sept22buyout;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -20,12 +22,18 @@ import java.util.List;
 
 public class Board {
 
+    final public int NTokensPerPlayer = 6;
+
     // Support for a singleton usage since most of the code expects it
-    static public int BoardXSize = 0;
-    static public int BoardYSize = 0;
+    //static public int BoardXSize = 0;
+    //static public int BoardYSize = 0;
     private static Board Instance = null;
 
+    // The instance members and constructors
+    private int nrows;
+    private int ncols;
     private BoardSpace[][] data;  // [row][col]
+    private List<Token> tokenStock;
     private LinearLayout layout;
 
     public static Board instance() {
@@ -33,6 +41,7 @@ public class Board {
             throw new RuntimeException("Board is not initialized");
         return Instance;
     }
+
 
     public static Board initialize(int nRows, int nCols, Context context) {
         if (Instance != null) {
@@ -43,14 +52,12 @@ public class Board {
             }
         }
         Instance = new Board(nRows, nCols, context);
-        BoardXSize = Instance.ncols;
-        BoardYSize = Instance.nrows;
+        //BoardXSize = Instance.ncols;
+        //BoardYSize = Instance.nrows;
         return Instance;
     }
 
-    // The instance members and constructors
-    private int nrows;
-    private int ncols;
+
 
     private Board(int nRows, int nCols, Context context) {
         nrows = nRows;
@@ -62,6 +69,33 @@ public class Board {
                 data[r][c] = new BoardSpace(r, c, context);
             }
         }
+
+        // Play one token for each player, all separate
+        AllPlayers players = AllPlayers.instance();
+        Player player = players.firstPlayer();
+        for (int i = 0; i < players.length(); i++, player = players.nextPlayer(player)) {
+            // The loop will terminate, we're playing just a
+            // small number of tiles from the board.
+            while (true) {
+                Token trial = randomUnoccupiedSpace();
+                if (unoccupiedNeighbors(trial).size() == 4) {
+                    playToken(trial);
+                    break;
+                }
+            }
+        }
+
+        // Create the remaining stoke and shuffle them
+        tokenStock = unoccupiedTokens();
+        Collections.shuffle(tokenStock);
+
+        // Now deal some out to the players
+        for (int i = 0; i < players.length(); i++, player = players.nextPlayer(player)) {
+            for (int n = 0; n < NTokensPerPlayer; n++) {
+                player.addToken(takeNextToken());
+            }
+        }
+
     }
 
 
@@ -133,7 +167,8 @@ public class Board {
             result.add(data[row][col]);
         return result;
     }
-    public List<Token> unoccupiedNeighbors(Token token) {
+
+    private List<Token> unoccupiedNeighbors(Token token) {
         List<BoardSpace> neighbors = allNeighbors(token);
         List<Token> ret = new ArrayList<Token>();
         for (int i = 0; i < neighbors.size(); i++) {
@@ -145,13 +180,13 @@ public class Board {
         return ret;
     }
 
-    public Token randomUnoccupiedSpace() {
+    private Token randomUnoccupiedSpace() {
         List<Token> possabilities = unoccupiedTokens();
         int n = (int)(Utils.random() * possabilities.size());
         return possabilities.get(n);
     }
 
-    public List<Token> unoccupiedTokens() {
+    private List<Token> unoccupiedTokens() {
         List<Token> rec = new ArrayList<Token>();
         for (int r = 0; r < nrows; r++) {
             for (int c = 0; c < ncols; c++) {
@@ -162,6 +197,16 @@ public class Board {
         }
         return rec;
     }
+
+    public Token takeNextToken() {
+        if (tokenStock.size() == 0)
+            return null;
+        Token ret = tokenStock.get(tokenStock.size()-1);
+        tokenStock.remove(ret);
+        return ret;
+    }
+
+
 
     //
     //  Layout related bits
