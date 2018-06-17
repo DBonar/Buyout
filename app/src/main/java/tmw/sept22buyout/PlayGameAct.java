@@ -94,7 +94,7 @@ public class PlayGameAct extends AppCompatActivity {
         // The three main areas, each drawn by the associated class.
         mainDisplay.addView( board.buildLayout(this) );
         mainDisplay.addView( AllPlayers.instance().buildLayout(this, null) );
-        mainDisplay.addView( AllChains.instance().buildLayout(this, null) );
+        mainDisplay.addView( Chains.instance().buildLayout(this, null) );
 
         // The space for displaying messages / instructions
         {
@@ -162,7 +162,7 @@ public class PlayGameAct extends AppCompatActivity {
     public void refreshScreen(Player player) {
         Board.instance().updateHighlights(player);
         AllPlayers.instance().updatePlayerData(player);
-        AllChains.instance().updateLabels(player);
+        Chains.instance().updateLabels(player);
 
         if (BOGlobals.EndOfGameOption) EndGameButton.setText("End Game");
         else EndGameButton.setText("Show Log");
@@ -402,7 +402,7 @@ public class PlayGameAct extends AppCompatActivity {
         playerTurnPanel.setVisibility(View.INVISIBLE);
         mainDisplay.setVisibility(View.VISIBLE);
         AllPlayers.instance().updateCallbacks(this::playTokenClicked);
-        AllChains.instance().updateCallbacks(this::meaninglessClick );
+        Chains.instance().updateCallbacks(this::meaninglessClick );
         ContinueButton.setOnClickListener(this::meaninglessClick);
         msgSet("Please select a token to place on the board.");
     }
@@ -488,14 +488,14 @@ public class PlayGameAct extends AppCompatActivity {
     public void setForBuyStock() {
         temp_stockPurchases = 0;
         AllPlayers.instance().updateCallbacks(this::meaninglessClick);
-        AllChains.instance().updateCallbacks(this::buyStockClick );
+        Chains.instance().updateCallbacks(this::buyStockClick );
         ContinueButton.setOnClickListener(this::nextTurnClicked);
         msgSet("Click on a chain to buy stock or 'Continue' to end your turn.");
     }
 
     public void setForAfterBuyingStock() {
         AllPlayers.instance().updateCallbacks(this::meaninglessClick);
-        AllChains.instance().updateCallbacks(this::meaninglessClick);
+        Chains.instance().updateCallbacks(this::meaninglessClick);
         ContinueButton.setOnClickListener(this::nextTurnClicked);
         // set the continue button
         msgSet("Click to end your turn.");
@@ -546,7 +546,7 @@ public class PlayGameAct extends AppCompatActivity {
     //
     public void setForCreateNewChain() {
         AllPlayers.instance().updateCallbacks(this::meaninglessClick);
-        AllChains.instance().updateCallbacks(this::createNewChainClick);
+        Chains.instance().updateCallbacks(this::createNewChainClick);
         ContinueButton.setOnClickListener(this::meaninglessClick);
         msgSet("Please select the chain you wish to create.");
     }
@@ -623,7 +623,7 @@ public class PlayGameAct extends AppCompatActivity {
         } else {
             // set up to select which one survives
             AllPlayers.instance().updateCallbacks(this::meaninglessClick);
-            AllChains.instance().updateCallbacks(this::selectSurvivorClick);
+            Chains.instance().updateCallbacks(this::selectSurvivorClick);
             ContinueButton.setOnClickListener(this::meaninglessClick);
             temp_Survivor = temp_Potentials;
             String msg = "Please select which chain survives. ";
@@ -679,7 +679,7 @@ public class PlayGameAct extends AppCompatActivity {
         } else {
             // set up to select which one survives
             AllPlayers.instance().updateCallbacks(this::meaninglessClick);
-            AllChains.instance().updateCallbacks(this::selectVictimClick);
+            Chains.instance().updateCallbacks(this::selectVictimClick);
             ContinueButton.setOnClickListener(this::meaninglessClick);
             temp_Victim = temp_Potentials;
             String msg = "Please select which chain merges first. ";
@@ -721,7 +721,7 @@ public class PlayGameAct extends AppCompatActivity {
     // Each player in turn merges temp_Victim into temp_Survivor
     public void setForMerge() {
         AllPlayers.instance().updateCallbacks(this::meaninglessClick);
-        AllChains.instance().updateCallbacks(this::mergeClick);
+        Chains.instance().updateCallbacks(this::mergeClick);
         ContinueButton.setOnClickListener(this::meaninglessClick);
         msgSet("Click on " + temp_Victim.get(0).getName() + " to sell a share.\n" +
               "Click on " + temp_Survivor.get(0).getName() + " aquire 1 share.\n" +

@@ -193,7 +193,7 @@ public class Chain {
         if (getBoardCount() > Chain.MaxChainSize)
             BOGlobals.EndOfGameOption = true;
         if (getBoardCount() >= Chain.MinSafeChainSize &&
-                AllChains.instance().isAllOnBoardChainsSafe())
+                Chains.instance().isAllOnBoardChainsSafe())
             BOGlobals.EndOfGameOption = true;
     }
 

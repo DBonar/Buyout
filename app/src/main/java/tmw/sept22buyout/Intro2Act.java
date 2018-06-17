@@ -95,7 +95,7 @@ public class Intro2Act extends AppCompatActivity {
             AllPlayers allplayers = AllPlayers.instance(Intro2Act.NPlayers,
                                                         Intro2Act.NMachines,
                                                         getResources().getStringArray(R.array.machine_names));
-            AllChains.instance();
+            Chains.instance();  // initialize the chains.
             Intent intent = new Intent(this, PlayGameAct.class);
             startActivity(intent);
         }

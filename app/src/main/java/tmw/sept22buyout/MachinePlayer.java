@@ -82,7 +82,7 @@ public class MachinePlayer extends Player {
         // Buy 1 share of the first thing we can afford.
         // Buy 2 or 3 shares if we can
         int cash = getMoney();
-        Iterator<Chain> it = AllChains.instance().allPlacedChains().iterator();
+        Iterator<Chain> it = Chains.instance().allPlacedChains().iterator();
         while (it.hasNext()) {
             Chain possibleBuy = it.next();
 
@@ -107,7 +107,7 @@ public class MachinePlayer extends Player {
     @Override
     public Chain selectNewChain() {
         PlayGameAct.inst().log(getPlayerName() + " selecting chain to start.");
-        List<Chain> chains = AllChains.instance().allUnplacedChains();
+        List<Chain> chains = Chains.instance().allUnplacedChains();
         int n = (int)(Utils.random() * chains.size());
         return chains.get(n);
     }

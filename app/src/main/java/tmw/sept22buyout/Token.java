@@ -122,7 +122,7 @@ public class Token extends Button {
             // If a new chain is being created, There must be at least one
             // off-board chain available.
         else if (mergechains.size() == 0 && newchain &&
-                AllChains.instance().allUnplacedChains().size() == 0)
+                Chains.instance().allUnplacedChains().size() == 0)
             result.setStatus(IllegalNoChain);
         else if (mergechains.size() >= 2) {
             result.setStatus(Merger); }

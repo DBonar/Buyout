@@ -15,42 +15,42 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class AllChains {
+public class Chains {
 
-    private static AllChains Instance = null;
-    private List<Chain> AllBankChains;
+    private static Chains Instance = null;
+    private List<Chain> bankChains;
 
-    protected AllChains() {
-        AllBankChains = new ArrayList<Chain>();
+    protected Chains() {
+        bankChains = new ArrayList<Chain>();
         // Note that chain list will come out in the opposite sequence that
         // they are added (since we add to the beginning of a list).
-        AllBankChains.add(new Chain("Chemical", Chain.BankClass.Community,
+        bankChains.add(new Chain("Chemical", Chain.BankClass.Community,
                 BOGlobals.ClrCommChain1));
-        AllBankChains.add(new Chain("Downtown", Chain.BankClass.Community,
+        bankChains.add(new Chain("Downtown", Chain.BankClass.Community,
                 BOGlobals.ClrCommChain2));
-        AllBankChains.add(new Chain("Fleet",    Chain.BankClass.SnL,
+        bankChains.add(new Chain("Fleet",    Chain.BankClass.SnL,
                 BOGlobals.ClrSnLChain1));
-        AllBankChains.add(new Chain("Morgan",   Chain.BankClass.SnL,
+        bankChains.add(new Chain("Morgan",   Chain.BankClass.SnL,
                 BOGlobals.ClrSnLChain2));
-        AllBankChains.add(new Chain("NatWest",  Chain.BankClass.SnL,
+        bankChains.add(new Chain("NatWest",  Chain.BankClass.SnL,
                 BOGlobals.ClrSnLChain3));
-        AllBankChains.add(new Chain("Peoples",  Chain.BankClass.Investment,
+        bankChains.add(new Chain("Peoples",  Chain.BankClass.Investment,
                 BOGlobals.ClrInvChain1));
-        AllBankChains.add(new Chain("Stearns",  Chain.BankClass.Investment,
+        bankChains.add(new Chain("Stearns",  Chain.BankClass.Investment,
                 BOGlobals.ClrInvChain2));
     }
 
-    static public AllChains instance() {
-        if (Instance == null) Instance = new AllChains();
+    static public Chains instance() {
+        if (Instance == null) Instance = new Chains();
         return Instance;
     }
 
-    private List<Chain> getAllChains() { return AllBankChains; }
-    private int nChains() { return AllBankChains.size(); }
+    private List<Chain> getAllChains() { return bankChains; }
+    private int nChains() { return bankChains.size(); }
 
     public List<Chain> allUnplacedChains() {
         List<Chain> result = new ArrayList<Chain>();
-        Iterator<Chain> chains = AllBankChains.iterator();
+        Iterator<Chain> chains = bankChains.iterator();
         while (chains.hasNext()) {
             Chain chain = chains.next();
             if (! chain.isOnBoard()) result.add(chain);
@@ -60,7 +60,7 @@ public class AllChains {
 
     public List<Chain> allPlacedChains() {
         List<Chain> result = new ArrayList<Chain>();
-        Iterator<Chain> chains = AllBankChains.iterator();
+        Iterator<Chain> chains = bankChains.iterator();
         while (chains.hasNext()) {
             Chain chain = chains.next();
             if (chain.isOnBoard()) result.add(chain);
@@ -70,7 +70,7 @@ public class AllChains {
 
 
     public boolean isAllOnBoardChainsSafe() {
-        Iterator<Chain> chains = AllBankChains.iterator();
+        Iterator<Chain> chains = bankChains.iterator();
         while (chains.hasNext()) {
             Chain chain = chains.next();
             if (   chain.getBoardCount() > 0
@@ -124,8 +124,8 @@ public class AllChains {
 
         buttons = new ChainButton[nChains()];
         texts = new TextView[nChains()];
-        for (int i = 0; i < AllBankChains.size(); i++) {
-            Chain chain = AllBankChains.get(i);
+        for (int i = 0; i < bankChains.size(); i++) {
+            Chain chain = bankChains.get(i);
 
             LinearLayout chain_row = new LinearLayout(context);
             chain_row.setOrientation(LinearLayout.HORIZONTAL);
@@ -159,13 +159,13 @@ public class AllChains {
     }
 
     public void updateLabels(Player player) {
-        for (int i = 0; i < AllBankChains.size(); i++) {
-            texts[i].setText(AllBankChains.get(i).toFullString(player));
+        for (int i = 0; i < bankChains.size(); i++) {
+            texts[i].setText(bankChains.get(i).toFullString(player));
         }
     }
 
     public void updateCallbacks(View.OnClickListener chainCallback) {
-        for (int i = 0; i < AllBankChains.size(); i++) {
+        for (int i = 0; i < bankChains.size(); i++) {
             buttons[i].setOnClickListener(chainCallback);
         }
     }

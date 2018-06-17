@@ -40,7 +40,7 @@ public class EndGameAct extends AppCompatActivity {
         output += "These are the end-game bonuses:\n";
 
         // Pay the shareholder bonuses for all chains
-        Iterator<Chain> chainiter = AllChains.instance().allPlacedChains().iterator();
+        Iterator<Chain> chainiter = Chains.instance().allPlacedChains().iterator();
         while (chainiter.hasNext()) {
             output += chainiter.next().payShareholderBonuses(null);
         }
