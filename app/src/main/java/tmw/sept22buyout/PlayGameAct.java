@@ -93,7 +93,7 @@ public class PlayGameAct extends AppCompatActivity {
 
         // The three main areas, each drawn by the associated class.
         mainDisplay.addView( board.buildLayout(this) );
-        mainDisplay.addView( AllPlayers.instance().buildLayout(this, null) );
+        mainDisplay.addView( Players.instance().buildLayout(this, null) );
         mainDisplay.addView( Chains.instance().buildLayout(this, null) );
 
         // The space for displaying messages / instructions
@@ -161,7 +161,7 @@ public class PlayGameAct extends AppCompatActivity {
 
     public void refreshScreen(Player player) {
         Board.instance().updateHighlights(player);
-        AllPlayers.instance().updatePlayerData(player);
+        Players.instance().updatePlayerData(player);
         Chains.instance().updateLabels(player);
 
         if (BOGlobals.EndOfGameOption) EndGameButton.setText("End Game");
@@ -170,12 +170,12 @@ public class PlayGameAct extends AppCompatActivity {
 
 
     public void msgSet(String msg) {
-        LblMessage.setText(AllPlayers.instance().firstPlayer().getPlayerName()
+        LblMessage.setText(Players.instance().firstPlayer().getPlayerName()
                     + ": " + msg);
     }
 
     public void msgSet(String errmsg, String msg) {
-        LblMessage.setText(AllPlayers.instance().firstPlayer().getPlayerName()
+        LblMessage.setText(Players.instance().firstPlayer().getPlayerName()
                     + ": " + msg);
     }
 
@@ -197,7 +197,7 @@ public class PlayGameAct extends AppCompatActivity {
         // Start the game loop
         while (!BOGlobals.EndOfGameOption) {
             Board board = Board.instance();
-            Player player = AllPlayers.instance().firstPlayer();
+            Player player = Players.instance().firstPlayer();
             log("Starting " + player.getPlayerName() + "'s turn.");
 
             // put up the privacy screen
@@ -350,13 +350,13 @@ public class PlayGameAct extends AppCompatActivity {
     }
 
     public void nextTurn() {
-        Player player = AllPlayers.instance().firstPlayer();
+        Player player = Players.instance().firstPlayer();
         if (! player.fillTokens()) {
             gameEnd();
         }
         log("Ending " + player.getPlayerName() + "'s turn.");
         checkGameEnd();
-        AllPlayers.instance().advanceToNextPlayer();
+        Players.instance().advanceToNextPlayer();
         saveGameState();
     }
     public void nextTurnClicked(View view) {
@@ -401,7 +401,7 @@ public class PlayGameAct extends AppCompatActivity {
     public void setForPlayToken(View view) {
         playerTurnPanel.setVisibility(View.INVISIBLE);
         mainDisplay.setVisibility(View.VISIBLE);
-        AllPlayers.instance().updateCallbacks(this::playTokenClicked);
+        Players.instance().updateCallbacks(this::playTokenClicked);
         Chains.instance().updateCallbacks(this::meaninglessClick );
         ContinueButton.setOnClickListener(this::meaninglessClick);
         msgSet("Please select a token to place on the board.");
@@ -409,7 +409,7 @@ public class PlayGameAct extends AppCompatActivity {
 
     private void playToken(Token token) {
         Board board = Board.instance();
-        Player player = AllPlayers.instance().firstPlayer();
+        Player player = Players.instance().firstPlayer();
         PlacementStatus status = token.evaluateForPlacement();
         log(token.getName() + ".evaluateForPlacement() returns " + status.getStatus());
 
@@ -487,14 +487,14 @@ public class PlayGameAct extends AppCompatActivity {
     //
     public void setForBuyStock() {
         temp_stockPurchases = 0;
-        AllPlayers.instance().updateCallbacks(this::meaninglessClick);
+        Players.instance().updateCallbacks(this::meaninglessClick);
         Chains.instance().updateCallbacks(this::buyStockClick );
         ContinueButton.setOnClickListener(this::nextTurnClicked);
         msgSet("Click on a chain to buy stock or 'Continue' to end your turn.");
     }
 
     public void setForAfterBuyingStock() {
-        AllPlayers.instance().updateCallbacks(this::meaninglessClick);
+        Players.instance().updateCallbacks(this::meaninglessClick);
         Chains.instance().updateCallbacks(this::meaninglessClick);
         ContinueButton.setOnClickListener(this::nextTurnClicked);
         // set the continue button
@@ -507,7 +507,7 @@ public class PlayGameAct extends AppCompatActivity {
                     "Please choose a different chain, or click 'Continue'.");
         } else {
             // See if we can afford it
-            Player player = AllPlayers.instance().firstPlayer();
+            Player player = Players.instance().firstPlayer();
             if (!player.canAfford(chain)) { // He cannot afford it
                 PlayGameAct.inst().msgSet("Sorry.  You cannot afford that issue.",
                         "Please choose a different chain, or click 'Continue'.");
@@ -545,7 +545,7 @@ public class PlayGameAct extends AppCompatActivity {
     //  The next phase is buying stock.
     //
     public void setForCreateNewChain() {
-        AllPlayers.instance().updateCallbacks(this::meaninglessClick);
+        Players.instance().updateCallbacks(this::meaninglessClick);
         Chains.instance().updateCallbacks(this::createNewChainClick);
         ContinueButton.setOnClickListener(this::meaninglessClick);
         msgSet("Please select the chain you wish to create.");
@@ -558,7 +558,7 @@ public class PlayGameAct extends AppCompatActivity {
         } else {
             Board board = Board.instance();
             chain.moveToBoard(tempToken_newChain);
-            Player player = AllPlayers.instance().firstPlayer();
+            Player player = Players.instance().firstPlayer();
             if (chain.getAvailableStock() > 0) {
                 player.takeStock(chain, 1);
             }
@@ -622,7 +622,7 @@ public class PlayGameAct extends AppCompatActivity {
             setForSelectMergeVictim();
         } else {
             // set up to select which one survives
-            AllPlayers.instance().updateCallbacks(this::meaninglessClick);
+            Players.instance().updateCallbacks(this::meaninglessClick);
             Chains.instance().updateCallbacks(this::selectSurvivorClick);
             ContinueButton.setOnClickListener(this::meaninglessClick);
             temp_Survivor = temp_Potentials;
@@ -673,12 +673,12 @@ public class PlayGameAct extends AppCompatActivity {
         if (large.size() == 1) {
             temp_Victim = large;
             temp_Potentials.remove(temp_Victim.get(0));
-            temp_mergePlayer = AllPlayers.instance().firstPlayer();
+            temp_mergePlayer = Players.instance().firstPlayer();
             setForMerge();
             merge();
         } else {
             // set up to select which one survives
-            AllPlayers.instance().updateCallbacks(this::meaninglessClick);
+            Players.instance().updateCallbacks(this::meaninglessClick);
             Chains.instance().updateCallbacks(this::selectVictimClick);
             ContinueButton.setOnClickListener(this::meaninglessClick);
             temp_Victim = temp_Potentials;
@@ -703,10 +703,10 @@ public class PlayGameAct extends AppCompatActivity {
             temp.add(chain);
             temp_Victim = temp;
             temp_Potentials.remove(chain);
-            temp_mergePlayer = AllPlayers.instance().firstPlayer();
+            temp_mergePlayer = Players.instance().firstPlayer();
             while (temp_mergePlayer.getChainNShares(chain) == 0) {
                 // We know at least one player has a share of the chain.
-                temp_mergePlayer = AllPlayers.instance().nextPlayer(temp_mergePlayer);
+                temp_mergePlayer = Players.instance().nextPlayer(temp_mergePlayer);
             }
             setForMerge();
             merge();
@@ -720,7 +720,7 @@ public class PlayGameAct extends AppCompatActivity {
     // Now do the merge
     // Each player in turn merges temp_Victim into temp_Survivor
     public void setForMerge() {
-        AllPlayers.instance().updateCallbacks(this::meaninglessClick);
+        Players.instance().updateCallbacks(this::meaninglessClick);
         Chains.instance().updateCallbacks(this::mergeClick);
         ContinueButton.setOnClickListener(this::meaninglessClick);
         msgSet("Click on " + temp_Victim.get(0).getName() + " to sell a share.\n" +
@@ -794,12 +794,12 @@ public class PlayGameAct extends AppCompatActivity {
 
     public void endMergeClick(View view) {
         // Go to the next player or on to the next turn.
-        temp_mergePlayer = AllPlayers.instance().nextPlayer(temp_mergePlayer);
+        temp_mergePlayer = Players.instance().nextPlayer(temp_mergePlayer);
         while (  temp_mergePlayer.getChainNShares(temp_Victim.get(0)) == 0
-               && temp_mergePlayer != AllPlayers.instance().firstPlayer() ) {
-            temp_mergePlayer = AllPlayers.instance().nextPlayer(temp_mergePlayer);
+               && temp_mergePlayer != Players.instance().firstPlayer() ) {
+            temp_mergePlayer = Players.instance().nextPlayer(temp_mergePlayer);
         }
-        if (temp_mergePlayer == AllPlayers.instance().firstPlayer()) {
+        if (temp_mergePlayer == Players.instance().firstPlayer()) {
             // Change the settings of the board and we're done
             nextTurnClicked(view);
         } else {

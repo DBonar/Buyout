@@ -71,7 +71,7 @@ public class Board {
         }
 
         // Play one token for each player, all separate
-        AllPlayers players = AllPlayers.instance();
+        Players players = Players.instance();
         Player player = players.firstPlayer();
         for (int i = 0; i < players.length(); i++, player = players.nextPlayer(player)) {
             // The loop will terminate, we're playing just a

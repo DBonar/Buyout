@@ -107,7 +107,7 @@ public class Chain {
         // turnplayer's turn. If turnplayer is null, this returns the transactions
         // as a String.
         String output = "";
-        AllPlayers allplayers = AllPlayers.instance();
+        Players allplayers = Players.instance();
         int nprimeshares = 0;
         int nsecondshares = 0;
         int nplayerowners = 0;

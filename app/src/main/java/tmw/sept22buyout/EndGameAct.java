@@ -31,7 +31,7 @@ public class EndGameAct extends AppCompatActivity {
         output += "These are the last few moves:\n";
         // We need a pointer to any one player (doesnt matter who) so we can write in
         // the log.
-        Player turnplayer = AllPlayers.instance().firstPlayer();
+        Player turnplayer = Players.instance().firstPlayer();
         ActionRecord record;
         ListIterator<ActionRecord> logiter =
                 new ListIterator<ActionRecord>(ActionLog.inst().getLog());
@@ -47,7 +47,7 @@ public class EndGameAct extends AppCompatActivity {
 
         // Write log to output.
         // Sell each players stock
-        AllPlayers allplayers = AllPlayers.instance();
+        Players allplayers = Players.instance();
         for (int playern = 0; playern < allplayers.length(); playern++) {
             Player player = allplayers.getPlayerN(playern);
             output += "\n";
