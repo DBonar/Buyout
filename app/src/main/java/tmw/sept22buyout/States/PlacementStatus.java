@@ -1,4 +1,7 @@
-package tmw.sept22buyout;
+package tmw.sept22buyout.States;
+
+import tmw.sept22buyout.Chain;
+import tmw.sept22buyout.LList;
 
 /**
  * Created by Tim Weinrich on 11/29/2017.
@@ -8,7 +11,7 @@ package tmw.sept22buyout;
  */
 
 public class PlacementStatus {
-    static enum StatusType { IllegalSafe, IllegalNoChain, SimplePlacement, NewChain, Join, Merger };
+    public enum StatusType { IllegalSafe, IllegalNoChain, SimplePlacement, NewChain, Join, Merger };
 
     private StatusType PStatus = null;
     private Chain PChain = null;

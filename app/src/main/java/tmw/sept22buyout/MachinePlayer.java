@@ -6,7 +6,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import static tmw.sept22buyout.PlacementStatus.StatusType.*;
+import tmw.sept22buyout.States.PlacementStatus;
+
+import static tmw.sept22buyout.States.PlacementStatus.StatusType.*;
 
 /**
  * Created by Tim Weinrich on 1/4/2018.

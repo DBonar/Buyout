@@ -9,12 +9,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static tmw.sept22buyout.PlacementStatus.StatusType.IllegalNoChain;
-import static tmw.sept22buyout.PlacementStatus.StatusType.IllegalSafe;
-import static tmw.sept22buyout.PlacementStatus.StatusType.Join;
-import static tmw.sept22buyout.PlacementStatus.StatusType.Merger;
-import static tmw.sept22buyout.PlacementStatus.StatusType.NewChain;
-import static tmw.sept22buyout.PlacementStatus.StatusType.SimplePlacement;
+import tmw.sept22buyout.States.PlacementStatus;
+
+import static tmw.sept22buyout.States.PlacementStatus.StatusType.IllegalNoChain;
+import static tmw.sept22buyout.States.PlacementStatus.StatusType.IllegalSafe;
+import static tmw.sept22buyout.States.PlacementStatus.StatusType.Join;
+import static tmw.sept22buyout.States.PlacementStatus.StatusType.Merger;
+import static tmw.sept22buyout.States.PlacementStatus.StatusType.NewChain;
+import static tmw.sept22buyout.States.PlacementStatus.StatusType.SimplePlacement;
 
 /**
  * Created by Tim Weinrich on 10/18/2017.

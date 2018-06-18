@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static tmw.sept22buyout.PlacementStatus.StatusType.*;
-
 /**
  * Created by Tim Weinrich on 10/15/2017.
 
