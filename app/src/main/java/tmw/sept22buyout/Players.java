@@ -19,55 +19,46 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.lang.Math;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
+import tmw.sept22buyout.Actions.Intro2Act;
 
 public class Players {
 
     private static Players Instance = null;
-    private Player players[];
+    private List<Player> players;
     private int NPlayers;
 
     private Players() {}  // default constructor disallowed.
 
-    protected Players(int nplayers, int nmachines, String[] machineNames) {
+    protected Players(int nplayers, int nmachines, String[] humanNames, String[] machineNames) {
         // System.out.println("Entered: AllPlayers(" + nplayers + ", " + nmachines + ")");
         MachinePlayer.setupNames( nmachines, machineNames );
-        players = new Player[nplayers];
+        players = new ArrayList<Player>(nplayers);
         NPlayers = nplayers;
         for (int playern = 0; playern < nplayers; playern++) {
             Player newplayer = null;
             if (playern < nplayers - nmachines) {
                 // Player is human
                 newplayer = new Player();
-                newplayer.setPlayerName(Intro2Act.HumanNames[playern]);
+                newplayer.setPlayerName(humanNames[playern]);
             } // if playern
             else {
                 // Player is machine
                 newplayer = new MachinePlayer(1 + playern - nplayers + nmachines);
             } // else
-            players[playern] = newplayer;
+            players.add(newplayer);
         }
+
         // Shuffle the players and assign sequence
-        // For historical reasons, I assume the sequence on the array must
-        // must be the same as the sequence of moves.  This may or may not be
-        // true.  tmw, 6/2017
-        for (int playern = 0; playern < nplayers; playern++) {
-            // Exchange [playern] with a random succeeding one.
-            int rand = (int)(Utils.random() * (nplayers - playern));
-            int randindex = playern + rand;
-            if (randindex != playern) {
-                // Swap playern with randindex
-                Player swapvalue = players[playern];
-                players[playern] = players[randindex];
-                players[randindex] = swapvalue;
-            } // if randindex
-        } // for playern = 0
+        Collections.shuffle(players);
 
     } // AllPlayers()
 
-    public static Players instance(int nplayers, int nmachines, String[] machineNames) {
-        if (Instance == null) Instance = new Players(nplayers, nmachines, machineNames);
+    public static Players instance(int nplayers, int nmachines, String[] humanNames, String[] machineNames) {
+        if (Instance == null) Instance = new Players(nplayers, nmachines, humanNames, machineNames);
         return Instance;
     }
 
@@ -77,7 +68,7 @@ public class Players {
 
     public Player getPlayerN(int arg) {
         if (arg < 0 || arg >= NPlayers) return null;
-        return players[arg];
+        return players.get(arg);
     }
 
     public int length() {
@@ -85,12 +76,12 @@ public class Players {
     }
 
     public Player nextPlayer(Player player) {
-        for (int i = 0; i < players.length; i++) {
-            if (players[i].getPlayerName() == player.getPlayerName()) {
-                if (i < players.length - 1) {
-                    return players[i + 1];
+        for (int i = 0; i < players.size(); i++) {
+            if (players.get(i).getPlayerName() == player.getPlayerName()) {
+                if (i < players.size() - 1) {
+                    return players.get(i + 1);
                 } else {
-                    return players[0];
+                    return players.get(0);
                 }
             }
         }

@@ -110,6 +110,8 @@ public class Board {
         data[token.getRow()][token.getCol()].setOccupied();
     }
 
+    // Adds token and all neighboring spaces that are occupied
+    // but no in a chain to the specified chain.
     public void addToChain(Token token, Chain chain) {
         BoardSpace space = data[token.getRow()][token.getCol()];
         if (space.getChain() != chain) {
@@ -128,18 +130,37 @@ public class Board {
         }
     }
 
+    // Adds token and all neighboring spaces that are in old chain
+    // to the specified new chain.
+    public void addToChain(Token token, Chain newChain, Chain oldChain) {
+        BoardSpace space = data[token.getRow()][token.getCol()];
+        if (space.getChain() != newChain) {
+            space.setChain(newChain);
+
+            // Now color all newly attached neighbors
+            List<BoardSpace> border = allNeighbors(space);
+            for (int i = 0; i < border.size(); i++) {
+                BoardSpace neighbor = border.get(i);
+                if (neighbor.isOccupied()
+                        && (neighbor.getChain() == oldChain)) {
+                    neighbor.setChain(newChain);
+                    border.addAll(allNeighbors(neighbor));
+                }
+            }
+        }
+    }
+
     public void removeChain(Token token, Chain chain) {
         BoardSpace space = data[token.getRow()][token.getCol()];
         space.removeChain();
 
-        // Now color all newly attached neighbors
+        // Now uncolor all newly attached neighbors
         List<BoardSpace> border = allNeighbors(space);
         for (int i = 0; i < border.size(); i++) {
             BoardSpace neighbor = border.get(i);
             if (   neighbor.isOccupied()
                     && (neighbor.getChain() == chain)) {
                 neighbor.removeChain();
-                chain.decrBoardCount();
                 border.addAll( allNeighbors(neighbor) );
             }
         }

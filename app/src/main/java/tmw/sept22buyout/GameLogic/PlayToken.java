@@ -1,25 +1,21 @@
-package tmw.sept22buyout.States;
+package tmw.sept22buyout.GameLogic;
 
 import android.view.View;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import tmw.sept22buyout.Board;
-import tmw.sept22buyout.BoardSpace;
 import tmw.sept22buyout.Chain;
 import tmw.sept22buyout.Chains;
-import tmw.sept22buyout.PlayGameAct;
+import tmw.sept22buyout.Actions.PlayGameAct;
 import tmw.sept22buyout.Player;
 import tmw.sept22buyout.Players;
 import tmw.sept22buyout.Token;
 
-import static tmw.sept22buyout.States.PlacementStatus.StatusType.IllegalNoChain;
-import static tmw.sept22buyout.States.PlacementStatus.StatusType.IllegalSafe;
-import static tmw.sept22buyout.States.PlacementStatus.StatusType.Join;
-import static tmw.sept22buyout.States.PlacementStatus.StatusType.Merger;
-import static tmw.sept22buyout.States.PlacementStatus.StatusType.NewChain;
-import static tmw.sept22buyout.States.PlacementStatus.StatusType.SimplePlacement;
+import static tmw.sept22buyout.GameLogic.PlacementStatus.StatusType.IllegalNoChain;
+import static tmw.sept22buyout.GameLogic.PlacementStatus.StatusType.IllegalSafe;
+import static tmw.sept22buyout.GameLogic.PlacementStatus.StatusType.Join;
+import static tmw.sept22buyout.GameLogic.PlacementStatus.StatusType.Merger;
+import static tmw.sept22buyout.GameLogic.PlacementStatus.StatusType.NewChain;
+import static tmw.sept22buyout.GameLogic.PlacementStatus.StatusType.SimplePlacement;
 
 public class PlayToken implements GameState {
 

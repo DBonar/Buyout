@@ -1,4 +1,4 @@
-package tmw.sept22buyout;
+package tmw.sept22buyout.Actions;
 
         import android.support.v7.app.AppCompatActivity;
         import android.os.Bundle;
@@ -7,6 +7,16 @@ package tmw.sept22buyout;
         import android.widget.TextView;
 
         import java.util.Iterator;
+
+        import tmw.sept22buyout.ActionLog;
+        import tmw.sept22buyout.ActionRecord;
+        import tmw.sept22buyout.Chain;
+        import tmw.sept22buyout.Chains;
+        import tmw.sept22buyout.ListIterator;
+        import tmw.sept22buyout.Player;
+        import tmw.sept22buyout.Players;
+        import tmw.sept22buyout.R;
+        import tmw.sept22buyout.StockShares;
 
 public class EndGameAct extends AppCompatActivity {
 

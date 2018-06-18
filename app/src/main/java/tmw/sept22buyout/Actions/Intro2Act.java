@@ -1,4 +1,4 @@
-package tmw.sept22buyout;
+package tmw.sept22buyout.Actions;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -6,6 +6,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.*;
+
+import tmw.sept22buyout.Chains;
+import tmw.sept22buyout.Players;
+import tmw.sept22buyout.R;
+import tmw.sept22buyout.Utils;
 
 public class Intro2Act extends AppCompatActivity {
 
@@ -91,10 +96,9 @@ public class Intro2Act extends AppCompatActivity {
     public void startGameClicked(View view) {
         makePlayerNameArray();
         if (checkPlayerNames()) {
-            Utils.FakeRandomNumbers = true;
-            // Initialize two statics
             Players.instance(Intro2Act.NPlayers,
                              Intro2Act.NMachines,
+                             Intro2Act.HumanNames,
                              getResources().getStringArray(R.array.machine_names));
             Chains.instance();  // initialize the chains.
             Intent intent = new Intent(this, PlayGameAct.class);

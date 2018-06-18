@@ -1,6 +1,6 @@
-package tmw.sept22buyout.States;
+package tmw.sept22buyout.GameLogic;
 
-import tmw.sept22buyout.PlayGameAct;
+import tmw.sept22buyout.Actions.PlayGameAct;
 import tmw.sept22buyout.Player;
 
 public class EndGame implements GameState {

@@ -1,4 +1,4 @@
-package tmw.sept22buyout.States;
+package tmw.sept22buyout.GameLogic;
 
 
 import android.view.View;
@@ -11,7 +11,7 @@ import tmw.sept22buyout.BoardSpace;
 import tmw.sept22buyout.Chain;
 import tmw.sept22buyout.ChainButton;
 import tmw.sept22buyout.Chains;
-import tmw.sept22buyout.PlayGameAct;
+import tmw.sept22buyout.Actions.PlayGameAct;
 import tmw.sept22buyout.Player;
 import tmw.sept22buyout.Players;
 import tmw.sept22buyout.Token;
@@ -232,8 +232,8 @@ public class Merge implements GameState {
             if (mergerPlayer == null) {
                 mergerPlayer = player;
             }
-            display.showCourtesyPanel(mergerPlayer, "merge turn", this::hidePanel);
             if (mergerPlayer.getChainNShares(victim) > 0) {
+                display.showCourtesyPanel(mergerPlayer, "merge turn", this::hidePanel);
                 if (mergerPlayer.isMachine()) {
                     // ask the player how many shares to (sell, trade, keep)
                     List<Integer> actions = mergerPlayer.mergeActions(victim, survivor);
@@ -265,10 +265,13 @@ public class Merge implements GameState {
             mergerPlayer = mergerPlayer.nextPlayer();
         }
 
+        // finish the merge of victim into survivor
+        Board.instance().addToChain(token, survivor, victim);
+        victim = null;
+        mergerPlayer = null;
+
         // Do we have more to merge?
         if (potentials.size() > 0) {
-            victim = null;
-            mergerPlayer = null;
             enter(player);
         } else {
             // Check for any extra, non-chain, spaces we need to merge in.

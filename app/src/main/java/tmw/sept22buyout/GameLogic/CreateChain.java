@@ -1,4 +1,4 @@
-package tmw.sept22buyout.States;
+package tmw.sept22buyout.GameLogic;
 
 import android.view.View;
 
@@ -6,7 +6,7 @@ import tmw.sept22buyout.Board;
 import tmw.sept22buyout.Chain;
 import tmw.sept22buyout.ChainButton;
 import tmw.sept22buyout.Chains;
-import tmw.sept22buyout.PlayGameAct;
+import tmw.sept22buyout.Actions.PlayGameAct;
 import tmw.sept22buyout.Player;
 import tmw.sept22buyout.Players;
 import tmw.sept22buyout.Token;

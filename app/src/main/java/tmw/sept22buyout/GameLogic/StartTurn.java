@@ -1,9 +1,9 @@
-package tmw.sept22buyout.States;
+package tmw.sept22buyout.GameLogic;
 
 
 import android.view.View;
 
-import tmw.sept22buyout.PlayGameAct;
+import tmw.sept22buyout.Actions.PlayGameAct;
 import tmw.sept22buyout.Player;
 
 public class StartTurn implements GameState {

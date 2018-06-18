@@ -6,9 +6,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import tmw.sept22buyout.States.PlacementStatus;
+import tmw.sept22buyout.Actions.PlayGameAct;
+import tmw.sept22buyout.GameLogic.PlacementStatus;
 
-import static tmw.sept22buyout.States.PlacementStatus.StatusType.*;
+import static tmw.sept22buyout.GameLogic.PlacementStatus.StatusType.*;
 
 /**
  * Created by Tim Weinrich on 1/4/2018.

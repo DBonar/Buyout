@@ -1,4 +1,4 @@
-package tmw.sept22buyout.States;
+package tmw.sept22buyout.GameLogic;
 
 import android.view.View;
 
@@ -7,7 +7,7 @@ import java.util.List;
 import tmw.sept22buyout.Chain;
 import tmw.sept22buyout.ChainButton;
 import tmw.sept22buyout.Chains;
-import tmw.sept22buyout.PlayGameAct;
+import tmw.sept22buyout.Actions.PlayGameAct;
 import tmw.sept22buyout.Player;
 import tmw.sept22buyout.Players;
 
@@ -39,6 +39,7 @@ public class BuyStock implements GameState {
         Chains.instance().updateCallbacks(this::buyStockClick );
         display.ContinueButton.setOnClickListener(this::nextTurnClicked);
         display.msgSet(player,"Click on a chain to buy stock or 'Continue' to end your turn.");
+        display.refreshScreen(player);
         if (player.isMachine()) {
             List<Chain> buys = player.buyStock();  // Machine player routine
             for (int i = 0; i < buys.size(); i++) {

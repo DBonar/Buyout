@@ -1,4 +1,4 @@
-package tmw.sept22buyout.States;
+package tmw.sept22buyout.GameLogic;
 
 import tmw.sept22buyout.Chain;
 import tmw.sept22buyout.LList;

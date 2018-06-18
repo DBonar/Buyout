@@ -1,9 +1,7 @@
-package tmw.sept22buyout.States;
-
-import android.view.View;
+package tmw.sept22buyout.GameLogic;
 
 import tmw.sept22buyout.Chains;
-import tmw.sept22buyout.PlayGameAct;
+import tmw.sept22buyout.Actions.PlayGameAct;
 import tmw.sept22buyout.Player;
 import tmw.sept22buyout.Players;
 
