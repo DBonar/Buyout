@@ -16,18 +16,16 @@ public class NextTurn implements GameState {
         display = theDisplay;
     }
 
-    public void nextTurnClicked(View view) {
-        endTurn();
-    }
 
     public void enter(Player thePlayer) {
         player = thePlayer;
         Players.instance().updateCallbacks(null);
         Chains.instance().updateCallbacks(null);
-        display.ContinueButton.setOnClickListener(this::nextTurnClicked);
-        display.msgSet("Click to end your turn.");
-        if (player.isMachine())
-            endTurn();
+        // No need to wait here.  We'll just go directly to ending this turn
+        // and starting the next one.
+        display.ContinueButton.setOnClickListener(null);
+        display.msgSet(player,"");
+        endTurn();
     }
 
     public void endTurn() {
@@ -40,8 +38,8 @@ public class NextTurn implements GameState {
 
         player = player.nextPlayer();
         saveGameState();
-        GameState playToken = new PlayToken(display);
-        playToken.enter(player);
+        GameState nextState = new StartTurn(display);
+        nextState.enter(player);
     }
 
     public boolean gameEnded() {

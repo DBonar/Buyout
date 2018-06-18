@@ -131,6 +131,10 @@ public class Merge implements GameState {
         enter(player);
     }
 
+    public void hidePanel(View view) {
+        display.hideCourtesyPanel();
+    }
+
     public void enter(Player thePlayer) {
         player = thePlayer;
 
@@ -169,7 +173,7 @@ public class Merge implements GameState {
                             msg += " or";
                         }
                     }
-                    display.msgSet(msg);
+                    display.msgSet(player, msg);
                     return; // exit and wait for callbacks
                 }
             }
@@ -210,7 +214,7 @@ public class Merge implements GameState {
                             msg += " or";
                         }
                     }
-                    display.msgSet(msg);
+                    display.msgSet(player, msg);
                     return; // exit and wait for callbacks
                 }
             }
@@ -228,11 +232,9 @@ public class Merge implements GameState {
             if (mergerPlayer == null) {
                 mergerPlayer = player;
             }
+            display.showCourtesyPanel(mergerPlayer, "merge turn", this::hidePanel);
             if (mergerPlayer.getChainNShares(victim) > 0) {
-                display.playerNameLabel.setText(mergerPlayer.getPlayerName() + "'s merge turn.");
                 if (mergerPlayer.isMachine()) {
-                    display.showCourtesyPanel();
-
                     // ask the player how many shares to (sell, trade, keep)
                     List<Integer> actions = mergerPlayer.mergeActions(victim, survivor);
                     if ((actions.size() != 3)
@@ -250,11 +252,10 @@ public class Merge implements GameState {
                     mergerPlayer.takeStock(victim, -actions.get(1));
 
                 } else {
-                    display.hideCourtesyPanel();
                     Players.instance().updateCallbacks(null);
                     Chains.instance().updateCallbacks(this::mergeClick);
                     display.ContinueButton.setOnClickListener(null);
-                    display.msgSet("Click on " + victim.getName() + " to sell a share.\n" +
+                    display.msgSet(player, "Click on " + victim.getName() + " to sell a share.\n" +
                             "Click on " + survivor.getName() + " aquire 1 share.\n" +
                             "Click 'Continue' to keep the rest of your shares.");
                     return; // exit and wait for callbacks

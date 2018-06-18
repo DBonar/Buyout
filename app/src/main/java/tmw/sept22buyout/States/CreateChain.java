@@ -36,7 +36,7 @@ public class CreateChain implements GameState {
         Players.instance().updateCallbacks(null);
         Chains.instance().updateCallbacks(this::createNewChainClick);
         display.ContinueButton.setOnClickListener(null);
-        display.msgSet("Please select the chain you wish to create.");
+        display.msgSet(player, "Please select the chain you wish to create.");
         if (player.isMachine()) {
             Chain chain = player.selectNewChain();  // Machine player routine
             display.log( "Creating chain " + chain.toString());
@@ -47,7 +47,7 @@ public class CreateChain implements GameState {
 
     public void createNewChain(Chain chain) {
         if (chain.isOnBoard()) {
-            display.msgSet("Sorry.  That chain is on the board already.",
+            display.msgSet(player, "Sorry.  That chain is on the board already.  " +
                     "Please choose a different chain.");
         } else {
             Board board = Board.instance();

@@ -27,7 +27,6 @@ public class Players {
     private static Players Instance = null;
     private Player players[];
     private int NPlayers;
-    private int n;
 
     private Players() {}  // default constructor disallowed.
 
@@ -64,7 +63,7 @@ public class Players {
                 players[randindex] = swapvalue;
             } // if randindex
         } // for playern = 0
-        n = 0;  // i.e. the first player is the first player
+
     } // AllPlayers()
 
     public static Players instance(int nplayers, int nmachines, String[] machineNames) {
@@ -85,7 +84,6 @@ public class Players {
         return NPlayers;
     }
 
-    public Player firstPlayer() { return players[n]; }
     public Player nextPlayer(Player player) {
         for (int i = 0; i < players.length; i++) {
             if (players[i].getPlayerName() == player.getPlayerName()) {
@@ -98,7 +96,6 @@ public class Players {
         }
         throw new RuntimeException("Player " + player.getPlayerName() + " is not on the player list.");
     }
-    public void advanceToNextPlayer() { n = n + 1; if (n == NPlayers) n = 0;}
 
 
     //

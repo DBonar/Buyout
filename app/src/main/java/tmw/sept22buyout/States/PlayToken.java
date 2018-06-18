@@ -42,11 +42,10 @@ public class PlayToken implements GameState {
     //
     public void enter(Player thePlayer) {
         player = thePlayer;
-        display.hideCourtesyPanel();
         Players.instance().updateCallbacks(this::playTokenClicked);
         Chains.instance().updateCallbacks(null);
         display.ContinueButton.setOnClickListener(null);
-        display.msgSet("Please select a token to place on the board.");
+        display.msgSet(player,"Please select a token to place on the board.");
         if (player.isMachine()) {
             display.log( "Player " + player.getPlayerName() + " is selecting a token.");
             Token token = player.selectTokenToPlay();  // Machine player routine
@@ -70,13 +69,13 @@ public class PlayToken implements GameState {
         display.log(token.getName() + ".evaluateForPlacement() returns " + status.getStatus());
 
         if (status.getStatus() == IllegalSafe) {
-            PlayGameAct.inst().msgSet("You may not merge two safe chains.",
+            PlayGameAct.inst().msgSet(player, "You may not merge two safe chains.  " +
                     "Please choose another token.");
             token.setText("");
             token.setOnClickListener(null);
 
         } else if (status.getStatus() == IllegalNoChain) {
-            PlayGameAct.inst().msgSet("There are no more chains available to place on the board.",
+            PlayGameAct.inst().msgSet(player, "There are no more chains available to place on the board. " +
                     "Please choose another token.");
             token.setText("");
             token.setOnClickListener(null);

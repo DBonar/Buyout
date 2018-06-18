@@ -38,7 +38,7 @@ public class BuyStock implements GameState {
         Players.instance().updateCallbacks(null);
         Chains.instance().updateCallbacks(this::buyStockClick );
         display.ContinueButton.setOnClickListener(this::nextTurnClicked);
-        display.msgSet("Click on a chain to buy stock or 'Continue' to end your turn.");
+        display.msgSet(player,"Click on a chain to buy stock or 'Continue' to end your turn.");
         if (player.isMachine()) {
             List<Chain> buys = player.buyStock();  // Machine player routine
             for (int i = 0; i < buys.size(); i++) {
@@ -66,13 +66,12 @@ public class BuyStock implements GameState {
 
     public void buyStock(Chain chain) {
         if (!chain.isOnBoard()) {
-            display.msgSet("Sorry.  That chain is not on the board.",
+            display.msgSet(player, "Sorry.  That chain is not on the board.  " +
                     "Please choose a different chain, or click 'Continue'.");
         } else {
             // See if we can afford it
-            Player player = Players.instance().firstPlayer();
             if (!player.canAfford(chain)) { // He cannot afford it
-                display.msgSet("Sorry.  You cannot afford that issue.",
+                display.msgSet(player,"Sorry.  You cannot afford that issue. " +
                         "Please choose a different chain, or click 'Continue'.");
             }
 
@@ -80,7 +79,7 @@ public class BuyStock implements GameState {
                 // We have successfully purchased the share
                 display.refreshScreen(player);
             } else {
-                display.msgSet("Sorry.  There are no more shares of that stock available.",
+                display.msgSet(player,"Sorry.  There are no more shares of that stock available. " +
                         "Please choose a different chain, or click 'Continue'.");
             }
 

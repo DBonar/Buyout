@@ -12,6 +12,7 @@ import java.util.List;
 
 import tmw.sept22buyout.States.GameState;
 import tmw.sept22buyout.States.PlayToken;
+import tmw.sept22buyout.States.StartTurn;
 
 
 public class PlayGameAct extends AppCompatActivity {
@@ -26,23 +27,13 @@ public class PlayGameAct extends AppCompatActivity {
 
     // View items that get manipulated -- mostly different onClick
     // listeners get set -- as we move between different phases of play
-    public Button           ContinueButton;
+    public Button            ContinueButton;
     private Button           EndGameButton;
     private LinearLayout     mainDisplay;      // created and built in onCreate()
-    private ConstraintLayout playerTurnPanel;  // Hides the screen at start of a player's turn.
-    public TextView         playerNameLabel;  // The text on the playerTurnPanel
+    private ConstraintLayout courtesyPanel;    // Hides the screen at start of a player's turn.
+    private TextView         courtesyLabel;    // The text on the playerTurnPanel
+    private Button           courtesyButton;   // The button to hide the panel
     private TextView         LblMessage;       // Used for instructional messages
-
-    // These are used to pass values between different callbacks.
-    // between playing a token and a new chain at that location
-    private Token tempToken_newChain;
-    // between the rounds of stock purchases
-    private int temp_stockPurchases;
-    // between the steps involved in handling mergers
-    private List<Chain> temp_Potentials;
-    private List<Chain> temp_Survivor;
-    private List<Chain> temp_Victim;
-    private Player temp_mergePlayer;
 
 
     //
@@ -59,8 +50,9 @@ public class PlayGameAct extends AppCompatActivity {
 
         setContentView(R.layout.activity_play_game);
         mainDisplay = (LinearLayout) findViewById(R.id.MainDisplay);
-        playerTurnPanel = (ConstraintLayout) findViewById(R.id.PlayerTurnPanel);
-        playerNameLabel = (TextView) findViewById(R.id.PlayerNameLabel);
+        courtesyPanel = (ConstraintLayout) findViewById(R.id.PlayerTurnPanel);
+        courtesyLabel = (TextView) findViewById(R.id.PlayerNameLabel);
+        courtesyButton = (Button) findViewById(R.id.StartTurnButton);
 
         // Create the display, a vertical stack of items.
         // 1 for the board
@@ -160,26 +152,21 @@ public class PlayGameAct extends AppCompatActivity {
         else EndGameButton.setText("Show Log");
     } // end refreshScreen()
 
-    public void showCourtesyPanel() {
-        playerTurnPanel.setVisibility(View.VISIBLE);
+    public void showCourtesyPanel(Player player,
+                                  String msg,
+                                  View.OnClickListener buttonCallback) {
+        courtesyLabel.setText("It is " + player.getPlayerName() + "'s " + msg);
+        courtesyPanel.setVisibility(View.VISIBLE);
         mainDisplay.setVisibility(View.INVISIBLE);
+        courtesyButton.setOnClickListener(buttonCallback);
+        refreshScreen(player);
     }
 
     public void hideCourtesyPanel() {
-        playerTurnPanel.setVisibility(View.INVISIBLE);
+        courtesyPanel.setVisibility(View.INVISIBLE);
         mainDisplay.setVisibility(View.VISIBLE);
     }
 
-
-    public void msgSet(String msg) {
-        LblMessage.setText(Players.instance().firstPlayer().getPlayerName()
-                    + ": " + msg);
-    }
-
-    public void msgSet(String errmsg, String msg) {
-        LblMessage.setText(Players.instance().firstPlayer().getPlayerName()
-                    + ": " + msg);
-    }
 
     public void msgSet(Player player, String msg) {
         LblMessage.setText(player.getPlayerName() + ": " + msg);
@@ -196,39 +183,8 @@ public class PlayGameAct extends AppCompatActivity {
     }
 
     public void gameLoop() {
-        GameState playToken = new PlayToken(this);
-        playToken.enter(Players.instance().firstPlayer());
-    }
-
-    public void nextTurn() {
-        Player player = Players.instance().firstPlayer();
-        if (! player.fillTokens()) {
-            gameEnd();
-        }
-        log("Ending " + player.getPlayerName() + "'s turn.");
-        checkGameEnd();
-        Players.instance().advanceToNextPlayer();
-        saveGameState();
-    }
-    public void nextTurnClicked(View view) {
-        // This was clicked because it was a human's turn.
-        // So we were not in the game loop, but had returned
-        // out of it.  We need to enter it again now in case
-        // the next player is a machine.
-        nextTurn();
-        gameLoop();
-    }
-
-    public void checkGameEnd() {
-        //  Should check something and if it is true, go to a different action
-    }
-
-    public void saveGameState() {
-        //  Should save the state in case the app is backgrounded and killed
-    }
-
-    public void gameEnd() {
-        // Now what?
+        GameState nextState = new StartTurn(this);
+        nextState.enter(Players.instance().getPlayerN(0));
     }
 
 
@@ -237,14 +193,6 @@ public class PlayGameAct extends AppCompatActivity {
 
     public void meaninglessClick(View view) {
     }
-
-    
-
-
-
-
-
-
 
 
 
@@ -262,9 +210,6 @@ public class PlayGameAct extends AppCompatActivity {
         }
     }
 
-
-    public void startNewPlayerSell() {
-    }
 
     public void startEndGame() {
         Intent intent = new Intent(this, EndGameAct.class);

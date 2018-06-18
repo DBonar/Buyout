@@ -39,7 +39,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="32dp"
             android:layout_marginTop="32dp"
-            android:onClick="setForPlayToken"
+            android:onClick="hideCourtesyPanel"
             android:text="Start turn"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/PlayerNameLabel" />

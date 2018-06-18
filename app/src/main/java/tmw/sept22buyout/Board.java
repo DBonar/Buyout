@@ -72,8 +72,8 @@ public class Board {
 
         // Play one token for each player, all separate
         Players players = Players.instance();
-        Player player = players.firstPlayer();
-        for (int i = 0; i < players.length(); i++, player = player.nextPlayer()) {
+        for (int i = 0; i < players.length(); i++) {
+            Player player = players.getPlayerN(i);
             // The loop will terminate, we're playing just a
             // small number of tiles from the board.
             while (true) {
@@ -90,7 +90,8 @@ public class Board {
         Collections.shuffle(tokenStock);
 
         // Now deal some out to the players
-        for (int i = 0; i < players.length(); i++, player = player.nextPlayer()) {
+        for (int i = 0; i < players.length(); i++) {
+            Player player = players.getPlayerN(i);
             for (int n = 0; n < NTokensPerPlayer; n++) {
                 player.addToken(takeNextToken());
             }
