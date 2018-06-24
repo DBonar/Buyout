@@ -275,6 +275,7 @@ public class Merge implements GameState {
             enter(player);
         } else {
             // Check for any extra, non-chain, spaces we need to merge in.
+            Board.instance().addToChain(token, survivor);
             GameState nextState = new BuyStock(display);
             nextState.enter(player);
         }

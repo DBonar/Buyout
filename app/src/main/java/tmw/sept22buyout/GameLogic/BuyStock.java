@@ -35,17 +35,36 @@ public class BuyStock implements GameState {
 
     public void enter(Player thePlayer) {
         player = thePlayer;
+
+        // check whether player can buy stock
+        List<Chain> chains = Chains.instance().allPlacedChains();
+        boolean canBuy = false;
+        for (int i = 0; i < chains.size(); i++) {
+            Chain chain = chains.get(i);
+            if (player.canAfford(chain))
+                canBuy = true;
+        }
+
         Players.instance().updateCallbacks(null);
-        Chains.instance().updateCallbacks(this::buyStockClick );
         display.ContinueButton.setOnClickListener(this::nextTurnClicked);
-        display.msgSet(player,"Click on a chain to buy stock or 'Continue' to end your turn.");
-        display.refreshScreen(player);
-        if (player.isMachine()) {
-            List<Chain> buys = player.buyStock();  // Machine player routine
-            for (int i = 0; i < buys.size(); i++) {
-                buyStock(buys.get(i));
+        if (canBuy) {
+            Chains.instance().updateCallbacks(this::buyStockClick);
+            display.msgSet(player, "Click on a chain to buy stock or 'Continue' to end your turn.");
+            display.refreshScreen(player);
+            if (player.isMachine()) {
+                List<Chain> buys = player.buyStock();  // Machine player routine
+                for (int i = 0; i < buys.size(); i++) {
+                    buyStock(buys.get(i));
+                }
+                afterBuyingStock();
             }
-            if (buys.size() < maxNumberPurchased)
+        } else { // can't buy
+            Chains.instance().updateCallbacks(this::buyStockClick);
+            display.msgSet(player, "There are no chains you can purchase.\n" +
+                            "Please click 'Continue' to end your turn.");
+            player.fillTokens();
+            display.refreshScreen(player);
+            if (player.isMachine())
                 afterBuyingStock();
         }
     }
@@ -57,6 +76,7 @@ public class BuyStock implements GameState {
     }
 
     public void nextTurnClicked(View view) {
+        player.fillTokens();  // If you clicked 'early' (before buying max), sill need to fill.
         afterBuyingStock();
     }
 
@@ -85,8 +105,14 @@ public class BuyStock implements GameState {
             }
 
             numberPurchased += 1;
-            if (numberPurchased == maxNumberPurchased)
-               afterBuyingStock();
+            if (numberPurchased == maxNumberPurchased) {
+                Chains.instance().updateCallbacks(null );
+                display.msgSet(player, "Please click 'Continue' to end your turn.");
+                player.fillTokens();
+                display.refreshScreen(player);
+                // Don't automatically nove to the next turn.
+                //afterBuyingStock();
+            }
         }
     }
 

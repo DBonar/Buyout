@@ -141,8 +141,8 @@ public class Board {
             List<BoardSpace> border = allNeighbors(space);
             for (int i = 0; i < border.size(); i++) {
                 BoardSpace neighbor = border.get(i);
-                if (neighbor.isOccupied()
-                        && (neighbor.getChain() == oldChain)) {
+                if (   neighbor.isOccupied()
+                    && (neighbor.getChain() == oldChain)) {
                     neighbor.setChain(newChain);
                     border.addAll(allNeighbors(neighbor));
                 }
