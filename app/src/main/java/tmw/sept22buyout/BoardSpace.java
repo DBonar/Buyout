@@ -17,13 +17,13 @@ public class BoardSpace extends Token {
     private boolean isOccupied = false;
     private Chain chain = null;
 
-    public BoardSpace(int r, int c, Context context) {
-        super(r, c, context);
+    public BoardSpace(int r, int c) {
+        super(r, c);
     }
 
     public void setOccupied() {
         isOccupied = true;
-        this.setBackgroundColor(BOGlobals.ClrFullSpace);
+        this.setColor(BOGlobals.ClrFullSpace);
     }
     public boolean isOccupied() { return isOccupied; }
 
@@ -33,14 +33,14 @@ public class BoardSpace extends Token {
         newchain.incrBoardCount();
         isOccupied = true;
         chain = newchain;
-        this.setBackgroundColor(newchain.getChainColor());
+        this.setColor(newchain.getChainColor());
     }
     public void removeChain() {
         if (chain == null) return;
         chain.decrBoardCount();
         isOccupied = false;
         chain = null;
-        this.setBackgroundColor(BOGlobals.ClrEmptySpace);
+        this.setColor(BOGlobals.ClrEmptySpace);
     }
     public Chain getChain() { return chain; }
 

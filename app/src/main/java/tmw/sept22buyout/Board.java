@@ -25,8 +25,6 @@ public class Board {
     final public int NTokensPerPlayer = 6;
 
     // Support for a singleton usage since most of the code expects it
-    //static public int BoardXSize = 0;
-    //static public int BoardYSize = 0;
     private static Board Instance = null;
 
     // The instance members and constructors
@@ -43,30 +41,23 @@ public class Board {
     }
 
 
-    public static Board initialize(int nRows, int nCols, Context context) {
-        if (Instance != null) {
-            if ((nRows != Instance.nrows) || (nCols != Instance.ncols)) {
-                throw new RuntimeException("Board is already initialized");
-            } else {
-                return Instance;
-            }
-        }
-        Instance = new Board(nRows, nCols, context);
-        //BoardXSize = Instance.ncols;
-        //BoardYSize = Instance.nrows;
+    // Only done in PlayGameAct::onCreate.  Need to build new view objects
+    // (which includes the board cells) whenever that activity is created.
+    public static Board initialize(int nRows, int nCols) {
+        Instance = new Board(nRows, nCols);
         return Instance;
     }
 
 
 
-    private Board(int nRows, int nCols, Context context) {
+    private Board(int nRows, int nCols) {
         nrows = nRows;
         ncols = nCols;
         layout = null;
         data = new BoardSpace[nrows][ncols];
         for (int r = 0; r < nrows; r++) {
             for (int c = 0; c < ncols; c++) {
-                data[r][c] = new BoardSpace(r, c, context);
+                data[r][c] = new BoardSpace(r, c);
             }
         }
 
@@ -90,11 +81,12 @@ public class Board {
         Collections.shuffle(tokenStock);
 
         // Now deal some out to the players
+        // (set the static in the constructor because
+        // the player fillTokens call needs it.
+        Instance = this;
         for (int i = 0; i < players.length(); i++) {
             Player player = players.getPlayerN(i);
-            for (int n = 0; n < NTokensPerPlayer; n++) {
-                player.addToken(takeNextToken());
-            }
+            player.fillTokens();
         }
 
     }
@@ -233,50 +225,52 @@ public class Board {
     //
     //  Layout related bits
     //
+
+    // This is only called from PlayGameAct::onCreate.  So
+    // it needs to build a new layout every time.
     public LinearLayout buildLayout(Context context) {
-        if (layout == null) {
-            layout = new LinearLayout(context);
+        layout = new LinearLayout(context);
 
-            // The overall layout needs a bit of buffter space
-            LinearLayout.LayoutParams params =
-                    new LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.MATCH_PARENT);
-            params.width = LinearLayout.LayoutParams.MATCH_PARENT;
-            params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
-            params.weight = 1;
-            params.topMargin = 3;
-            params.bottomMargin = 10;
-            layout.setOrientation(LinearLayout.VERTICAL);
-            layout.setLayoutParams(params);
+        // The overall layout needs a bit of buffter space
+        LinearLayout.LayoutParams params =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.MATCH_PARENT);
+        params.width = LinearLayout.LayoutParams.MATCH_PARENT;
+        params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        params.weight = 1;
+        params.topMargin = 3;
+        params.bottomMargin = 10;
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setLayoutParams(params);
 
-            // Each hoizontal line needs to be sized.  So, we
-            // can't just use the params from above, we need one
-            // that is sized based on the Text boxes it contains.
-            LinearLayout.LayoutParams row_params =
-                    new LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.MATCH_PARENT);
-            row_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
-            row_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
-            row_params.weight = 1;
-            row_params.bottomMargin = 2;
+        // Each hoizontal line needs to be sized.  So, we
+        // can't just use the params from above, we need one
+        // that is sized based on the Text boxes it contains.
+        LinearLayout.LayoutParams row_params =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.MATCH_PARENT);
+        row_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
+        row_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        row_params.weight = 1;
+        row_params.bottomMargin = 2;
 
-            // It will have YSize rows each of which is a
-            // horizontal LinearLayout holding XSize 'buttons'
-            for (int rln = 0; rln < nrows; rln++) {
-                LinearLayout row = new LinearLayout(context);
-                row.setOrientation((LinearLayout.HORIZONTAL));
-                row.setLayoutParams(row_params);
+        // It will have YSize rows each of which is a
+        // horizontal LinearLayout holding XSize 'buttons'
+        for (int rln = 0; rln < nrows; rln++) {
+            LinearLayout row = new LinearLayout(context);
+            row.setOrientation((LinearLayout.HORIZONTAL));
+            row.setLayoutParams(row_params);
 
-                for (int cln = 0; cln < ncols; cln++) {
-                    BoardSpace space = data[rln][cln];
-                    row.addView(space);
-                }
-
-                layout.addView(row);
+            for (int cln = 0; cln < ncols; cln++) {
+                BoardSpace space = data[rln][cln];
+                row.addView(space.getView(context));
             }
+
+            layout.addView(row);
         }
+
         return layout;
     }
 
@@ -287,7 +281,7 @@ public class Board {
             for (int c = 0; c < ncols; c++) {
                 BoardSpace space = data[r][c];
                 if (!space.isOccupied())
-                    space.setBackgroundColor(BOGlobals.ClrEmptySpace);
+                    space.setColor(BOGlobals.ClrEmptySpace);
             }
         }
         // Add the ones for this player
@@ -299,10 +293,10 @@ public class Board {
     }
 
     private void highlight(Token token) {
-        data[token.getRow()][token.getCol()].setBackgroundColor(BOGlobals.ClrTokenSpace);
+        data[token.getRow()][token.getCol()].setColor(BOGlobals.ClrTokenSpace);
     }
 
     public void chosen(Token token) {
-        data[token.getRow()][token.getCol()].setBackgroundColor(BOGlobals.ClrChoseSpace);
+        data[token.getRow()][token.getCol()].setColor(BOGlobals.ClrChoseSpace);
     }
 }

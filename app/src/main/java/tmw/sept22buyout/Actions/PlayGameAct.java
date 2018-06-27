@@ -75,11 +75,8 @@ public class PlayGameAct extends AppCompatActivity {
         mainDisplay.setLayoutParams(vlparams);
         this.addContentView(mainDisplay, vlparams);
 
-        // Create the board
-        Board board = Board.initialize(9, 12, this);
-
         // The three main areas, each drawn by the associated class.
-        mainDisplay.addView( board.buildLayout(this) );
+        mainDisplay.addView( Board.instance().buildLayout(this) );
         mainDisplay.addView( Players.instance().buildLayout(this, null) );
         mainDisplay.addView( Chains.instance().buildLayout(this, null) );
 
@@ -202,21 +199,21 @@ public class PlayGameAct extends AppCompatActivity {
     //  Left over bits
     //
 
+    // Used for the lower right hand button.  Could be 'End Game' or 'Show Log'
     public void endGameClicked(View view) {
         if (BOGlobals.EndOfGameOption) {
-            startEndGame();
+            Intent intent = new Intent(this, EndGameAct.class);
+            startActivity(intent);
         }
         else {
+            // Hmm.  I want to get back to the game state I left.
+            // Even if it is half-way through a compound action like
+            // buying stocks.
             Intent intent = new Intent(this, DisplayLogAct.class);
             startActivity(intent);
         }
     }
 
-
-    public void startEndGame() {
-        Intent intent = new Intent(this, EndGameAct.class);
-        startActivity(intent);
-    }
 
 
 

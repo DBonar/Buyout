@@ -55,7 +55,7 @@ public class PlayToken implements GameState {
     }
 
     public void playTokenClicked(View view) {
-        Token token = (Token) view;
+        Token token = ((Token.Button) view).getToken();
         playToken(token);
     }
 
@@ -67,13 +67,11 @@ public class PlayToken implements GameState {
         if (status.getStatus() == IllegalSafe) {
             PlayGameAct.inst().msgSet(player, "You may not merge two safe chains.  " +
                     "Please choose another token.");
-            token.setText("");
             token.setOnClickListener(null);
 
         } else if (status.getStatus() == IllegalNoChain) {
             PlayGameAct.inst().msgSet(player, "There are no more chains available to place on the board. " +
                     "Please choose another token.");
-            token.setText("");
             token.setOnClickListener(null);
 
         } else if (status.getStatus() == SimplePlacement) {

@@ -108,10 +108,11 @@ public class Player {
 
     public boolean fillTokens() {
         Board at = Board.instance();
-        if (OwnedTokens.size() < at.NTokensPerPlayer) {
+        while (OwnedTokens.size() < at.NTokensPerPlayer) {
             Token tk = at.takeNextToken();
+            if (tk == null)
+                return false;
             OwnedTokens.add(tk);
-            return (tk != null);
         }
         return true;
     }

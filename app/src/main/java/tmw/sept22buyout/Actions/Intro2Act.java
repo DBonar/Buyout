@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.*;
 
+import tmw.sept22buyout.Board;
 import tmw.sept22buyout.Chains;
 import tmw.sept22buyout.Players;
 import tmw.sept22buyout.R;
@@ -96,11 +97,16 @@ public class Intro2Act extends AppCompatActivity {
     public void startGameClicked(View view) {
         makePlayerNameArray();
         if (checkPlayerNames()) {
-            Players.instance(Intro2Act.NPlayers,
-                             Intro2Act.NMachines,
-                             Intro2Act.HumanNames,
+            // initialize the players
+            Players.instance(NPlayers,
+                             NMachines,
+                             HumanNames,
                              getResources().getStringArray(R.array.machine_names));
-            Chains.instance();  // initialize the chains.
+            // initialize the chains.
+            Chains.instance();
+            // Create the board
+            Board.initialize(9, 12);
+
             Intent intent = new Intent(this, PlayGameAct.class);
             startActivity(intent);
         }

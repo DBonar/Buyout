@@ -1,9 +1,9 @@
 package tmw.sept22buyout;
 
 import android.content.Context;
-import android.widget.Button;
+import android.support.annotation.Nullable;
+import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -22,54 +22,85 @@ import static tmw.sept22buyout.GameLogic.PlacementStatus.StatusType.SimplePlacem
  * Created by Tim Weinrich on 10/18/2017.
  */
 
-public class Token extends Button {
+public class Token {
+
+    // I wish I didn't need this inner class, but I need
+    // to add the the method which can return the parent
+    // Token when you get this Button back from a callback.
+    public class Button extends android.widget.Button {
+        private Token tk;
+        private Button(Token token, Context context) {super(context); tk = token;}
+        public Token getToken() { return tk; }
+    }
 
     private int row;
     private int col;
     private String name;
-    private TextView Display = null;
+    private int color;
+    private View.OnClickListener callback;
+    private Button display = null;
 
     public int getCol() { return col; }
     public int getRow() { return row; }
     public String getName() { return name; }
     public String toString() { return name; }
 
+    // Each time you call this you get a new Button
+    public Button getView(Context context) {
+        LinearLayout.LayoutParams cell_params =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+        cell_params.weight = 1;
+        cell_params.leftMargin = 2;
+
+        display = new Button(this, context);
+        display.setPadding(8,0,0,10);
+        display.setText(name);
+        display.setLayoutParams(cell_params);
+        display.setMinHeight(1);
+        display.setMinimumHeight(1);
+        display.setBackgroundColor(color);
+        display.setOnClickListener(callback);
+
+        return display;
+    }
+
     public void setData(Token token) {
         if (token != null) {
             row = token.row;
             col = token.col;
             name = token.name;
+            color = BOGlobals.ClrTokenSpace;
         } else {
             row = 0;
             col = 0;
             name = "";
         }
-        setText(name);
+        if (display != null)
+            display.setText(name);
     }
 
-    public Token(int r, int c, Context context) {
-        super(context);
+    public void setColor(int clr) {
+        color = clr;
+        if (display != null)
+            display.setBackgroundColor(clr);
+    }
+
+    public void setOnClickListener(@Nullable View.OnClickListener listen) {
+        callback = listen;
+        if (display != null)
+            display.setOnClickListener(listen);
+    }
+
+    public Token(int r, int c) {
+        display = null;
+        callback = null;
         row = r;
         col = c;
         name = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".substring(col, col + 1) +
                       Integer.toString(row + 1);
-
-        // TODO It would be nice to have the text more centered
-        LinearLayout.LayoutParams cell_params =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT);
-        cell_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
-        cell_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
-        cell_params.weight = 1;
-        cell_params.leftMargin = 2;
-
-        this.setPadding(8,0,0,10);
-        this.setText(name);
-        this.setLayoutParams(cell_params);
-        this.setMinHeight(1);
-        this.setMinimumHeight(1);
-        setBackgroundColor(BOGlobals.ClrTokenSpace);
+        color = BOGlobals.ClrTokenSpace;
     }
 
 

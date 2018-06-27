@@ -101,9 +101,7 @@ public class Players {
         LinearLayout.LayoutParams row_params =
                 new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.MATCH_PARENT);
-        row_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
-        row_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
         row_params.topMargin = 2;
         row_params.bottomMargin = 10;
         ret.setOrientation((LinearLayout.HORIZONTAL));
@@ -113,34 +111,17 @@ public class Players {
         lblTokens.setText("Tokens:");
         LinearLayout.LayoutParams label_params =
                 new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT);
-        label_params.width = 0;
-        label_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
-        label_params.weight = 1;
         lblTokens.setLayoutParams(label_params);
         ret.addView(lblTokens);
 
-        LinearLayout.LayoutParams token_params =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT);
-        token_params.width = 0;
-        token_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
-        token_params.weight = 1;
         tiles = new Token[Board.instance().NTokensPerPlayer];
         for (int tn = 0; (tn < Board.instance().NTokensPerPlayer); tn++) {
-            Token token = new Token(1,1, context); // replaced later
-            token.setText("Button");
-            token.setLayoutParams(token_params);
-            token.setMinHeight(1);
-            token.setMinimumHeight(1);
+            Token token = new Token(1,1); // replaced later
             tiles[tn] = token;
-            if (tokenCallback != null) {
-                View vtoke = (View) token;
-                vtoke.setOnClickListener(tokenCallback);
-            }
-            ret.addView(token);
+            token.setOnClickListener(tokenCallback);
+            ret.addView(token.getView(context));
         }
 
         cash = new TextView(context);
