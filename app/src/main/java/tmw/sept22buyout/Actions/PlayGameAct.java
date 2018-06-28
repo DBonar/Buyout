@@ -5,12 +5,16 @@ import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.*;
 
+import tmw.sept22buyout.ActionLog;
+import tmw.sept22buyout.ActionRecord;
 import tmw.sept22buyout.BOGlobals;
 import tmw.sept22buyout.Board;
 import tmw.sept22buyout.Chains;
+import tmw.sept22buyout.ListIterator;
 import tmw.sept22buyout.Player;
 import tmw.sept22buyout.Players;
 import tmw.sept22buyout.R;
@@ -31,13 +35,14 @@ public class PlayGameAct extends AppCompatActivity {
     // View items that get manipulated -- mostly different onClick
     // listeners get set -- as we move between different phases of play
     public Button            ContinueButton;
-    private Button           EndGameButton;
+    private Button           LogButton;
+    private FrameLayout      frame;
     private LinearLayout     mainDisplay;      // created and built in onCreate()
     private ConstraintLayout courtesyPanel;    // Hides the screen at start of a player's turn.
     private TextView         courtesyLabel;    // The text on the playerTurnPanel
     private Button           courtesyButton;   // The button to hide the panel
     private TextView         LblMessage;       // Used for instructional messages
-
+    private PopupWindow      pop;              // used for the log
 
     //
     // Create the layout in the onCreate method.
@@ -52,8 +57,9 @@ public class PlayGameAct extends AppCompatActivity {
         Instance = this;
 
         setContentView(R.layout.activity_play_game);
+        frame = (FrameLayout) findViewById(R.id.PlayGameFrame);
         mainDisplay = (LinearLayout) findViewById(R.id.MainDisplay);
-        courtesyPanel = (ConstraintLayout) findViewById(R.id.PlayerTurnPanel);
+        courtesyPanel = (ConstraintLayout) findViewById(R.id.CourtesyPanel);
         courtesyLabel = (TextView) findViewById(R.id.PlayerNameLabel);
         courtesyButton = (Button) findViewById(R.id.StartTurnButton);
 
@@ -67,8 +73,6 @@ public class PlayGameAct extends AppCompatActivity {
                 new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
                         LinearLayout.LayoutParams.MATCH_PARENT);
-        vlparams.width = LinearLayout.LayoutParams.MATCH_PARENT;
-        vlparams.height = LinearLayout.LayoutParams.MATCH_PARENT;
 
         mainDisplay = new LinearLayout(this);
         mainDisplay.setOrientation(LinearLayout.VERTICAL);
@@ -85,9 +89,7 @@ public class PlayGameAct extends AppCompatActivity {
             LinearLayout.LayoutParams spacer_params =
                     new LinearLayout.LayoutParams(
                             LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.MATCH_PARENT);
-            spacer_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
-            spacer_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+                            LinearLayout.LayoutParams.WRAP_CONTENT);
             spacer_params.weight = 2;
 
             LinearLayout row = new LinearLayout(this);
@@ -105,9 +107,7 @@ public class PlayGameAct extends AppCompatActivity {
             LinearLayout.LayoutParams bottom_params =
                     new LinearLayout.LayoutParams(
                             LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.MATCH_PARENT);
-            bottom_params.width = LinearLayout.LayoutParams.MATCH_PARENT;
-            bottom_params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+                            LinearLayout.LayoutParams.WRAP_CONTENT);
             bottom_params.weight = 1;
 
             LinearLayout row = new LinearLayout(this);
@@ -119,7 +119,6 @@ public class PlayGameAct extends AppCompatActivity {
                             LinearLayout.LayoutParams.MATCH_PARENT,
                             LinearLayout.LayoutParams.WRAP_CONTENT);
             btnparams.width = 0;
-            btnparams.height = LinearLayout.LayoutParams.MATCH_PARENT;
             btnparams.weight = 1;
 
             ContinueButton = new Button(this);
@@ -130,13 +129,13 @@ public class PlayGameAct extends AppCompatActivity {
             ContinueButton.setMinimumHeight(1);
             row.addView(ContinueButton);
 
-            EndGameButton = new Button(this);
-            EndGameButton.setText("");
-            EndGameButton.setLayoutParams(btnparams);
-            EndGameButton.setOnClickListener(this::endGameClicked);
-            EndGameButton.setMinHeight(1);
-            EndGameButton.setMinimumHeight(1);
-            row.addView(EndGameButton);
+            LogButton = new Button(this);
+            LogButton.setText("Show Log");
+            LogButton.setLayoutParams(btnparams);
+            LogButton.setOnClickListener(this::logClicked);
+            LogButton.setMinHeight(1);
+            LogButton.setMinimumHeight(1);
+            row.addView(LogButton);
 
             mainDisplay.addView(row);
         }
@@ -148,8 +147,8 @@ public class PlayGameAct extends AppCompatActivity {
         Players.instance().updatePlayerData(player);
         Chains.instance().updateLabels(player);
 
-        if (BOGlobals.EndOfGameOption) EndGameButton.setText("End Game");
-        else EndGameButton.setText("Show Log");
+        //if (BOGlobals.EndOfGameOption) LogButton.setText("End Game");
+        //else LogButton.setText("Show Log");
     } // end refreshScreen()
 
     public void showCourtesyPanel(Player player,
@@ -196,11 +195,11 @@ public class PlayGameAct extends AppCompatActivity {
 
 
     //
-    //  Left over bits
+    //  Log panel
     //
 
     // Used for the lower right hand button.  Could be 'End Game' or 'Show Log'
-    public void endGameClicked(View view) {
+    public void logClicked(View view) {
         if (BOGlobals.EndOfGameOption) {
             Intent intent = new Intent(this, EndGameAct.class);
             startActivity(intent);
@@ -209,9 +208,64 @@ public class PlayGameAct extends AppCompatActivity {
             // Hmm.  I want to get back to the game state I left.
             // Even if it is half-way through a compound action like
             // buying stocks.
-            Intent intent = new Intent(this, DisplayLogAct.class);
-            startActivity(intent);
+            //Intent intent = new Intent(this, DisplayLogAct.class);
+            //startActivity(intent);
+            ScrollView log = new ScrollView(this );
+            ScrollView.LayoutParams p1 = new ScrollView.LayoutParams(
+                                      ScrollView.LayoutParams.MATCH_PARENT,
+                                      ScrollView.LayoutParams.MATCH_PARENT );
+            log.setLayoutParams(p1);
+
+            LinearLayout layout = new LinearLayout(this );
+            LinearLayout.LayoutParams p2 = new LinearLayout.LayoutParams(
+                                                   LinearLayout.LayoutParams.MATCH_PARENT,
+                                                   LinearLayout.LayoutParams.WRAP_CONTENT );
+            layout.setOrientation(LinearLayout.VERTICAL);
+            layout.setLayoutParams(p2);
+
+            Button but = new Button(this );
+            LinearLayout.LayoutParams p3 = new LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT,
+                                    LinearLayout.LayoutParams.WRAP_CONTENT );
+            but.setLayoutParams(p3);
+            but.setText("Done");
+            but.setOnClickListener(this::logDoneClick);
+            layout.addView(but);
+
+            TextView text = new TextView( this );
+            LinearLayout.LayoutParams p4 = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT );
+            p4.topMargin = 20;
+            text.setLayoutParams(p4);
+            {
+                String output = "";
+                output += "ACTIVITY LOG\n\n";
+                ActionRecord record;
+                ListIterator<ActionRecord> logiter =
+                        new ListIterator<ActionRecord>(ActionLog.inst().getLog());
+                while ((record = logiter.getNext()) != null)
+                    output += record.toString() + "\n";
+                text.setText(output);
+            }
+            layout.addView(text);
+            log.addView(layout);
+
+            // I have to hid the main display because the background
+            // of the popup window is transparent, so the main display
+            // would show through.
+            mainDisplay.setVisibility(View.INVISIBLE);
+            pop = new PopupWindow(log,
+                                  ConstraintLayout.LayoutParams.MATCH_PARENT,
+                                  ConstraintLayout.LayoutParams.MATCH_PARENT );
+            pop.showAtLocation(mainDisplay, Gravity.CENTER, 0, 0);
         }
+    }
+
+    public void logDoneClick(View view) {
+        pop.dismiss();
+        pop = null;
+        mainDisplay.setVisibility(View.VISIBLE);
     }
 
 
