@@ -6,7 +6,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.*;
 
 import tmw.sept22buyout.ActionLog;
@@ -57,11 +59,11 @@ public class PlayGameAct extends AppCompatActivity {
         Instance = this;
 
         setContentView(R.layout.activity_play_game);
-        frame = (FrameLayout) findViewById(R.id.PlayGameFrame);
-        mainDisplay = (LinearLayout) findViewById(R.id.MainDisplay);
-        courtesyPanel = (ConstraintLayout) findViewById(R.id.CourtesyPanel);
-        courtesyLabel = (TextView) findViewById(R.id.PlayerNameLabel);
-        courtesyButton = (Button) findViewById(R.id.StartTurnButton);
+        frame =  findViewById(R.id.PlayGameFrame);
+        mainDisplay = findViewById(R.id.MainDisplay);
+        courtesyPanel = findViewById(R.id.CourtesyPanel);
+        courtesyLabel = findViewById(R.id.PlayerNameLabel);
+        courtesyButton = findViewById(R.id.StartTurnButton);
 
         // Create the display, a vertical stack of items.
         // 1 for the board
@@ -205,59 +207,22 @@ public class PlayGameAct extends AppCompatActivity {
             startActivity(intent);
         }
         else {
-            // Hmm.  I want to get back to the game state I left.
-            // Even if it is half-way through a compound action like
-            // buying stocks.
-            //Intent intent = new Intent(this, DisplayLogAct.class);
-            //startActivity(intent);
-            ScrollView log = new ScrollView(this );
-            ScrollView.LayoutParams p1 = new ScrollView.LayoutParams(
-                                      ScrollView.LayoutParams.MATCH_PARENT,
-                                      ScrollView.LayoutParams.MATCH_PARENT );
-            log.setLayoutParams(p1);
+            LayoutInflater inflater = (LayoutInflater) this.getSystemService(LAYOUT_INFLATER_SERVICE);
+            View logview = inflater.inflate(R.layout.log_popup,null);
+            pop = new PopupWindow(logview,
+                    ConstraintLayout.LayoutParams.MATCH_PARENT,
+                    ConstraintLayout.LayoutParams.MATCH_PARENT );
 
-            LinearLayout layout = new LinearLayout(this );
-            LinearLayout.LayoutParams p2 = new LinearLayout.LayoutParams(
-                                                   LinearLayout.LayoutParams.MATCH_PARENT,
-                                                   LinearLayout.LayoutParams.WRAP_CONTENT );
-            layout.setOrientation(LinearLayout.VERTICAL);
-            layout.setLayoutParams(p2);
-
-            Button but = new Button(this );
-            LinearLayout.LayoutParams p3 = new LinearLayout.LayoutParams(
-                                    LinearLayout.LayoutParams.MATCH_PARENT,
-                                    LinearLayout.LayoutParams.WRAP_CONTENT );
-            but.setLayoutParams(p3);
-            but.setText("Done");
-            but.setOnClickListener(this::logDoneClick);
-            layout.addView(but);
-
-            TextView text = new TextView( this );
-            LinearLayout.LayoutParams p4 = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT );
-            p4.topMargin = 20;
-            text.setLayoutParams(p4);
-            {
-                String output = "";
-                output += "ACTIVITY LOG\n\n";
-                ActionRecord record;
-                ListIterator<ActionRecord> logiter =
-                        new ListIterator<ActionRecord>(ActionLog.inst().getLog());
-                while ((record = logiter.getNext()) != null)
-                    output += record.toString() + "\n";
-                text.setText(output);
-            }
-            layout.addView(text);
-            log.addView(layout);
+            //TextView text = findViewById(R.id.LogTextField);
+            ViewGroup logviewgp = (ViewGroup) logview;
+            ViewGroup child0  = (ViewGroup) logviewgp.getChildAt(0);
+            TextView text = (TextView) child0.getChildAt(1);
+            text.setText( ActionLog.instance().getLogText());
 
             // I have to hid the main display because the background
             // of the popup window is transparent, so the main display
             // would show through.
             mainDisplay.setVisibility(View.INVISIBLE);
-            pop = new PopupWindow(log,
-                                  ConstraintLayout.LayoutParams.MATCH_PARENT,
-                                  ConstraintLayout.LayoutParams.MATCH_PARENT );
             pop.showAtLocation(mainDisplay, Gravity.CENTER, 0, 0);
         }
     }

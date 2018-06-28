@@ -150,7 +150,7 @@ public class Chain {
                                 " for " + toString() + "\n";
                     }
                     else {
-                        ActionLog.inst().add(turnplayer, oneplayer,
+                        ActionLog.instance().add(turnplayer, oneplayer,
                                 "received a primary bonus of $" + primebonus +
                                         " for " + toString());
                     }
@@ -179,7 +179,7 @@ public class Chain {
                                 secondbonus + " for " + toString() + "\n";
                     }
                     else {
-                        ActionLog.inst().add(turnplayer, oneplayer,
+                        ActionLog.instance().add(turnplayer, oneplayer,
                                 "received a secondary bonus of $" + secondbonus +
                                         " for " + toString());
                     }

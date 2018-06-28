@@ -42,7 +42,7 @@ public class EndGameAct extends AppCompatActivity {
 
         ActionRecord record;
         ListIterator<ActionRecord> logiter =
-                new ListIterator<ActionRecord>(ActionLog.inst().getLog());
+                new ListIterator<ActionRecord>(ActionLog.instance().getLog());
         while ((record = logiter.getNext()) != null)
             output += record.toString() + "\n";
         output += "These are the end-game bonuses:\n";

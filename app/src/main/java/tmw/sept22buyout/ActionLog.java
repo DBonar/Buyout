@@ -23,9 +23,15 @@ public class ActionLog {
         return Instance;
     }
 
-    public static ActionLog inst() {
-        // just an abbreviation for instance()
-        return instance();
+    public String getLogText() {
+        String output = "";
+        output += "ACTIVITY LOG\n\n";
+        ActionRecord record;
+        ListIterator<ActionRecord> logiter =
+                new ListIterator<ActionRecord>(Log);
+        while ((record = logiter.getNext()) != null)
+            output += record.toString() + "\n";
+        return output;
     }
 
     public void add(Player newplayer, String newaction) {
