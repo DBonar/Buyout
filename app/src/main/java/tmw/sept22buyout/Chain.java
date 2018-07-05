@@ -48,6 +48,7 @@ public class Chain {
     public String getChainClass() { return ChainClass.name(); }
     public boolean isOnBoard() { return (BoardCount > 0); }
     public boolean isSafe() { return (getBoardCount() >= MinSafeChainSize); };
+    public boolean isMaximal() { return (getBoardCount() > MaxChainSize); }
     public int getBoardCount() { return BoardCount; }
     public void incrBoardCount() { BoardCount++; }
     public void decrBoardCount() { BoardCount--; }
