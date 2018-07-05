@@ -51,7 +51,7 @@ public class CreateChain implements GameState {
                     "Please choose a different chain.");
         } else {
             Board board = Board.instance();
-            chain.moveToBoard(token);
+            board.addToChain(token, chain);
             if (chain.getAvailableStock() > 0) {
                 player.takeStock(chain, 1);
             }

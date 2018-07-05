@@ -103,21 +103,19 @@ public class Board {
     }
 
     // Adds token and all neighboring spaces that are occupied
-    // but no in a chain to the specified chain.
+    // but not in a chain to the specified chain.
     public void addToChain(Token token, Chain chain) {
         BoardSpace space = data[token.getRow()][token.getCol()];
-        if (space.getChain() != chain) {
-            space.setChain(chain);
+        space.setChain(chain);
 
-            // Now color all newly attached neighbors
-            List<BoardSpace> border = allNeighbors(space);
-            for (int i = 0; i < border.size(); i++) {
-                BoardSpace neighbor = border.get(i);
-                if (neighbor.isOccupied()
-                        && (neighbor.getChain() == null)) {
-                    neighbor.setChain(chain);
-                    border.addAll(allNeighbors(neighbor));
-                }
+        // Now color all newly attached neighbors
+        List<BoardSpace> border = allNeighbors(space);
+        for (int i = 0; i < border.size(); i++) {
+            BoardSpace neighbor = border.get(i);
+            if (neighbor.isOccupied()
+                    && (neighbor.getChain() == null)) {
+                neighbor.setChain(chain);
+                border.addAll(allNeighbors(neighbor));
             }
         }
     }
@@ -126,18 +124,16 @@ public class Board {
     // to the specified new chain.
     public void addToChain(Token token, Chain newChain, Chain oldChain) {
         BoardSpace space = data[token.getRow()][token.getCol()];
-        if (space.getChain() != newChain) {
-            space.setChain(newChain);
+        space.setChain(newChain);
 
-            // Now color all newly attached neighbors
-            List<BoardSpace> border = allNeighbors(space);
-            for (int i = 0; i < border.size(); i++) {
-                BoardSpace neighbor = border.get(i);
-                if (   neighbor.isOccupied()
-                    && (neighbor.getChain() == oldChain)) {
-                    neighbor.setChain(newChain);
-                    border.addAll(allNeighbors(neighbor));
-                }
+        // Now color all newly attached neighbors
+        List<BoardSpace> border = allNeighbors(space);
+        for (int i = 0; i < border.size(); i++) {
+            BoardSpace neighbor = border.get(i);
+            if (   neighbor.isOccupied()
+                && (neighbor.getChain() == oldChain)) {
+                neighbor.setChain(newChain);
+                border.addAll(allNeighbors(neighbor));
             }
         }
     }

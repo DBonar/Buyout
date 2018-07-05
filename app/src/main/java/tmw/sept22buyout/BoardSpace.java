@@ -28,13 +28,14 @@ public class BoardSpace extends Token {
     public boolean isOccupied() { return isOccupied; }
 
     public void setChain(Chain newchain) {
-        if (chain == newchain) return;
+        // This logic works even if newchain == chain
         if (chain != null) chain.decrBoardCount();
         newchain.incrBoardCount();
         isOccupied = true;
         chain = newchain;
         this.setColor(newchain.getChainColor());
     }
+
     public void removeChain() {
         if (chain == null) return;
         chain.decrBoardCount();
@@ -42,6 +43,7 @@ public class BoardSpace extends Token {
         chain = null;
         this.setColor(BOGlobals.ClrEmptySpace);
     }
+
     public Chain getChain() { return chain; }
 
 

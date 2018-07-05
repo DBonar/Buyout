@@ -33,7 +33,6 @@ public class Chain {
     private @ColorInt int ChainColor;
 
     private int BoardCount = 0;
-    private Token initialSpace = null;
     private int StockAvailable = 25;
 
 
@@ -61,7 +60,7 @@ public class Chain {
         return ValuationTable.getPricePerShare(ChainClass, BoardCount); }
     public int getStartingPricePerShare() {
         return ValuationTable.getPricePerShare(ChainClass, 2); }
-    public int getBonusPrice(boolean isprimary) {
+    private int getBonusPrice(boolean isprimary) {
         return ValuationTable.getBonusPrice(ChainClass, BoardCount, isprimary);
     }
     public @ColorInt int getChainColor() { return ChainColor; }
@@ -70,6 +69,7 @@ public class Chain {
         String issafe = (getBoardCount() >= MinSafeChainSize) ?
                 "Safe " : "";
         return Name + "(" + issafe + ChainClass + " Bank)"; }
+
     // We'd like the FullString to look like this:
     // Class=nn, Size=dd, Price=dd, Holdings=dd, Unsold=dd
     public String toFullString(Player player) {
@@ -81,21 +81,7 @@ public class Chain {
                 ", Holdings=" + player.getChainNShares(this) +
                 ", Unsold=" + StockAvailable; }
     // public String toFullString() { return Name + " " + ChainClass.name() + " " + ChainSeed + " " + BoardCount + " " + StockAvailable; }
-
-    public void moveToBoard(Token space) {
-        // put this chain on the board
-        // Save the initial space for removing it later.
-        // Incrementing the board count is handled in the board logic
-        initialSpace = space;
-        Board.instance().addToChain(space, this);
-    }
-
-    public void removeFromBoard() {
-        // take this chain off the board.
-        // Decrementing the board count is handled in the board logic
-        Board.instance().removeChain(initialSpace, this);
-    }
-
+    
 
     public String payShareholderBonuses(Player turnplayer) {
         // Find who owns the most shares of this chain, and who owns the

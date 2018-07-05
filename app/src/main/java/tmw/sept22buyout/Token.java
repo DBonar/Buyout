@@ -33,12 +33,12 @@ public class Token {
         public Token getToken() { return tk; }
     }
 
+    private Button display = null;
+    private View.OnClickListener callback;
     private int row;
     private int col;
     private String name;
     private int color;
-    private View.OnClickListener callback;
-    private Button display = null;
 
     public int getCol() { return col; }
     public int getRow() { return row; }
@@ -103,6 +103,14 @@ public class Token {
         color = BOGlobals.ClrTokenSpace;
     }
 
+    public Token(Token orig) {
+        display = orig.display;
+        callback = orig.callback;
+        row = orig.row;
+        col = orig.col;
+        name = orig.name;
+        color = orig.color;
+    }
 
 
     public PlacementStatus evaluateForPlacement() {

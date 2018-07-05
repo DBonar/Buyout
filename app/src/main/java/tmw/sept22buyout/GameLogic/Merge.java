@@ -27,10 +27,13 @@ public class Merge implements GameState {
     private Chain victim;                 // The chain currently being merged
     private Player mergerPlayer;          // The player making sell/trade/keep choice
 
-
     public Merge(PlayGameAct theDisplay, Token theToken) {
         display = theDisplay;
-        token = theToken;
+        // copy it because the given Token is actually one of
+        // the Player area board objects.  That will get changed
+        // if we update Players data.  So, for safety, we get a
+        // token that looks just like it.
+        token = new Token(theToken);
         List<BoardSpace> neighbors = Board.instance().allNeighbors(token);
         potentials = new ArrayList<Chain>();
         for (int i = 0; i < neighbors.size(); i++) {
@@ -118,7 +121,9 @@ public class Merge implements GameState {
             // no-op, ignore it.
             return;
         }
-        display.refreshScreen(mergerPlayer);
+        // No need to update the display for a non-human.
+        if (!mergerPlayer.isMachine())
+            display.refreshScreen(mergerPlayer);
     }
 
     public void endMergeClick(View view) {
@@ -128,7 +133,9 @@ public class Merge implements GameState {
                 && mergerPlayer != player ) {
             mergerPlayer = mergerPlayer.nextPlayer();
         }
-        enter(player);
+        if (!mergerPlayer.isMachine())
+            display.refreshScreen(mergerPlayer);
+        enter(player); // same player we started with
     }
 
     public void hidePanel(View view) {
@@ -218,7 +225,12 @@ public class Merge implements GameState {
                     return; // exit and wait for callbacks
                 }
             }
+
+            // Having chosen the victim, pay the bonuses to the top "two" shareholders
+            victim.payShareholderBonuses(player);
+
         } // When we pass here we have a victim which is no longer in potentials
+
 
         // So, do the loop for this survivor / victim pair
         // Just as with survivor and victim, when we first come
@@ -254,8 +266,9 @@ public class Merge implements GameState {
                 } else {
                     Players.instance().updateCallbacks(null);
                     Chains.instance().updateCallbacks(this::mergeClick);
-                    display.ContinueButton.setOnClickListener(null);
-                    display.msgSet(player, "Click on " + victim.getName() + " to sell a share.\n" +
+                    display.ContinueButton.setOnClickListener(this::endMergeClick);
+                    display.msgSet(mergerPlayer,
+                            "Click on " + victim.getName() + " to sell a share.\n" +
                             "Click on " + survivor.getName() + " aquire 1 share.\n" +
                             "Click 'Continue' to keep the rest of your shares.");
                     return; // exit and wait for callbacks
@@ -265,6 +278,9 @@ public class Merge implements GameState {
             mergerPlayer = mergerPlayer.nextPlayer();
         }
 
+        // If we come out the bottom of that while, it means
+        // we're done with the merge.  (mergePlayer == starting player)
+        // so we need to finish things off.
         // finish the merge of victim into survivor
         Board.instance().addToChain(token, survivor, victim);
         victim = null;
