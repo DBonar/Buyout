@@ -32,12 +32,12 @@ public class NextTurn implements GameState {
             || gameEnded()    ) {
             GameState end = new EndGame(display);
             end.enter(player);
+        } else {
+            player = player.nextPlayer();
+            saveGameState();
+            GameState nextState = new StartTurn(display);
+            nextState.enter(player);
         }
-
-        player = player.nextPlayer();
-        saveGameState();
-        GameState nextState = new StartTurn(display);
-        nextState.enter(player);
     }
 
     boolean gameEnded() {

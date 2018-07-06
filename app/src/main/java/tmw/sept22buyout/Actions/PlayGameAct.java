@@ -148,10 +148,7 @@ public class PlayGameAct extends AppCompatActivity {
         Board.instance().updateHighlights(player);
         Players.instance().updatePlayerData(player);
         Chains.instance().updateLabels(player);
-
-        //if (BOGlobals.EndOfGameOption) LogButton.setText("End Game");
-        //else LogButton.setText("Show Log");
-    } // end refreshScreen()
+    }
 
     public void showCourtesyPanel(Player player,
                                   String msg,
