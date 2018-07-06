@@ -40,7 +40,7 @@ public class NextTurn implements GameState {
         nextState.enter(player);
     }
 
-    public boolean gameEnded() {
+    boolean gameEnded() {
         // We'll end the game if all chains on the board are safe
         // or if one chain on the board has 41+ tiles.
         // Note that officially a player has to notice and announce
@@ -49,19 +49,21 @@ public class NextTurn implements GameState {
         // this is getting checked automatically at the end of every
         // turn.  (After stock purchase since that cannot hurt a player.)
         List<Chain> chains = Chains.instance().allPlacedChains();
+        boolean endGame = (chains.size() > 0);
+
         for (int i = 0; i < chains.size(); i++) {
             Chain chain = chains.get(i);
             if (chain.isMaximal())
                 return true;
             if (!chain.isSafe())
-                return false;
+                endGame = false;
         }
         // This doesn't seem to be explicitly mentioned, but we need
         // it or the game ends on the first turn with no chains on the board.
-        return (chains.size() > 0);
+        return endGame;
     }
 
-    public void saveGameState() {
+    void saveGameState() {
         // stub
     }
 }
