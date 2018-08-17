@@ -2,6 +2,7 @@ package tmw.sept22buyout.GameLogic;
 
 import android.view.View;
 
+import tmw.sept22buyout.ActionLog;
 import tmw.sept22buyout.Board;
 import tmw.sept22buyout.Chain;
 import tmw.sept22buyout.Chains;
@@ -62,6 +63,7 @@ public class PlayToken implements GameState {
     private void playToken(Token token) {
         Board board = Board.instance();
         PlacementStatus status = token.evaluateForPlacement();
+        ActionLog.instance().add(player, "Played token " + token.toString());
         display.log(token.getName() + ".evaluateForPlacement() returns " + status.getStatus());
 
         if (status.getStatus() == IllegalSafe) {
